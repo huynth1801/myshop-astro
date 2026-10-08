@@ -58,6 +58,14 @@ Core principles:
 **Gate rule:** do not start Phase 2 until checkout works end-to-end in staging with real
 Stripe test-mode keys.
 
+**Status notes:**
+- 2026-10-08 — **Stripe integration deferred** by owner decision. The Phase 1→2 gate
+  ("checkout E2E in Stripe test mode") is postponed until Stripe resumes; until then
+  Phase 2 work (coupons, related products, admin CRUD) may proceed — none of it depends
+  on payments. Revisit before launch: the Launch Checklist §15 still requires it.
+- 2026-10-08 — **Git workflow adopted:** feature branch → PR → CI green (`api / verify`,
+  `web / build`) → squash-merge. See `AGENTS.md`.
+
 ## 4. Data Model (core tables)
 
 ```sql
