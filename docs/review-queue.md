@@ -14,3 +14,6 @@ Commits pending review. Auto-managed:
 - fe2d4fd (2026-10-08) feat(web): cart islands - variant picker, add-to-cart, drawer with free-shipping bar
 - d7d77df (2026-10-08) docs: mark cart endpoints as implemented in OpenAPI spec
 - 9d3979e (2026-10-08) feat(api): JWT auth - register, login, refresh cookie, guest cart adoption
+- b941978 (2026-10-08) feat(web): auth island with session restore; docs: mark auth endpoints implemented
+- 6b36bb8 (2026-10-08) fix(ci): provide API env vars to web build (repo .env is git-ignored)
+- 5b924a0 (2026-10-08) docs: adopt branch-per-feature PR workflow; defer Stripe integration
