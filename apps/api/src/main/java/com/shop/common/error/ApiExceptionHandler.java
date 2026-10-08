@@ -11,6 +11,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Global error handling — every error leaves the API as application/problem+json
@@ -39,6 +40,32 @@ public class ApiExceptionHandler {
     @ExceptionHandler(com.shop.cart.OutOfStockException.class)
     public ProblemDetail handleOutOfStock(com.shop.cart.OutOfStockException ex) {
         return problem(HttpStatus.CONFLICT, "OUT_OF_STOCK", ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.auth.UnauthenticatedException.class)
+    public ProblemDetail handleUnauthenticated(com.shop.auth.UnauthenticatedException ex) {
+        return problem(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.auth.EmailTakenException.class)
+    public ProblemDetail handleEmailTaken(com.shop.auth.EmailTakenException ex) {
+        return problem(HttpStatus.CONFLICT, "EMAIL_TAKEN", ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.auth.InvalidCredentialsException.class)
+    public ProblemDetail handleInvalidCredentials(com.shop.auth.InvalidCredentialsException ex) {
+        return problem(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.auth.InvalidRefreshTokenException.class)
+    public ProblemDetail handleInvalidRefreshToken(com.shop.auth.InvalidRefreshTokenException ex) {
+        return problem(HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN", ex.getMessage());
+    }
+
+    /** Unmapped URLs — without this the generic handler turns them into 500s. */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ProblemDetail handleNoResource(NoResourceFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "NOT_FOUND", "No such endpoint");
     }
 
     @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class})

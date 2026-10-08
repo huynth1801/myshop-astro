@@ -38,6 +38,11 @@ public class Cart {
         return cart;
     }
 
+    /** Adopt a guest cart into a user account on login/register. */
+    void attachUser(UUID userId) {
+        this.userId = userId;
+    }
+
     void extendExpiry(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }

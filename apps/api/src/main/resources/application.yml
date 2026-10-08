@@ -26,3 +26,8 @@ shop:
     allowed-origins: http://localhost:4321
   cookie:
     secure: false # true in staging/prod behind HTTPS
+  auth:
+    # HS256 key must be >= 32 chars. Override in every real environment.
+    jwt-secret: ${AUTH_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    access-token-minutes: 15
+    refresh-token-days: 7

@@ -46,7 +46,7 @@ class CartServiceTest {
         when(carts.findByCartTokenAndExpiresAtAfter(anyString(), any(Instant.class)))
                 .thenReturn(Optional.of(existing));
 
-        Cart result = cartService.getOrCreateCart("token-1");
+        Cart result = cartService.getOrCreateCart(null, "token-1");
 
         assertThat(result).isSameAs(existing);
         verify(carts, never()).save(any(Cart.class));
@@ -59,11 +59,87 @@ class CartServiceTest {
         when(carts.save(any(Cart.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Cart created = cartService.getOrCreateCart("stale-token");
+        Cart created = cartService.getOrCreateCart(null, "stale-token");
 
         assertThat(created.getCartToken()).isNotEqualTo("stale-token");
         assertThat(created.getExpiresAt()).isAfter(Instant.now());
         verify(carts).save(any(Cart.class));
+    }
+
+    @Test
+    void getOrCreateCartAdoptsGuestCartWhenUserHasNone() {
+        Cart guest = cart("guest-token");
+        UUID userId = UUID.randomUUID();
+        when(carts.findByCartTokenAndExpiresAtAfter(anyString(), any(Instant.class)))
+                .thenReturn(Optional.of(guest));
+        when(carts.findFirstByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(any(UUID.class), any(Instant.class)))
+                .thenReturn(Optional.empty());
+
+        Cart result = cartService.getOrCreateCart(userId, "guest-token");
+
+        assertThat(result).isSameAs(guest);
+        assertThat(result.getUserId()).isEqualTo(userId);
+    }
+
+    @Test
+    void getOrCreateCartCreatesNewCartForUserWithoutGuestCookie() {
+        UUID userId = UUID.randomUUID();
+        when(carts.findFirstByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(any(UUID.class), any(Instant.class)))
+                .thenReturn(Optional.empty());
+        when(carts.save(any(Cart.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Cart created = cartService.getOrCreateCart(userId, null);
+
+        assertThat(created.getUserId()).isEqualTo(userId);
+        verify(carts).save(any(Cart.class));
+    }
+
+    @Test
+    void getOrCreateCartMergesGuestIntoExistingUserCart() {
+        UUID userId = UUID.randomUUID();
+        Cart userCart = cart("user-token");
+        Cart guest = cart("guest-token");
+        ProductVariant variant = variant(UUID.randomUUID(), "TEE-CLS-M", 1900, 10);
+        CartItem guestItem = item(guest, variant, 3);
+        CartItem targetItem = item(userCart, variant, 2);
+
+        when(carts.findFirstByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(any(UUID.class), any(Instant.class)))
+                .thenReturn(Optional.of(userCart));
+        when(carts.findByCartTokenAndExpiresAtAfter(anyString(), any(Instant.class)))
+                .thenReturn(Optional.of(guest));
+        when(items.findAllByCartWithDetails(guest.getId())).thenReturn(List.of(guestItem));
+        when(items.findByCartIdAndVariantId(userCart.getId(), variant.getId()))
+                .thenReturn(Optional.of(targetItem));
+
+        Cart result = cartService.getOrCreateCart(userId, "guest-token");
+
+        assertThat(result).isSameAs(userCart);
+        assertThat(targetItem.getQty()).isEqualTo(5); // 2 + 3
+        verify(carts).delete(guest);
+        verify(items, never()).save(any(CartItem.class));
+    }
+
+    @Test
+    void mergeClampsQuantityToStockInsteadOfFailing() {
+        UUID userId = UUID.randomUUID();
+        Cart userCart = cart("user-token");
+        Cart guest = cart("guest-token");
+        ProductVariant variant = variant(UUID.randomUUID(), "TEE-CLS-M", 1900, 4);
+        CartItem guestItem = item(guest, variant, 3);
+        CartItem targetItem = item(userCart, variant, 2);
+
+        when(carts.findFirstByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(any(UUID.class), any(Instant.class)))
+                .thenReturn(Optional.of(userCart));
+        when(carts.findByCartTokenAndExpiresAtAfter(anyString(), any(Instant.class)))
+                .thenReturn(Optional.of(guest));
+        when(items.findAllByCartWithDetails(guest.getId())).thenReturn(List.of(guestItem));
+        when(items.findByCartIdAndVariantId(userCart.getId(), variant.getId()))
+                .thenReturn(Optional.of(targetItem));
+
+        cartService.getOrCreateCart(userId, "guest-token");
+
+        assertThat(targetItem.getQty()).isEqualTo(4); // 2 + 3 clamped to stock 4
+        verify(carts).delete(guest);
     }
 
     @Test

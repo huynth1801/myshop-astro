@@ -1,5 +1,6 @@
 package com.shop.cart;
 
+import com.shop.auth.AuthPrincipal;
 import com.shop.cart.dto.AddItemRequest;
 import com.shop.cart.dto.CartResponse;
 import com.shop.cart.dto.UpdateQtyRequest;
@@ -9,6 +10,7 @@ import jakarta.validation.Valid;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -62,16 +64,25 @@ public class CartController {
     /** Read-style endpoints create the cart (and cookie) on first touch. */
     private Cart readingCart(HttpServletRequest request, HttpServletResponse response) {
         String provided = tokens.read(request).orElse(null);
-        Cart cart = cartService.getOrCreateCart(provided);
+        Cart cart = cartService.getOrCreateCart(currentUserId(), provided);
         if (!cart.getCartToken().equals(provided)) {
             tokens.write(response, cart.getCartToken());
         }
         return cart;
     }
 
-    /** Mutating endpoints require an existing cart — no cookie means nothing to change. */
+    /** Mutating endpoints require an existing cart — no cookie and no user cart means nothing to change. */
     private Cart mutatingCart(HttpServletRequest request) {
-        Optional<Cart> cart = cartService.findActiveCart(tokens.read(request).orElse(null));
+        Optional<Cart> cart = cartService.findActiveCart(currentUserId(), tokens.read(request).orElse(null));
         return cart.orElseThrow(CartNotFoundException::new);
+    }
+
+    /** null when the request is unauthenticated (guest). */
+    private UUID currentUserId() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof AuthPrincipal principal) {
+            return principal.userId();
+        }
+        return null;
     }
 }

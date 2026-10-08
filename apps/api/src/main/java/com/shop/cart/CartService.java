@@ -26,24 +26,84 @@ public class CartService {
         this.variants = variants;
     }
 
+    /**
+     * Resolves the caller's cart. Authenticated users get their account cart; a
+     * guest cart riding along in the cookie is adopted (no account cart yet) or
+     * merged into it (both exist). Guests resolve by cookie only.
+     */
     @Transactional
-    public Cart getOrCreateCart(String cartToken) {
-        if (cartToken != null) {
-            Optional<Cart> found = carts.findByCartTokenAndExpiresAtAfter(cartToken, Instant.now());
-            if (found.isPresent()) {
-                return found.get();
-            }
+    public Cart getOrCreateCart(UUID userId, String cartToken) {
+        Instant now = Instant.now();
+        if (userId == null) {
+            return resolveGuestCart(cartToken, now);
         }
-        // Missing or expired → brand-new cart with a fresh token (cookie refreshed by controller)
-        return carts.save(Cart.newCart(CartTokens.newToken(), Instant.now().plus(CART_TTL)));
+
+        Optional<Cart> guest = cartToken == null
+                ? Optional.empty()
+                : carts.findByCartTokenAndExpiresAtAfter(cartToken, now);
+        Optional<Cart> userCart =
+                carts.findFirstByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(userId, now);
+
+        if (userCart.isEmpty() && guest.isPresent()) {
+            guest.get().attachUser(userId);
+            return guest.get();
+        }
+        if (userCart.isEmpty()) {
+            Cart created = Cart.newCart(CartTokens.newToken(), now.plus(CART_TTL));
+            created.attachUser(userId);
+            return carts.save(created);
+        }
+        if (guest.isPresent() && !guest.get().getCartToken().equals(userCart.get().getCartToken())) {
+            mergeGuestInto(userCart.get(), guest.get());
+        }
+        return userCart.get();
     }
 
     @Transactional(readOnly = true)
-    public Optional<Cart> findActiveCart(String cartToken) {
+    public Optional<Cart> findActiveCart(UUID userId, String cartToken) {
+        if (userId != null) {
+            return carts.findFirstByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(userId, Instant.now());
+        }
         if (cartToken == null) {
             return Optional.empty();
         }
         return carts.findByCartTokenAndExpiresAtAfter(cartToken, Instant.now());
+    }
+
+    private Cart resolveGuestCart(String cartToken, Instant now) {
+        if (cartToken != null) {
+            Optional<Cart> found = carts.findByCartTokenAndExpiresAtAfter(cartToken, now);
+            if (found.isPresent()) {
+                return found.get();
+            }
+        }
+        return carts.save(Cart.newCart(CartTokens.newToken(), now.plus(CART_TTL)));
+    }
+
+    /**
+     * Moves guest items into the user's cart, summing quantities per variant and
+     * clamping to stock — a stale guest cart must never block a login.
+     */
+    private void mergeGuestInto(Cart target, Cart guest) {
+        for (CartItem guestItem : items.findAllByCartWithDetails(guest.getId())) {
+            int stock = guestItem.getVariant().getStock();
+            if (stock <= 0) {
+                continue;
+            }
+            CartItem targetItem = items
+                    .findByCartIdAndVariantId(target.getId(), guestItem.getVariant().getId())
+                    .orElse(null);
+            int mergedQty = Math.min((targetItem == null ? 0 : targetItem.getQty()) + guestItem.getQty(), stock);
+            if (mergedQty <= 0) {
+                continue;
+            }
+            if (targetItem == null) {
+                items.save(CartItem.newItem(target, guestItem.getVariant(), mergedQty));
+            } else {
+                targetItem.setQty(mergedQty);
+            }
+        }
+        carts.delete(guest);
     }
 
     @Transactional
