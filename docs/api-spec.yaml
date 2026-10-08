@@ -1,0 +1,580 @@
+openapi: 3.0.3
+
+# Source of truth for the myshop REST API (contract-first, PLAN.md §8).
+# ✅ = implemented today. Endpoints marked "Phase 1/2" are specified but not
+# built yet — implement them exactly as written here; change the spec first.
+
+info:
+  title: myshop API
+  version: 1.0.0
+  description: |
+    E-commerce REST API for the myshop storefront.
+
+    Conventions:
+    - All money values are **integer cents** (`priceCents: 1900` = $19.00). Never floats.
+    - All list endpoints use the shared pagination envelope
+      `{ content, page, size, totalElements, totalPages }`.
+    - All errors are RFC 9457 problem+json with `code` (stable machine code)
+      and `traceId` (quote in bug reports).
+    - Status codes: 400 validation · 401 unauthenticated · 403 forbidden ·
+      404 missing · 409 conflict (e.g. out of stock) · 422 business rule · 500 unexpected.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Health
+  - name: Products
+  - name: Categories
+  - name: Cart
+  - name: Checkout
+  - name: Webhooks
+  - name: Auth
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Liveness probe ✅
+      security: []
+      responses:
+        '200':
+          description: API is up
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    example: UP
+
+  /api/v1/products:
+    get:
+      tags: [Products]
+      summary: List active products ✅
+      security: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 100, default: 12 }
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [newest, price_asc, price_desc]
+            default: newest
+      responses:
+        '200':
+          description: Paged product summaries, prices aggregated from variants
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedProducts' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/products/{slug}:
+    get:
+      tags: [Products]
+      summary: Product detail with variants and images ✅
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductDetail' }
+        '404':
+          description: No ACTIVE product with this slug
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example:
+                code: PRODUCT_NOT_FOUND
+                detail: No product with slug 'xyz'
+
+  /api/v1/products/{slug}/recommendations:
+    get:
+      tags: [Products]
+      summary: Related products for an upsell surface (Phase 2)
+      description: Backs every recommendation surface so strategy changes never touch the UI.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+        - in: query
+          name: type
+          required: true
+          schema:
+            type: string
+            enum: [CROSS_SELL, UPSELL, BUNDLE]
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 10, default: 3 }
+      responses:
+        '200':
+          description: Curated recommendations (empty list is valid)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ProductSummary' }
+
+  /api/v1/categories:
+    get:
+      tags: [Categories]
+      summary: Category tree (Phase 1)
+      security: []
+      responses:
+        '200':
+          description: All categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+
+  /api/v1/categories/{slug}/products:
+    get:
+      tags: [Categories]
+      summary: Products in a category (Phase 1)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 100, default: 12 }
+      responses:
+        '200':
+          description: Paged product summaries
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedProducts' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/cart:
+    get:
+      tags: [Cart]
+      summary: Current cart (Phase 1)
+      description: Resolves the cart by `cart_token` cookie or authenticated user.
+      responses:
+        '200':
+          description: The caller's cart (created empty on first call)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+
+  /api/v1/cart/items:
+    post:
+      tags: [Cart]
+      summary: Add a variant to the cart (Phase 1)
+      responses:
+        '201':
+          description: Item added; returns the updated cart
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '409':
+          description: Out of stock / insufficient stock
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422': { $ref: '#/components/responses/BusinessRule' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [variantId, qty]
+              properties:
+                variantId: { type: string, format: uuid }
+                qty: { type: integer, minimum: 1, maximum: 99 }
+
+  /api/v1/cart/items/{itemId}:
+    patch:
+      tags: [Cart]
+      summary: Change item quantity (Phase 1)
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qty]
+              properties:
+                qty: { type: integer, minimum: 0, maximum: 99 }
+                description: '0 removes the item'
+      responses:
+        '200':
+          description: Updated cart
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+    delete:
+      tags: [Cart]
+      summary: Remove an item (Phase 1)
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated cart
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+
+  /api/v1/cart/coupon:
+    post:
+      tags: [Cart]
+      summary: Apply a coupon code (Phase 2)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, example: WELCOME10 }
+      responses:
+        '200':
+          description: Updated cart with discount applied
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '422': { $ref: '#/components/responses/BusinessRule' }
+    delete:
+      tags: [Cart]
+      summary: Remove the applied coupon (Phase 2)
+      responses:
+        '200':
+          description: Updated cart
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+
+  /api/v1/checkout:
+    post:
+      tags: [Checkout]
+      summary: Create a Stripe Checkout Session (Phase 1)
+      description: |
+        The server recalculates prices, discounts and shipping from the database —
+        client-supplied numbers are never trusted. Idempotent per Idempotency-Key.
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, format: uuid }
+          description: Retrying with the same key never creates a duplicate order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, shippingAddress]
+              properties:
+                email: { type: string, format: email }
+                shippingAddress: { $ref: '#/components/schemas/Address' }
+      responses:
+        '201':
+          description: Session created — redirect the browser to url
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [orderId, url]
+                properties:
+                  orderId: { type: string, format: uuid }
+                  url:
+                    type: string
+                    description: Stripe Checkout hosted page URL
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/BusinessRule' }
+
+  /api/v1/webhooks/stripe:
+    post:
+      tags: [Webhooks]
+      summary: Stripe events (Phase 1)
+      description: Signature-verified. Order status transitions are driven ONLY by these events.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Raw Stripe event envelope
+      responses:
+        '204': { description: Accepted (must be retry-safe and idempotent) }
+
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register (Phase 1)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, name]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 12 }
+                name: { type: string, minLength: 1, maxLength: 255 }
+      responses:
+        '201': { $ref: '#/components/responses/AuthTokens' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login (Phase 1)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/AuthTokens' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate tokens (Phase 1)
+      description: Reads the httpOnly refresh cookie; returns a new access token.
+      security: []
+      responses:
+        '200': { $ref: '#/components/responses/AuthTokens' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+components:
+  parameters:
+    Slug:
+      in: path
+      name: slug
+      required: true
+      schema: { type: string }
+      description: Stable forever — changes require a redirect (AGENTS.md)
+
+  responses:
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { code: VALIDATION_ERROR }
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: Missing or expired credentials
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: State conflict (e.g. out of stock)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { code: OUT_OF_STOCK }
+    BusinessRule:
+      description: Valid request, but a business rule rejected it
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+          example: { code: COUPON_MIN_ORDER_NOT_MET }
+    AuthTokens:
+      description: Access token + refresh cookie set
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [accessToken, expiresIn]
+            properties:
+              accessToken: { type: string }
+              expiresIn: { type: integer, example: 900 }
+
+  schemas:
+    Problem:
+      type: object
+      required: [code, detail]
+      properties:
+        code:
+          type: string
+          description: Stable machine-readable code
+          example: PRODUCT_NOT_FOUND
+        detail:
+          type: string
+          description: Human-readable message
+        traceId:
+          type: string
+          description: Quote this when reporting errors
+        status: { type: integer }
+        instance: { type: string }
+
+    Image:
+      type: object
+      required: [url, alt, position]
+      properties:
+        url: { type: string, format: uri }
+        alt: { type: string }
+        position: { type: integer }
+
+    CategoryRef:
+      type: object
+      required: [slug, name]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+
+    Variant:
+      type: object
+      required: [id, sku, priceCents, stock, attributes]
+      properties:
+        id: { type: string, format: uuid }
+        sku: { type: string }
+        priceCents: { type: integer, description: 'Cents. 1900 = $19.00' }
+        compareAtPriceCents:
+          type: integer
+          nullable: true
+        stock: { type: integer }
+        attributes:
+          type: object
+          additionalProperties: true
+          example: { size: M }
+
+    ProductSummary:
+      type: object
+      required: [id, slug, name, category]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        shortDescription:
+          type: string
+          nullable: true
+        priceFromCents:
+          type: integer
+          nullable: true
+          description: Lowest variant price; null when the product has no variants
+        image:
+          allOf: [{ $ref: '#/components/schemas/Image' }]
+          nullable: true
+        category: { $ref: '#/components/schemas/CategoryRef' }
+
+    ProductDetail:
+      type: object
+      required: [id, slug, name, description, category, images, variants, inStock]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: string }
+        shortDescription:
+          type: string
+          nullable: true
+        category: { $ref: '#/components/schemas/CategoryRef' }
+        images:
+          type: array
+          items: { $ref: '#/components/schemas/Image' }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/Variant' }
+        inStock: { type: boolean }
+
+    PagedProducts:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/ProductSummary' }
+        page: { type: integer, example: 0 }
+        size: { type: integer, example: 12 }
+        totalElements: { type: integer, example: 342 }
+        totalPages: { type: integer, example: 29 }
+
+    Category:
+      allOf:
+        - $ref: '#/components/schemas/CategoryRef'
+        - type: object
+          properties:
+            parentId:
+              type: string
+              format: uuid
+              nullable: true
+            position: { type: integer }
+
+    CartItem:
+      type: object
+      required: [id, variantId, sku, productName, qty, priceAtAddCents, priceCents, lineTotalCents]
+      properties:
+        id: { type: string, format: uuid }
+        variantId: { type: string, format: uuid }
+        sku: { type: string }
+        productName: { type: string }
+        productSlug: { type: string }
+        qty: { type: integer }
+        priceAtAddCents: { type: integer }
+        priceCents:
+          type: integer
+          description: Current price — display only; totals are always recalculated server-side
+        lineTotalCents: { type: integer }
+
+    Cart:
+      type: object
+      required: [id, items, subtotalCents, itemCount]
+      properties:
+        id: { type: string, format: uuid }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CartItem' }
+        subtotalCents: { type: integer }
+        discountCents: { type: integer }
+        couponCode:
+          type: string
+          nullable: true
+        shippingCents: { type: integer }
+        freeShippingThresholdCents:
+          type: integer
+          description: Powers the free-shipping progress bar (PLAN.md §9)
+        itemCount: { type: integer }
+
+    Address:
+      type: object
+      required: [fullName, line1, city, postalCode, countryCode]
+      properties:
+        fullName: { type: string }
+        line1: { type: string }
+        line2: { type: string }
+        city: { type: string }
+        postalCode: { type: string }
+        countryCode: { type: string, minLength: 2, maxLength: 2 }

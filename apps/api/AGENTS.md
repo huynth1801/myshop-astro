@@ -1,7 +1,7 @@
 # apps/api — Spring Boot rules
 
-Java 21, Spring Boot 3, PostgreSQL 16, Flyway. These rules apply when working anywhere
-under `apps/api/`.
+Java 21, Spring Boot 4.x (see ADR 0002), PostgreSQL 16, Flyway. These rules apply when
+working anywhere under `apps/api/`.
 
 ## Structure
 

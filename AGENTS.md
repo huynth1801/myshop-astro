@@ -1,6 +1,6 @@
 # AGENTS.md — myshop
 
-E-commerce storefront: **Astro 5 + React islands** (`apps/web`), **Java 21 / Spring Boot 3**
+E-commerce storefront: **Astro 5 + React islands** (`apps/web`), **Java 21 / Spring Boot 4**
 API (`apps/api`), **PostgreSQL 16**, Stripe Checkout.
 
 Full architecture and roadmap: `docs/PLAN.md`.

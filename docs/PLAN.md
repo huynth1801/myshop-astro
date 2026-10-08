@@ -37,7 +37,7 @@ Core principles:
 | Islands / UI | React + shadcn/ui, Tailwind CSS v4 | shadcn CLI officially supports Astro |
 | Client state | nanostores (cart UI mirror only) | Cart data lives server-side, keyed by cookie |
 | Forms | react-hook-form + Zod | Zod validates every API response at the boundary |
-| Backend | Java 21, Spring Boot 3.x | Spring Web, Data JPA, Security, Validation, Flyway |
+| Backend | Java 21, Spring Boot 4.x (see ADR 0002) | Spring WebMVC, Data JPA, Security, Validation, Flyway |
 | Database | PostgreSQL 16 | Flyway migrations; `ddl-auto=validate` in every env |
 | Auth | JWT access token + httpOnly refresh cookie | Argon2/bcrypt password hashing |
 | Payments | Stripe Checkout + Webhooks | order state driven by webhooks, not redirects |
@@ -288,7 +288,7 @@ Astro equivalent of the Next.js "Server Components by default" rule.
 
 ## 8. API Design Rules
 
-- REST, versioned: `/api/v1/products`, plural nouns, kebab-case JSON fields.
+- REST, versioned: `/api/v1/products`, plural nouns, camelCase JSON fields (matching the pagination envelope below).
 - Status codes: 200/201/204 success · 400 validation · 401 unauthenticated · 403 forbidden ·
   404 missing · 409 conflict (e.g., out of stock) · 422 business rule · 500 with traceId.
 - Pagination: `?page=0&size=20&sort=price,asc` → `{ "content": [...], "page": 0, "totalElements": 342 }`.
