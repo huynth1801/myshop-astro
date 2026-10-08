@@ -163,8 +163,11 @@ paths:
   /api/v1/cart:
     get:
       tags: [Cart]
-      summary: Current cart (Phase 1)
-      description: Resolves the cart by `cart_token` cookie or authenticated user.
+      summary: Current cart ✅
+      description: |
+        Resolves the cart by `cart_token` cookie (httpOnly, SameSite=Lax, 30 days).
+        First call creates an empty cart and sets the cookie. Totals are always
+        recalculated server-side from current DB prices.
       responses:
         '200':
           description: The caller's cart (created empty on first call)
@@ -175,7 +178,8 @@ paths:
   /api/v1/cart/items:
     post:
       tags: [Cart]
-      summary: Add a variant to the cart (Phase 1)
+      summary: Add a variant to the cart ✅
+      description: Adding an existing variant merges quantities. Server checks stock.
       responses:
         '201':
           description: Item added; returns the updated cart
@@ -187,7 +191,9 @@ paths:
           content:
             application/problem+json:
               schema: { $ref: '#/components/schemas/Problem' }
+              example: { code: OUT_OF_STOCK }
         '422': { $ref: '#/components/responses/BusinessRule' }
+        '404': { $ref: '#/components/responses/NotFound' }
       requestBody:
         required: true
         content:
@@ -202,7 +208,8 @@ paths:
   /api/v1/cart/items/{itemId}:
     patch:
       tags: [Cart]
-      summary: Change item quantity (Phase 1)
+      summary: Change item quantity ✅
+      description: Items are always scoped to the caller's cart — a foreign itemId is 404 CART_ITEM_NOT_FOUND.
       parameters:
         - in: path
           name: itemId
@@ -226,7 +233,7 @@ paths:
               schema: { $ref: '#/components/schemas/Cart' }
     delete:
       tags: [Cart]
-      summary: Remove an item (Phase 1)
+      summary: Remove an item ✅
       parameters:
         - in: path
           name: itemId
