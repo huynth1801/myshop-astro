@@ -1,0 +1,63 @@
+name: web
+
+# The site build fetches the real catalog from the API (fail-the-build rule),
+# so CI boots Postgres + the packaged API before running npm run build.
+on:
+  push:
+    branches: [main]
+    paths: ['apps/web/**', 'apps/api/**', '.github/workflows/web.yml']
+  pull_request:
+    paths: ['apps/web/**', 'apps/api/**', '.github/workflows/web.yml']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: myshop
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/myshop
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Package API (with migrations)
+        working-directory: apps/api
+        run: ./mvnw --batch-mode -DskipTests package
+
+      - name: Start API and wait for health
+        run: |
+          nohup java -jar apps/api/target/api-0.0.1-SNAPSHOT.jar > api.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/api/health > /dev/null; then echo "API up"; exit 0; fi
+            sleep 2
+          done
+          echo "API failed to start"; cat api.log; exit 1
+
+      - name: Type-check and build site
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run check
+          npm run build
