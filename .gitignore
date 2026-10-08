@@ -1,0 +1,27 @@
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# node / astro (apps/web)
+node_modules/
+dist/
+.astro/
+.vercel/
+*.log
+npm-debug.log*
+
+# java / maven / gradle (apps/api)
+target/
+build/
+.gradle/
+*.class
+.idea/
+.vscode/
+
+# os
+.DS_Store
+
+# local db dumps
+*.dump
+*.sql.gz
