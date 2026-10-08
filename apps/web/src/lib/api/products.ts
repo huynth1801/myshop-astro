@@ -84,6 +84,19 @@ export async function getProducts(page = 0, size = 60, sort: ProductSort = 'newe
   return apiGet(`/api/v1/products?${query}`, pagedProductsSchema);
 }
 
+export async function getCategoryProducts(
+  categorySlug: string,
+  page = 0,
+  size = 60,
+  sort: ProductSort = 'newest',
+) {
+  const query = new URLSearchParams({ page: String(page), size: String(size), sort });
+  return apiGet(
+    `/api/v1/categories/${encodeURIComponent(categorySlug)}/products?${query}`,
+    pagedProductsSchema,
+  );
+}
+
 export async function getProduct(slug: string) {
   return apiGet(`/api/v1/products/${encodeURIComponent(slug)}`, productDetailSchema);
 }

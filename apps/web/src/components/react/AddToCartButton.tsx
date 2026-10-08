@@ -33,9 +33,9 @@ export default function AddToCartButton({ variants }: { variants: VariantOption[
       await addToCart(selected.id, 1);
     } catch (e) {
       if (e instanceof ApiError && e.code === 'OUT_OF_STOCK') {
-        setError('Sorry — that option just sold out. Pick another one.');
+        setError('Rất tiếc — lựa chọn này vừa hết hàng. Vui lòng chọn lựa chọn khác.');
       } else {
-        setError('Could not add to cart. Please try again.');
+        setError('Không thêm được vào giỏ. Vui lòng thử lại.');
       }
     } finally {
       setBusy(false);
@@ -46,8 +46,8 @@ export default function AddToCartButton({ variants }: { variants: VariantOption[
     <div>
       {variants.length > 1 && (
         <>
-          <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">Option</h2>
-          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Choose option">
+          <p className="text-sm font-medium text-muted-foreground">Lựa chọn</p>
+          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Chọn lựa chọn">
             {variants.map((variant) => {
               const soldOut = variant.stock === 0;
               const isSelected = variant.id === selectedId;
@@ -59,11 +59,13 @@ export default function AddToCartButton({ variants }: { variants: VariantOption[
                   disabled={soldOut}
                   onClick={() => setSelectedId(variant.id)}
                   className={[
-                    'rounded-full border px-4 py-2 text-sm transition',
-                    soldOut ? 'cursor-not-allowed border-neutral-200 text-neutral-300 line-through' : '',
-                    !soldOut && isSelected ? 'border-neutral-900 bg-neutral-900 text-white' : '',
+                    'h-9 rounded-full px-4 text-sm font-medium transition',
+                    soldOut
+                      ? 'cursor-not-allowed border border-border text-muted-foreground line-through opacity-50'
+                      : '',
+                    !soldOut && isSelected ? 'border-2 border-foreground' : '',
                     !soldOut && !isSelected
-                      ? 'border-neutral-300 text-neutral-700 hover:border-neutral-900'
+                      ? 'border border-border text-muted-foreground transition-colors hover:border-foreground'
                       : '',
                   ].join(' ')}
                 >
@@ -79,23 +81,23 @@ export default function AddToCartButton({ variants }: { variants: VariantOption[
         type="button"
         onClick={() => void handleAdd()}
         disabled={!anyInStock || busy}
-        className="mt-4 w-full rounded-lg bg-neutral-900 px-6 py-3 font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        className="mt-4 h-12 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {busy
-          ? 'Adding…'
+          ? 'Đang thêm…'
           : !anyInStock
-            ? 'Sold out'
+            ? 'Hết hàng'
             : selected && selected.compareAtPriceCents != null ? (
-                <>
-                  <s className="mr-2 opacity-60">{formatCents(selected.compareAtPriceCents)}</s>
-                  Add to cart — {formatCents(selected.priceCents)}
-                </>
-              ) : (
-                <>Add to cart — {selected ? formatCents(selected.priceCents) : ''}</>
-              )}
+              <>
+                <s className="mr-2 opacity-60">{formatCents(selected.compareAtPriceCents)}</s>
+                Thêm vào giỏ — {formatCents(selected.priceCents)}
+              </>
+            ) : (
+              <>Thêm vào giỏ — {selected ? formatCents(selected.priceCents) : ''}</>
+            )}
       </button>
 
-      {error && <p className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
+      {error && <p className="mt-2 text-sm text-accent" role="alert">{error}</p>}
     </div>
   );
 }

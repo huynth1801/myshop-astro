@@ -14,20 +14,48 @@ if (content.length === 0) {
 ---
 
 <Base
-  title="Shop everyday essentials"
-  description="Well-made apparel and accessories for daily use: heavyweight tees, merino socks, enamel mugs and more. Free shipping over $75."
+  title="Đồ dùng hàng ngày được chọn kỹ"
+  description="Áo tee dày cay, hoodie fleeced, tất merino và phụ kiện bền — chọn ít, dùng lâu. Miễn phí giao hàng cho đơn từ 500K, đổi trả trong 30 ngày."
   canonical="/"
 >
-  <section>
-    <h1 class="text-3xl font-bold tracking-tight">Shop all</h1>
-    <p class="mt-2 text-neutral-600">{totalElements} products, chosen to last.</p>
+  <section class="relative overflow-hidden border-b bg-muted">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Bộ sưu tập mới</p>
+      <h1 class="mt-3 max-w-2xl text-4xl font-semibold sm:text-5xl">
+        Chọn ít.<br />Dùng lâu.
+      </h1>
+      <p class="mt-4 max-w-xl text-muted-foreground">
+        Những món đồ hàng ngày được chọn kỹ — chất liệu tốt, làm tử tế, giá minh bạch.
+        Không sale ảo, không rác thời trang.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a
+          href="#products"
+          class="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+        >
+          Mua ngay — {totalElements} sản phẩm
+        </a>
+        <span class="text-sm text-muted-foreground">Freeship từ 500K · Đổi trả 30 ngày</span>
+      </div>
+    </div>
+    <div
+      class="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-accent/10 blur-3xl"
+      aria-hidden="true"
+    >
+    </div>
   </section>
 
-  <ul class="mt-8 grid list-none grid-cols-2 gap-6 sm:grid-cols-3" role="list">
-    {content.map((product) => (
-      <li><ProductCard product={product} /></li>
-    ))}
-  </ul>
+  <section id="products" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="flex items-end justify-between">
+      <h2 class="text-2xl font-semibold">Tất cả sản phẩm</h2>
+      <p class="text-sm text-muted-foreground">{totalElements} món</p>
+    </div>
+    <ul class="mt-8 grid list-none grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4" role="list">
+      {content.map((product, index) => (
+        <li><ProductCard product={product} eager={index < 4} /></li>
+      ))}
+    </ul>
+  </section>
 
   <JsonLd
     schema={{
@@ -35,6 +63,15 @@ if (content.length === 0) {
       '@type': 'Organization',
       name: 'myshop',
       url: (Astro.site ?? new URL('https://myshop.example.com')).toString(),
+    }}
+  />
+  <JsonLd
+    schema={{
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'myshop',
+      url: (Astro.site ?? new URL('https://myshop.example.com')).toString(),
+      inLanguage: 'vi',
     }}
   />
 </Base>

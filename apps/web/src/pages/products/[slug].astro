@@ -21,6 +21,10 @@ if (!slug) {
 const product = await getProduct(slug);
 const primaryImage = product.images[0];
 const minPrice = Math.min(...product.variants.map((v) => v.priceCents));
+const minCompareAt = Math.min(
+  ...product.variants.map((v) => v.compareAtPriceCents ?? v.priceCents),
+);
+const hasCompare = minCompareAt > minPrice;
 const availability = product.inStock
   ? 'https://schema.org/InStock'
   : 'https://schema.org/OutOfStock';
@@ -40,53 +44,87 @@ const variantOptions = product.variants.map((variant) => ({
   canonical={`/products/${product.slug}/`}
   ogImage={primaryImage?.url}
 >
-  <nav aria-label="Breadcrumb" class="text-sm text-neutral-500">
-    <ol class="flex list-none gap-2">
-      <li><a href="/" class="hover:text-neutral-900">Home</a></li>
-      <li aria-hidden="true">/</li>
-      <li aria-current="page" class="text-neutral-900">{product.name}</li>
-    </ol>
-  </nav>
-
-  <div class="mt-6 grid gap-10 md:grid-cols-2">
-    <div class="space-y-4">
-      {product.images.map((image, index) => (
-        <div class="overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
-          <Image
-            src={image.url}
-            alt={image.alt}
-            width={800}
-            height={800}
-            loading={index === 0 ? 'eager' : 'lazy'}
-            fetchpriority={index === 0 ? 'high' : undefined}
-            class="h-full w-full object-cover"
-          />
-        </div>
-      ))}
-      {product.images.length === 0 && (
-        <div class="flex aspect-square items-center justify-center rounded-lg border border-neutral-200 text-neutral-400">
-          No image
-        </div>
-      )}
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:grid lg:grid-cols-2 lg:gap-12 lg:px-8">
+    <div class="lg:sticky lg:top-24 lg:self-start">
+      <div class="space-y-4">
+        {product.images.map((image, index) => (
+          <div class="aspect-[3/4] overflow-hidden rounded-3xl bg-muted">
+            <Image
+              src={image.url}
+              alt={image.alt}
+              width={900}
+              height={1200}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchpriority={index === 0 ? 'high' : undefined}
+              class="h-full w-full object-cover"
+            />
+          </div>
+        ))}
+        {product.images.length === 0 && (
+          <div class="flex aspect-[3/4] items-center justify-center rounded-3xl bg-muted text-muted-foreground">
+            Không có ảnh
+          </div>
+        )}
+      </div>
     </div>
 
-    <div>
-      <p class="text-xs uppercase tracking-wide text-neutral-500">{product.category.name}</p>
-      <h1 class="mt-1 text-3xl font-bold tracking-tight">{product.name}</h1>
-      <p class="mt-2 text-xl">
-        {product.variants.length > 1 ? 'from ' : ''}{formatCents(minPrice)}
+    <div class="mt-8 lg:mt-0">
+      <nav aria-label="Breadcrumb" class="text-sm text-muted-foreground">
+        <ol class="flex list-none gap-2">
+          <li><a href="/" class="hover:text-foreground">Trang chủ</a></li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <a href={`/categories/${product.category.slug}/`} class="hover:text-foreground">
+              {product.category.name}
+            </a>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" class="text-foreground">{product.name}</li>
+        </ol>
+      </nav>
+
+      <h1 class="mt-3 text-3xl font-semibold">{product.name}</h1>
+      <p class="mt-3 text-xl font-semibold">
+        {formatCents(minPrice)}
+        {hasCompare && (
+          <s class="ml-2 text-base font-normal text-muted-foreground">{formatCents(minCompareAt)}</s>
+        )}
       </p>
-      <p class="mt-4 leading-relaxed text-neutral-700">{product.description}</p>
+      {product.shortDescription && (
+        <p class="mt-3 leading-relaxed text-muted-foreground">{product.shortDescription}</p>
+      )}
 
       {product.inStock && variantOptions.length > 0 ? (
         <div class="mt-6">
           <AddToCartButton client:load variants={variantOptions} />
         </div>
       ) : (
-        <p class="mt-4 text-sm text-neutral-500">
-          Out of stock — this page stays live for SEO (AGENTS.md); availability flips in the data below.
+        <p class="mt-6 rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+          Tạm hết hàng — trang vẫn sống cho SEO, availability đã chuyển thành OutOfStock trong dữ
+          liệu cấu trúc bên dưới.
         </p>
       )}
+
+      <div class="mt-8 divide-y border-t">
+        <details class="py-4">
+          <summary class="cursor-pointer text-sm font-medium">Mô tả sản phẩm</summary>
+          <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{product.description}</p>
+        </details>
+        <details class="py-4">
+          <summary class="cursor-pointer text-sm font-medium">Chất liệu & cách giặt</summary>
+          <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Chất liệu và hướng dẫn giặt được ghi trên nhãn sản phẩm. Giặt lạnh, phơi bóng râm để
+            giữ form và màu lâu nhất.
+          </p>
+        </details>
+        <details class="py-4">
+          <summary class="cursor-pointer text-sm font-medium">Giao hàng & đổi trả</summary>
+          <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Miễn phí giao hàng cho đơn từ 500K. Đổi trả trong 30 ngày nếu sản phẩm còn tag và chưa
+            qua sử dụng.
+          </p>
+        </details>
+      </div>
     </div>
   </div>
 
@@ -101,7 +139,7 @@ const variantOptions = product.variants.map((variant) => ({
       offers: {
         '@type': 'Offer',
         price: centsToDecimalString(minPrice),
-        priceCurrency: 'USD',
+        priceCurrency: 'VND',
         availability,
         url: new URL(`/products/${product.slug}/`, Astro.site).toString(),
       },
@@ -112,11 +150,12 @@ const variantOptions = product.variants.map((variant) => ({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: Astro.site?.toString() },
         {
           '@type': 'ListItem',
           position: 2,
           name: product.category.name,
+          item: new URL(`/categories/${product.category.slug}/`, Astro.site).toString(),
         },
         { '@type': 'ListItem', position: 3, name: product.name },
       ],

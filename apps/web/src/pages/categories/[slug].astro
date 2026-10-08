@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/astro/ProductCard.astro';
+import JsonLd from '../../components/astro/JsonLd.astro';
+import { categoryDisplayName, getCategories } from '../../lib/api/categories';
+import { getCategoryProducts } from '../../lib/api/products';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const categories = await getCategories();
+  if (categories.length === 0) {
+    throw new Error('API returned 0 categories — failing the build');
+  }
+  return categories.map((category) => ({ params: { slug: category.slug } }));
+}
+
+const { slug } = Astro.params;
+if (!slug) {
+  throw new Error('Missing slug param — getStaticPaths always provides it');
+}
+
+const categories = await getCategories();
+const category = categories.find((c) => c.slug === slug);
+if (!category) {
+  throw new Error(`Category ${slug} vanished between getStaticPaths and render`);
+}
+
+const { content, totalElements } = await getCategoryProducts(category.slug, 0, 60);
+if (content.length === 0 && totalElements > 0) {
+  throw new Error('Pagination inconsistency — totalElements > 0 but empty page');
+}
+const site = Astro.site ?? new URL('https://myshop.example.com');
+---
+
+<Base
+  title={`${categoryDisplayName(category)} — chọn kỹ, dùng lâu`}
+  description={`${totalElements} sản phẩm ${categoryDisplayName(category).toLowerCase()} được chọn kỹ tại myshop. Freeship từ 500K, đổi trả trong 30 ngày.`}
+  canonical={`/categories/${category.slug}/`}
+>
+  <nav aria-label="Breadcrumb" class="mx-auto max-w-7xl px-4 pt-6 text-sm text-muted-foreground sm:px-6 lg:px-8">
+    <ol class="flex list-none gap-2">
+      <li><a href="/" class="hover:text-foreground">Trang chủ</a></li>
+      <li aria-hidden="true">/</li>
+      <li aria-current="page" class="text-foreground">{categoryDisplayName(category)}</li>
+    </ol>
+  </nav>
+
+  <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-semibold">{categoryDisplayName(category)}</h1>
+    <p class="mt-1 text-sm text-muted-foreground">{totalElements} sản phẩm</p>
+
+    <ul class="mt-8 grid list-none grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4" role="list">
+      {content.map((product, index) => (
+        <li><ProductCard product={product} eager={index < 4} /></li>
+      ))}
+    </ul>
+  </section>
+
+  <JsonLd
+    schema={{
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: site.toString() },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: categoryDisplayName(category),
+          item: new URL(`/categories/${category.slug}/`, site).toString(),
+        },
+      ],
+    }}
+  />
+</Base>
