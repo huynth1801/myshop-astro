@@ -17,3 +17,4 @@ Commits pending review. Auto-managed:
 - bdeae92 (2026-10-08) feat: catalog API (Spring Boot 4) + Astro storefront + OpenAPI spec
 - 74456eb (2026-10-08) feat(api): VND demo prices (ADR 0003), category endpoints, richer product summaries
 - c3eb09e (2026-10-08) feat(web): Modern DTC redesign - glass header, hero, hover-swap cards, quick-add, VND
+- 695e84c (2026-10-08) docs: spec marks categories + summary fields; ADR 0003 VND
