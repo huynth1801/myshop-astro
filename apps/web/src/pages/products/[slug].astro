@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import JsonLd from '../../components/astro/JsonLd.astro';
+import AddToCartButton from '../../components/react/AddToCartButton';
 import { getProducts, getProduct } from '../../lib/api/products';
 import { formatCents, centsToDecimalString } from '../../lib/money';
 
@@ -23,6 +24,14 @@ const minPrice = Math.min(...product.variants.map((v) => v.priceCents));
 const availability = product.inStock
   ? 'https://schema.org/InStock'
   : 'https://schema.org/OutOfStock';
+const variantOptions = product.variants.map((variant) => ({
+  id: variant.id,
+  label: Object.values(variant.attributes).join(', ') || variant.sku,
+  sku: variant.sku,
+  priceCents: variant.priceCents,
+  compareAtPriceCents: variant.compareAtPriceCents ?? null,
+  stock: variant.stock,
+}));
 ---
 
 <Base
@@ -69,30 +78,10 @@ const availability = product.inStock
       </p>
       <p class="mt-4 leading-relaxed text-neutral-700">{product.description}</p>
 
-      <div class="mt-6">
-        <h2 class="text-sm font-medium uppercase tracking-wide text-neutral-500">Options</h2>
-        <ul class="mt-2 divide-y divide-neutral-200 rounded-lg border border-neutral-200" role="list">
-          {product.variants.map((variant) => (
-            <li class:list={['flex items-center justify-between px-4 py-3', variant.stock === 0 && 'text-neutral-400']}>
-              <span class="text-sm">
-                {Object.values(variant.attributes).length > 0
-                  ? Object.values(variant.attributes).join(', ')
-                  : variant.sku}
-              </span>
-              <span class="flex items-center gap-3 text-sm">
-                {variant.compareAtPriceCents != null && (
-                  <s class="text-neutral-400">{formatCents(variant.compareAtPriceCents)}</s>
-                )}
-                <span>{formatCents(variant.priceCents)}</span>
-                {variant.stock === 0 && <span class="text-xs uppercase">Sold out</span>}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {product.inStock ? (
-        <p class="mt-4 text-sm text-neutral-500">Add-to-cart lands in Phase 1 with the cart API.</p>
+      {product.inStock && variantOptions.length > 0 ? (
+        <div class="mt-6">
+          <AddToCartButton client:load variants={variantOptions} />
+        </div>
       ) : (
         <p class="mt-4 text-sm text-neutral-500">
           Out of stock — this page stays live for SEO (AGENTS.md); availability flips in the data below.

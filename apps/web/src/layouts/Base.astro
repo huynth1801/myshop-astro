@@ -2,6 +2,7 @@
 import '@fontsource-variable/inter';
 import '../styles/global.css';
 import BaseHead from './BaseHead.astro';
+import CartWidget from '../components/react/CartWidget';
 
 interface Props {
   title: string;
@@ -25,9 +26,12 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
     <header class="border-b border-neutral-200">
       <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <a href="/" class="text-lg font-bold tracking-tight">myshop</a>
-        <nav aria-label="Main" class="flex items-center gap-6 text-sm text-neutral-600">
-          <a href="/" class="transition hover:text-neutral-900">Shop</a>
-        </nav>
+        <div class="flex items-center gap-4">
+          <nav aria-label="Main" class="flex items-center gap-6 text-sm text-neutral-600">
+            <a href="/" class="transition hover:text-neutral-900">Shop</a>
+          </nav>
+          <CartWidget client:load />
+        </div>
       </div>
     </header>
 
