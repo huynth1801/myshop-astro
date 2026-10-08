@@ -128,7 +128,7 @@ paths:
   /api/v1/categories:
     get:
       tags: [Categories]
-      summary: Category tree (Phase 1)
+      summary: Category list ✅
       security: []
       responses:
         '200':
@@ -142,7 +142,7 @@ paths:
   /api/v1/categories/{slug}/products:
     get:
       tags: [Categories]
-      summary: Products in a category (Phase 1)
+      summary: Products in a category ✅
       security: []
       parameters:
         - $ref: '#/components/parameters/Slug'
@@ -522,7 +522,7 @@ components:
 
     ProductSummary:
       type: object
-      required: [id, slug, name, category]
+      required: [id, slug, name, category, inStock, createdAt]
       properties:
         id: { type: string, format: uuid }
         slug: { type: string }
@@ -534,10 +534,25 @@ components:
           type: integer
           nullable: true
           description: Lowest variant price; null when the product has no variants
+        compareAtFromCents:
+          type: integer
+          nullable: true
+          description: Lowest compare-at price — powers −% badges (ADR 0003: VND minor units)
         image:
           allOf: [{ $ref: '#/components/schemas/Image' }]
           nullable: true
+        hoverImage:
+          allOf: [{ $ref: '#/components/schemas/Image' }]
+          nullable: true
+          description: Second image for hover swap on cards
         category: { $ref: '#/components/schemas/CategoryRef' }
+        defaultVariantId:
+          type: string
+          format: uuid
+          nullable: true
+          description: First in-stock variant by SKU — the quick-add target
+        inStock: { type: boolean }
+        createdAt: { type: string, format: date-time }
 
     ProductDetail:
       type: object

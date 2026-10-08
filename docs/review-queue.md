@@ -14,3 +14,6 @@ Commits pending review. Auto-managed:
 - fe2d4fd (2026-10-08) feat(web): cart islands - variant picker, add-to-cart, drawer with free-shipping bar
 - d7d77df (2026-10-08) docs: mark cart endpoints as implemented in OpenAPI spec
 - 9d3979e (2026-10-08) feat(api): JWT auth - register, login, refresh cookie, guest cart adoption
+- bdeae92 (2026-10-08) feat: catalog API (Spring Boot 4) + Astro storefront + OpenAPI spec
+- 74456eb (2026-10-08) feat(api): VND demo prices (ADR 0003), category endpoints, richer product summaries
+- c3eb09e (2026-10-08) feat(web): Modern DTC redesign - glass header, hero, hover-swap cards, quick-add, VND
