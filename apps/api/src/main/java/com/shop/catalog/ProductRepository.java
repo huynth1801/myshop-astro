@@ -17,13 +17,28 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
                    p.shortDescription as shortDescription,
                    p.createdAt as createdAt,
                    min(v.priceCents) as priceFromCents,
+                   min(v.compareAtPriceCents) as compareAtFromCents,
                    c.slug as categorySlug,
                    c.name as categoryName
             from Product p
               join p.category c
               left join p.variants v
             where p.status = com.shop.catalog.ProductStatus.ACTIVE
+            """;
+
+    String GROUP_AND_ORDER_PRICE_ASC = """
             group by p.id, p.slug, p.name, p.shortDescription, p.createdAt, c.slug, c.name
+            order by min(v.priceCents) asc, p.id asc
+            """;
+
+    String GROUP_AND_ORDER_PRICE_DESC = """
+            group by p.id, p.slug, p.name, p.shortDescription, p.createdAt, c.slug, c.name
+            order by min(v.priceCents) desc, p.id asc
+            """;
+
+    String GROUP_AND_ORDER_NEWEST = """
+            group by p.id, p.slug, p.name, p.shortDescription, p.createdAt, c.slug, c.name
+            order by p.createdAt desc, p.id asc
             """;
 
     String COUNT_ACTIVE = """
@@ -31,14 +46,39 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             where p.status = com.shop.catalog.ProductStatus.ACTIVE
             """;
 
-    @Query(value = SUMMARIES_SELECT + "order by min(v.priceCents) asc, p.id asc", countQuery = COUNT_ACTIVE)
+    String COUNT_ACTIVE_IN_CATEGORY = """
+            select count(p) from Product p join p.category c
+            where p.status = com.shop.catalog.ProductStatus.ACTIVE and c.slug = :categorySlug
+            """;
+
+    String CATEGORY_FILTER = " and c.slug = :categorySlug ";
+
+    @Query(value = SUMMARIES_SELECT + "group by p.id, p.slug, p.name, p.shortDescription, p.createdAt, c.slug, c.name "
+            + "order by min(v.priceCents) asc, p.id asc", countQuery = COUNT_ACTIVE)
     Page<ProductSummaryView> findSummariesOrderByPriceAsc(Pageable pageable);
 
-    @Query(value = SUMMARIES_SELECT + "order by min(v.priceCents) desc, p.id asc", countQuery = COUNT_ACTIVE)
+    @Query(value = SUMMARIES_SELECT + "group by p.id, p.slug, p.name, p.shortDescription, p.createdAt, c.slug, c.name "
+            + "order by min(v.priceCents) desc, p.id asc", countQuery = COUNT_ACTIVE)
     Page<ProductSummaryView> findSummariesOrderByPriceDesc(Pageable pageable);
 
-    @Query(value = SUMMARIES_SELECT + "order by p.createdAt desc, p.id asc", countQuery = COUNT_ACTIVE)
+    @Query(value = SUMMARIES_SELECT + "group by p.id, p.slug, p.name, p.shortDescription, p.createdAt, c.slug, c.name "
+            + "order by p.createdAt desc, p.id asc", countQuery = COUNT_ACTIVE)
     Page<ProductSummaryView> findSummariesOrderByNewest(Pageable pageable);
+
+    @Query(value = SUMMARIES_SELECT + CATEGORY_FILTER + GROUP_AND_ORDER_PRICE_ASC,
+            countQuery = COUNT_ACTIVE_IN_CATEGORY)
+    Page<ProductSummaryView> findSummariesByCategoryOrderByPriceAsc(@Param("categorySlug") String categorySlug,
+            Pageable pageable);
+
+    @Query(value = SUMMARIES_SELECT + CATEGORY_FILTER + GROUP_AND_ORDER_PRICE_DESC,
+            countQuery = COUNT_ACTIVE_IN_CATEGORY)
+    Page<ProductSummaryView> findSummariesByCategoryOrderByPriceDesc(@Param("categorySlug") String categorySlug,
+            Pageable pageable);
+
+    @Query(value = SUMMARIES_SELECT + CATEGORY_FILTER + GROUP_AND_ORDER_NEWEST,
+            countQuery = COUNT_ACTIVE_IN_CATEGORY)
+    Page<ProductSummaryView> findSummariesByCategoryOrderByNewest(@Param("categorySlug") String categorySlug,
+            Pageable pageable);
 
     /**
      * Detail fetch: one collection (variants) join-fetched — images are loaded

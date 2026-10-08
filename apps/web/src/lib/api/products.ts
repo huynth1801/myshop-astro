@@ -43,8 +43,13 @@ export const productSummarySchema = z.object({
   name: z.string(),
   shortDescription: z.string().nullish(),
   priceFromCents: z.number().int().nonnegative().nullish(),
+  compareAtFromCents: z.number().int().nonnegative().nullish(),
   image: imageSchema.nullish(),
+  hoverImage: imageSchema.nullish(),
   category: categoryRefSchema,
+  defaultVariantId: z.string().uuid().nullish(),
+  inStock: z.boolean(),
+  createdAt: z.string(),
 });
 
 export const pagedProductsSchema = z.object({

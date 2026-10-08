@@ -7,6 +7,7 @@ import com.shop.catalog.dto.ProductSummaryResponse;
 import com.shop.catalog.dto.VariantResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /** Explicit entity/projection → DTO mapping (PLAN.md §7: never leak entities). */
 public final class ProductMapper {
@@ -14,13 +15,19 @@ public final class ProductMapper {
     private ProductMapper() {
     }
 
-    public static ProductSummaryResponse toSummary(ProductSummaryView view, ProductImage primaryImage) {
-        ImageResponse image = primaryImage == null
-                ? null
-                : new ImageResponse(primaryImage.getUrl(), primaryImage.getAlt(), primaryImage.getPosition());
+    public static ProductSummaryResponse toSummary(ProductSummaryView view, ProductImage primaryImage,
+            ProductImage hoverImage, UUID defaultVariantId, boolean inStock) {
         return new ProductSummaryResponse(view.getId(), view.getSlug(), view.getName(),
-                view.getShortDescription(), view.getPriceFromCents(), image,
-                new CategoryRefResponse(view.getCategorySlug(), view.getCategoryName()));
+                view.getShortDescription(), view.getPriceFromCents(), view.getCompareAtFromCents(),
+                toImageDto(primaryImage), toImageDto(hoverImage),
+                new CategoryRefResponse(view.getCategorySlug(), view.getCategoryName()),
+                defaultVariantId, inStock, view.getCreatedAt());
+    }
+
+    private static ImageResponse toImageDto(ProductImage image) {
+        return image == null
+                ? null
+                : new ImageResponse(image.getUrl(), image.getAlt(), image.getPosition());
     }
 
     public static ProductDetailResponse toDetail(Product product, List<ProductImage> images) {

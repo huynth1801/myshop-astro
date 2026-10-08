@@ -1,0 +1,49 @@
+---
+import CartWidget from '../react/CartWidget';
+import AuthButton from '../react/AuthButton';
+import { categoryDisplayName, getCategories } from '../../lib/api/categories';
+
+const categories = await getCategories();
+---
+
+<header class="sticky top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+    <a href="/" class="mr-2 text-lg font-semibold tracking-tighter">
+      myshop<span class="text-accent">.</span>
+    </a>
+
+    <nav aria-label="Danh mục" class="hidden items-center gap-1 text-sm font-medium md:flex">
+      <a
+        href="/"
+        class="rounded-full px-4 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        Tất cả
+      </a>
+      {categories.map((category) => (
+        <a
+          href={`/categories/${category.slug}/`}
+          class="rounded-full px-4 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          {categoryDisplayName(category)}
+        </a>
+      ))}
+    </nav>
+
+    <div class="ml-auto flex items-center gap-1">
+      <AuthButton client:idle />
+      <CartWidget client:load />
+    </div>
+  </div>
+
+  <nav aria-label="Danh mục (mobile)" class="flex items-center gap-2 overflow-x-auto border-t border-border/60 px-4 py-2 text-sm md:hidden">
+    <a href="/" class="shrink-0 rounded-full bg-muted px-3 py-1.5 font-medium">Tất cả</a>
+    {categories.map((category) => (
+      <a
+        href={`/categories/${category.slug}/`}
+        class="shrink-0 rounded-full px-3 py-1.5 text-muted-foreground"
+      >
+        {categoryDisplayName(category)}
+      </a>
+    ))}
+  </nav>
+</header>

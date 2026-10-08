@@ -1,5 +1,54 @@
 @import 'tailwindcss';
 
-@theme {
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.985 0.004 95); /* trắng ngà, không trắng tinh */
+  --foreground: oklch(0.17 0.012 95);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.17 0.012 95); /* nút gần-đen kiểu DTC */
+  --primary-foreground: oklch(0.985 0.004 95);
+  --muted: oklch(0.955 0.006 95);
+  --muted-foreground: oklch(0.52 0.015 95);
+  --accent: oklch(0.62 0.19 32); /* MỘT màu duy nhất — đổi thành màu brand của bạn */
+  --border: oklch(0.915 0.006 95);
+  --ring: oklch(0.17 0.012 95);
+  --radius: 0.875rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply tracking-tight text-balance;
+  }
+  ::selection {
+    background: var(--accent);
+    color: white;
+  }
 }

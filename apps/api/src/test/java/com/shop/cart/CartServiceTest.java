@@ -159,7 +159,7 @@ class CartServiceTest {
         assertThat(response.items()).hasSize(1);
         assertThat(response.items().get(0).priceAtAddCents()).isEqualTo(1900L);
         assertThat(response.items().get(0).lineTotalCents()).isEqualTo(3800L);
-        assertThat(response.freeShippingThresholdCents()).isEqualTo(7500L);
+        assertThat(response.freeShippingThresholdCents()).isEqualTo(50_000_000L);
         verify(items).save(any(CartItem.class));
     }
 

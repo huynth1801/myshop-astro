@@ -1,9 +1,10 @@
 ---
 import '@fontsource-variable/inter';
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import BaseHead from './BaseHead.astro';
-import CartWidget from '../components/react/CartWidget';
-import AuthButton from '../components/react/AuthButton';
+import Header from '../components/astro/Header.astro';
+import CartBridge from '../components/react/CartBridge';
 
 interface Props {
   title: string;
@@ -17,34 +18,28 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="vi" class="h-full">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <BaseHead title={title} description={description} canonical={canonical} ogImage={ogImage} />
+    <ClientRouter />
   </head>
-  <body class="flex min-h-screen flex-col bg-white font-sans text-neutral-900 antialiased">
-    <header class="border-b border-neutral-200">
-      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <a href="/" class="text-lg font-bold tracking-tight">myshop</a>
-        <div class="flex items-center gap-4">
-          <AuthButton client:idle />
-          <nav aria-label="Main" class="flex items-center gap-6 text-sm text-neutral-600">
-            <a href="/" class="transition hover:text-neutral-900">Shop</a>
-          </nav>
-          <CartWidget client:load />
-        </div>
-      </div>
-    </header>
-
-    <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
-      <slot />
-    </main>
-
-    <footer class="border-t border-neutral-200">
-      <div class="mx-auto max-w-6xl px-4 py-8 text-sm text-neutral-500">
-        © {new Date().getFullYear()} myshop — demo storefront built with Astro + Spring Boot.
+  <body class="flex min-h-full flex-col">
+    <p class="bg-primary px-4 py-2 text-center text-xs font-medium tracking-wide text-primary-foreground">
+      Miễn phí giao hàng cho đơn từ 500K · Đổi trả trong 30 ngày
+    </p>
+    <Header />
+    <main class="flex-1"><slot /></main>
+    <footer class="border-t py-10">
+      <div
+        class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:flex-row sm:px-6 lg:px-8"
+      >
+        <p class="font-semibold tracking-tighter text-foreground">myshop<span class="text-accent">.</span></p>
+        <p>Chọn kỹ, dùng lâu — đồ tốt cho ngày thường.</p>
+        <p>© {new Date().getFullYear()} MyShop</p>
       </div>
     </footer>
+    <CartBridge client:idle />
   </body>
 </html>
