@@ -11,3 +11,6 @@ Commits pending review. Auto-managed:
 - 9be0f6d (2026-10-08) feat: catalog API (Spring Boot 4) + Astro storefront + OpenAPI spec
 - da2bd00 (2026-10-08) ci: GitHub Actions for api (verify + Postgres) and web (build against live API)
 - 03dc3f2 (2026-10-08) feat(api): guest cart API with cookie token, stock checks and CORS
+- fe2d4fd (2026-10-08) feat(web): cart islands - variant picker, add-to-cart, drawer with free-shipping bar
+- d7d77df (2026-10-08) docs: mark cart endpoints as implemented in OpenAPI spec
+- 9d3979e (2026-10-08) feat(api): JWT auth - register, login, refresh cookie, guest cart adoption
