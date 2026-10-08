@@ -17,9 +17,12 @@ spring:
           time_zone: UTC
   jackson:
     default-property-inclusion: non_null
-  web:
-    cors:
-      allowed-origins: http://localhost:4321
 
 server:
   port: 8080
+
+shop:
+  cors:
+    allowed-origins: http://localhost:4321
+  cookie:
+    secure: false # true in staging/prod behind HTTPS
