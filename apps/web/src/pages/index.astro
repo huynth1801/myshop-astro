@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/astro/ProductCard.astro';
+import JsonLd from '../components/astro/JsonLd.astro';
+import { getProducts } from '../lib/api/products';
+
+export const prerender = true;
+
+const { content, totalElements } = await getProducts(0, 60);
+if (content.length === 0) {
+  // AGENTS.md: fail the build if the API has no products — never ship an empty catalog
+  throw new Error('API returned 0 products — failing the build');
+}
+---
+
+<Base
+  title="Shop everyday essentials"
+  description="Well-made apparel and accessories for daily use: heavyweight tees, merino socks, enamel mugs and more. Free shipping over $75."
+  canonical="/"
+>
+  <section>
+    <h1 class="text-3xl font-bold tracking-tight">Shop all</h1>
+    <p class="mt-2 text-neutral-600">{totalElements} products, chosen to last.</p>
+  </section>
+
+  <ul class="mt-8 grid list-none grid-cols-2 gap-6 sm:grid-cols-3" role="list">
+    {content.map((product) => (
+      <li><ProductCard product={product} /></li>
+    ))}
+  </ul>
+
+  <JsonLd
+    schema={{
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'myshop',
+      url: (Astro.site ?? new URL('https://myshop.example.com')).toString(),
+    }}
+  />
+</Base>

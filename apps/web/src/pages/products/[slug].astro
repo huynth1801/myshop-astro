@@ -1,0 +1,136 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import JsonLd from '../../components/astro/JsonLd.astro';
+import { getProducts, getProduct } from '../../lib/api/products';
+import { formatCents, centsToDecimalString } from '../../lib/money';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const { content } = await getProducts(0, 100);
+  if (content.length === 0) throw new Error('API returned 0 products — failing the build');
+  return content.map((summary) => ({ params: { slug: summary.slug } }));
+}
+
+const { slug } = Astro.params;
+if (!slug) {
+  throw new Error('Missing slug param — getStaticPaths always provides it');
+}
+const product = await getProduct(slug);
+const primaryImage = product.images[0];
+const minPrice = Math.min(...product.variants.map((v) => v.priceCents));
+const availability = product.inStock
+  ? 'https://schema.org/InStock'
+  : 'https://schema.org/OutOfStock';
+---
+
+<Base
+  title={product.name}
+  description={(product.shortDescription ?? product.description).slice(0, 160)}
+  canonical={`/products/${product.slug}/`}
+  ogImage={primaryImage?.url}
+>
+  <nav aria-label="Breadcrumb" class="text-sm text-neutral-500">
+    <ol class="flex list-none gap-2">
+      <li><a href="/" class="hover:text-neutral-900">Home</a></li>
+      <li aria-hidden="true">/</li>
+      <li aria-current="page" class="text-neutral-900">{product.name}</li>
+    </ol>
+  </nav>
+
+  <div class="mt-6 grid gap-10 md:grid-cols-2">
+    <div class="space-y-4">
+      {product.images.map((image, index) => (
+        <div class="overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
+          <Image
+            src={image.url}
+            alt={image.alt}
+            width={800}
+            height={800}
+            loading={index === 0 ? 'eager' : 'lazy'}
+            fetchpriority={index === 0 ? 'high' : undefined}
+            class="h-full w-full object-cover"
+          />
+        </div>
+      ))}
+      {product.images.length === 0 && (
+        <div class="flex aspect-square items-center justify-center rounded-lg border border-neutral-200 text-neutral-400">
+          No image
+        </div>
+      )}
+    </div>
+
+    <div>
+      <p class="text-xs uppercase tracking-wide text-neutral-500">{product.category.name}</p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight">{product.name}</h1>
+      <p class="mt-2 text-xl">
+        {product.variants.length > 1 ? 'from ' : ''}{formatCents(minPrice)}
+      </p>
+      <p class="mt-4 leading-relaxed text-neutral-700">{product.description}</p>
+
+      <div class="mt-6">
+        <h2 class="text-sm font-medium uppercase tracking-wide text-neutral-500">Options</h2>
+        <ul class="mt-2 divide-y divide-neutral-200 rounded-lg border border-neutral-200" role="list">
+          {product.variants.map((variant) => (
+            <li class:list={['flex items-center justify-between px-4 py-3', variant.stock === 0 && 'text-neutral-400']}>
+              <span class="text-sm">
+                {Object.values(variant.attributes).length > 0
+                  ? Object.values(variant.attributes).join(', ')
+                  : variant.sku}
+              </span>
+              <span class="flex items-center gap-3 text-sm">
+                {variant.compareAtPriceCents != null && (
+                  <s class="text-neutral-400">{formatCents(variant.compareAtPriceCents)}</s>
+                )}
+                <span>{formatCents(variant.priceCents)}</span>
+                {variant.stock === 0 && <span class="text-xs uppercase">Sold out</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {product.inStock ? (
+        <p class="mt-4 text-sm text-neutral-500">Add-to-cart lands in Phase 1 with the cart API.</p>
+      ) : (
+        <p class="mt-4 text-sm text-neutral-500">
+          Out of stock — this page stays live for SEO (AGENTS.md); availability flips in the data below.
+        </p>
+      )}
+    </div>
+  </div>
+
+  <JsonLd
+    schema={{
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description: product.shortDescription ?? product.description,
+      image: product.images.map((image) => image.url),
+      sku: product.variants[0]?.sku,
+      offers: {
+        '@type': 'Offer',
+        price: centsToDecimalString(minPrice),
+        priceCurrency: 'USD',
+        availability,
+        url: new URL(`/products/${product.slug}/`, Astro.site).toString(),
+      },
+    }}
+  />
+  <JsonLd
+    schema={{
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: product.category.name,
+        },
+        { '@type': 'ListItem', position: 3, name: product.name },
+      ],
+    }}
+  />
+</Base>

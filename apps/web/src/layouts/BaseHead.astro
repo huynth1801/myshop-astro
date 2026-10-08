@@ -1,0 +1,24 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogImage?: string;
+}
+
+const { title, description, canonical, ogImage } = Astro.props;
+const site = Astro.site ?? new URL('https://myshop.example.com');
+const canonicalUrl = new URL(canonical, site).href;
+const ogImageUrl = ogImage ? new URL(ogImage, site).href : undefined;
+---
+
+<title>{title} | myshop</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalUrl} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content="website" />
+{ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+<meta name="robots" content="index, follow" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="sitemap" href="/sitemap-index.xml" />
