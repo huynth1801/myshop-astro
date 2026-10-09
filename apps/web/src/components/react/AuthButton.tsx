@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { AuthError } from '../../lib/api/auth';
-import { login, register } from '../../lib/api/auth';
+import { createPortal } from 'react-dom';
+import { AuthError, login, register } from '../../lib/api/auth';
 import { authOpen, authUser, bootstrapAuth, setUser, signOut } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 
@@ -45,7 +45,7 @@ export default function AuthButton() {
       setPassword('');
     } catch (e) {
       if (e instanceof AuthError && e.code === 'EMAIL_TAKEN') {
-        setError('That email already has an account — switch to Đăng nhập.');
+        setError('Email này đã có tài khoản — chuyển sang Đăng nhập.');
       } else if (e instanceof AuthError && e.code === 'INVALID_CREDENTIALS') {
         setError('Email hoặc mật khẩu không đúng.');
       } else if (e instanceof AuthError && e.code === 'VALIDATION_ERROR') {
@@ -83,20 +83,21 @@ export default function AuthButton() {
         </button>
       )}
 
-      {open && (
-        <div className="fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-black/40"
-            aria-hidden="true"
-            onClick={() => authOpen.set(false)}
-          />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-50">
             <div
-              role="dialog"
-              aria-modal="true"
-              aria-label={mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
-              className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
-            >
+              className="absolute inset-0 bg-black/40"
+              aria-hidden="true"
+              onClick={() => authOpen.set(false)}
+            />
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+                className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
+              >
               <div className="mb-4 flex gap-4 border-b border-border text-sm">
                 {(['login', 'register'] as const).map((tab) => (
                   <button
@@ -174,10 +175,11 @@ export default function AuthButton() {
                   {busy ? 'Vui lòng đợi…' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
                 </button>
               </form>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

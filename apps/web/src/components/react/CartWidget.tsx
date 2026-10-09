@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ApiError } from '../../lib/api/cart';
 import { formatCents } from '../../lib/money';
 import {
@@ -93,8 +94,9 @@ export default function CartWidget() {
         )}
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50">
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-50">
           <div
             className="absolute inset-0 bg-black/40"
             aria-hidden="true"
@@ -253,8 +255,9 @@ export default function CartWidget() {
               </div>
             )}
           </aside>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
