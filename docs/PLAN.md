@@ -496,6 +496,18 @@ brew install --cask docker   # launch Docker.app once to finish setup
 
 Verify Postgres: `psql -d myshop -c 'select version();'`
 
+**Seed demo data (chạy thủ công, mọi máy):**
+
+```bash
+./scripts/seed.sh                # db local `myshop`
+DATABASE_URL=postgres://u:p@host:5432/db ./scripts/seed.sh
+```
+
+Flyway (V1+) chỉ lo schema; dữ liệu demo (6 sản phẩm Shopee thật + coupons +
+cross-sell) nằm ở `apps/api/src/main/resources/db/seed/demo-catalog.sql`, idempotent
+— chạy lại bao nhiêu lần cũng reset đúng. Bảng `users` không bị đụng. Sau khi seed
+nhớ `npm run build` trong `apps/web` để trang tĩnh nhận data mới.
+
 Env handling: each app keeps a committed `.env.example`; real `.env` files are git-ignored
 (see root `.gitignore`).
 

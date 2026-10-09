@@ -16,8 +16,13 @@ async function apiGet<T>(path: string, schema: z.ZodType<T>): Promise<T> {
   return schema.parse(await res.json());
 }
 
+// Ảnh có thể là URL tuyệt đối (CDN) hoặc path nằm trong /public của web
+const imageSrcSchema = z
+  .string()
+  .refine((s) => s.startsWith('/') || /^https?:\/\//.test(s), 'phải là path "/" hoặc URL tuyệt đối');
+
 const imageSchema = z.object({
-  url: z.string().url(),
+  url: imageSrcSchema,
   alt: z.string(),
   position: z.number().int(),
 });
