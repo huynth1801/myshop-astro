@@ -58,6 +58,9 @@ jobs:
       - name: Type-check and build site
         working-directory: apps/web
         run: |
+          # apps/web/.env is git-ignored (secrets rule) — recreate it for the build.
+          # The site fetches the real catalog from the local API (fail-the-build rule).
+          printf 'API_BASE_URL=http://localhost:8080\nPUBLIC_API_URL=http://localhost:8080\n' > .env
           npm ci
           npm run check
           npm run build

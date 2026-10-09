@@ -21,11 +21,15 @@ Full architecture and roadmap: `docs/PLAN.md`.
 
 ## When working in this repo
 
+- **Git workflow (from 2026-10-08):** NEVER commit directly to `main`. One feature/fix
+  = one branch (`feat/…`, `fix/…`, `docs/…`, `chore/…`) = one PR. Merge only when CI is
+  green — branch protection on `main` requires the `api / verify` and `web / build`
+  checks. Squash-merge to keep history readable.
 - Read `docs/PLAN.md` before any architecture-level decision.
 - Endpoints follow `docs/api-spec.yaml` (OpenAPI). Do not invent endpoints — extend the spec first.
 - Every public service method in `apps/api` gets a unit test; repositories are tested with
   Testcontainers against real Postgres.
-- Conventional Commits: `feat:`, `fix:`, `chore:`. Small PRs, one approval.
+- Conventional Commits: `feat:`, `fix:`, `chore:`. Small PRs.
 - Big decisions get a short ADR in `docs/adr/`.
 - App-specific rules apply when working inside that app:
   - `apps/web/AGENTS.md` — Astro / React islands / Tailwind / shadcn
