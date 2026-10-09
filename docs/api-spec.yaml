@@ -102,8 +102,11 @@ paths:
   /api/v1/products/{slug}/recommendations:
     get:
       tags: [Products]
-      summary: Related products for an upsell surface (Phase 2)
-      description: Backs every recommendation surface so strategy changes never touch the UI.
+      summary: Related products for an upsell surface ✅
+      description: |
+        Backs every recommendation surface so strategy changes never touch the UI.
+        Curated order from the related_products mapping; limit applies after
+        ordering. Unknown slug → 404 PRODUCT_NOT_FOUND; unknown type → 400.
       security: []
       parameters:
         - $ref: '#/components/parameters/Slug'

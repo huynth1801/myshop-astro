@@ -100,3 +100,18 @@ export async function getCategoryProducts(
 export async function getProduct(slug: string) {
   return apiGet(`/api/v1/products/${encodeURIComponent(slug)}`, productDetailSchema);
 }
+
+export type RecommendationType = 'CROSS_SELL' | 'UPSELL' | 'BUNDLE';
+
+/** Curated cross-sell for PDP / drawer — every surface reads from the API (PLAN §9). */
+export async function getRecommendations(
+  slug: string,
+  type: RecommendationType = 'CROSS_SELL',
+  limit = 4,
+): Promise<ProductSummary[]> {
+  const query = new URLSearchParams({ type, limit: String(limit) });
+  return apiGet(
+    `/api/v1/products/${encodeURIComponent(slug)}/recommendations?${query}`,
+    z.array(productSummarySchema),
+  );
+}
