@@ -27,3 +27,5 @@ Commits pending review. Auto-managed:
 - eed1f17 (2026-10-09) chore: review queue
 - f44de27 (2026-10-09) feat(seed): standalone demo-catalog seed with real Shopee images (./scripts/seed.sh)
 - 653b415 (2026-10-09) fix(web): accept site-relative image paths in Zod schema; docs: seed runbook
+- bb8d571 (2026-10-09) chore: review queue
+- 68ab5d7 (2026-10-09) feat(seed): full 29-product catalog from Shopee images; fix auth/cart modal portal
