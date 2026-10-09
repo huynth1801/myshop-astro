@@ -27,6 +27,10 @@ public class Cart {
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
+    /** Applied coupon (V5) — discount recomputed from the coupon row per response. */
+    @Column(name = "coupon_id")
+    private UUID couponId;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;
@@ -41,6 +45,14 @@ public class Cart {
     /** Adopt a guest cart into a user account on login/register. */
     void attachUser(UUID userId) {
         this.userId = userId;
+    }
+
+    void applyCoupon(UUID couponId) {
+        this.couponId = couponId;
+    }
+
+    void removeCoupon() {
+        this.couponId = null;
     }
 
     void extendExpiry(Instant expiresAt) {
@@ -68,6 +80,10 @@ public class Cart {
 
     public Instant getExpiresAt() {
         return expiresAt;
+    }
+
+    public UUID getCouponId() {
+        return couponId;
     }
 
     public Instant getCreatedAt() {

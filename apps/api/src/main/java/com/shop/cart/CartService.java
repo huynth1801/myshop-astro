@@ -18,12 +18,14 @@ public class CartService {
     private final CartRepository carts;
     private final CartItemRepository items;
     private final ProductVariantRepository variants;
+    private final CouponRepository coupons;
 
     public CartService(CartRepository carts, CartItemRepository items,
-            ProductVariantRepository variants) {
+            ProductVariantRepository variants, CouponRepository coupons) {
         this.carts = carts;
         this.items = items;
         this.variants = variants;
+        this.coupons = coupons;
     }
 
     /**
@@ -147,8 +149,45 @@ public class CartService {
         return toResponse(cart);
     }
 
+    @Transactional
+    public CartResponse applyCoupon(Cart cart, String code) {
+        Coupon coupon = coupons.findByCodeIgnoreCaseAndActiveTrue(code)
+                .filter(c -> c.isUsable(Instant.now()))
+                .orElseThrow(() -> new CouponNotFoundException(code));
+        long subtotalCents = currentSubtotalCents(cart);
+        if (subtotalCents < coupon.getMinOrderCents()) {
+            throw new CouponMinOrderNotMetException(coupon.getCode(), coupon.getMinOrderCents(),
+                    subtotalCents);
+        }
+        cart.applyCoupon(coupon.getId());
+        return CartMapper.toResponse(cart, items.findAllByCartWithDetails(cart.getId()), coupon);
+    }
+
+    @Transactional
+    public CartResponse removeCoupon(Cart cart) {
+        cart.removeCoupon();
+        return toResponse(cart);
+    }
+
+    private long currentSubtotalCents(Cart cart) {
+        return items.findAllByCartWithDetails(cart.getId()).stream()
+                .mapToLong(item -> item.getVariant().getPriceCents() * item.getQty())
+                .sum();
+    }
+
     @Transactional(readOnly = true)
     public CartResponse toResponse(Cart cart) {
-        return CartMapper.toResponse(cart, items.findAllByCartWithDetails(cart.getId()));
+        Coupon coupon = resolveCoupon(cart);
+        return CartMapper.toResponse(cart, items.findAllByCartWithDetails(cart.getId()), coupon);
+    }
+
+    /** Applied coupon that vanished or expired server-side → discount silently drops. */
+    private Coupon resolveCoupon(Cart cart) {
+        if (cart.getCouponId() == null) {
+            return null;
+        }
+        return coupons.findById(cart.getCouponId())
+                .filter(c -> c.isUsable(Instant.now()))
+                .orElse(null);
     }
 }
