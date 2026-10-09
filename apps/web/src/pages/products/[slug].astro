@@ -2,8 +2,9 @@
 import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import JsonLd from '../../components/astro/JsonLd.astro';
+import ProductCard from '../../components/astro/ProductCard.astro';
 import AddToCartButton from '../../components/react/AddToCartButton';
-import { getProducts, getProduct } from '../../lib/api/products';
+import { getProducts, getProduct, getRecommendations } from '../../lib/api/products';
 import { formatCents, centsToDecimalString } from '../../lib/money';
 
 export const prerender = true;
@@ -36,6 +37,7 @@ const variantOptions = product.variants.map((variant) => ({
   compareAtPriceCents: variant.compareAtPriceCents ?? null,
   stock: variant.stock,
 }));
+const crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
 ---
 
 <Base
@@ -127,6 +129,19 @@ const variantOptions = product.variants.map((variant) => ({
       </div>
     </div>
   </div>
+
+  {crossSells.length > 0 && (
+    <section aria-label="Thường mua cùng" class="mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 lg:px-8">
+      <div class="border-t pt-10">
+        <h2 class="text-xl font-semibold">Thường mua cùng</h2>
+        <ul class="mt-6 grid list-none grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4" role="list">
+          {crossSells.map((item, index) => (
+            <li><ProductCard product={item} eager={false} /></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
 
   <JsonLd
     schema={{

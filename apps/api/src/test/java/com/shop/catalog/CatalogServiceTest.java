@@ -38,6 +38,9 @@ class CatalogServiceTest {
     @Mock
     private CategoryRepository categories;
 
+    @Mock
+    private RelatedProductRepository relatedProducts;
+
     @InjectMocks
     private CatalogService catalogService;
 
@@ -158,6 +161,74 @@ class CatalogServiceTest {
         assertThatThrownBy(() -> catalogService.getProduct("missing"))
                 .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining("missing");
+    }
+
+    // --- recommendations ---
+
+    @Test
+    void listRecommendationsKeepsCuratedOrderAndLimits() {
+        UUID teeId = UUID.randomUUID();
+        UUID mugId = UUID.randomUUID();
+        UUID capId = UUID.randomUUID();
+        // curated order: mug, cap — repo returns them newest-first (reversed)
+        ProductSummaryView mug = view(mugId, "enamel-camp-mug", "Mug", null, 29_000_000L, "accessories", "Accessories");
+        ProductSummaryView cap = view(capId, "field-cap", "Cap", null, 65_000_000L, "accessories", "Accessories");
+
+        when(products.findIdBySlugAndStatus("classic-tee")).thenReturn(Optional.of(teeId));
+        List<RelatedProduct> curated = List.of(related(mugId), related(capId)); // build trước (Mockito)
+        when(relatedProducts.findByProductIdAndTypeOrderByRelatedProductIdAsc(teeId, RelatedType.CROSS_SELL))
+                .thenReturn(curated);
+        when(products.findSummariesByIdIn(any())).thenReturn(List.of(cap, mug)); // thứ tự khác mapping
+        when(images.findByProductIdInOrderByPositionAsc(any())).thenReturn(List.of());
+        when(variants.findByProductIdInOrderBySkuAsc(any())).thenReturn(List.of());
+
+        List<ProductSummaryResponse> result =
+                catalogService.listRecommendations("classic-tee", RelatedType.CROSS_SELL, 1);
+
+        assertThat(result).hasSize(1); // limit áp sau khi đúng thứ tự
+        assertThat(result.get(0).slug()).isEqualTo("enamel-camp-mug"); // theo curated mapping
+    }
+
+    @Test
+    void listRecommendationsReturnsAllWhenUnderLimit() {
+        UUID teeId = UUID.randomUUID();
+        UUID mugId = UUID.randomUUID();
+        ProductSummaryView mug = view(mugId, "enamel-camp-mug", "Mug", null, 29_000_000L, "accessories", "Accessories");
+
+        when(products.findIdBySlugAndStatus("classic-tee")).thenReturn(Optional.of(teeId));
+        List<RelatedProduct> curated = List.of(related(mugId)); // build trước (Mockito)
+        when(relatedProducts.findByProductIdAndTypeOrderByRelatedProductIdAsc(teeId, RelatedType.CROSS_SELL))
+                .thenReturn(curated);
+        when(products.findSummariesByIdIn(any())).thenReturn(List.of(mug));
+        when(images.findByProductIdInOrderByPositionAsc(any())).thenReturn(List.of());
+        when(variants.findByProductIdInOrderBySkuAsc(any())).thenReturn(List.of());
+
+        assertThat(catalogService.listRecommendations("classic-tee", RelatedType.CROSS_SELL, 3))
+                .extracting(ProductSummaryResponse::slug)
+                .containsExactly("enamel-camp-mug");
+    }
+
+    @Test
+    void listRecommendationsEmptyWhenNothingCurated() {
+        when(products.findIdBySlugAndStatus("field-cap")).thenReturn(Optional.of(UUID.randomUUID()));
+        when(relatedProducts.findByProductIdAndTypeOrderByRelatedProductIdAsc(any(UUID.class), any(RelatedType.class)))
+                .thenReturn(List.of());
+
+        assertThat(catalogService.listRecommendations("field-cap", RelatedType.UPSELL, 3)).isEmpty();
+    }
+
+    @Test
+    void listRecommendationsThrowsForUnknownSlug() {
+        when(products.findIdBySlugAndStatus("missing")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> catalogService.listRecommendations("missing", RelatedType.CROSS_SELL, 3))
+                .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    private static RelatedProduct related(UUID relatedProductId) {
+        RelatedProduct rp = mock(RelatedProduct.class);
+        lenient().when(rp.getRelatedProductId()).thenReturn(relatedProductId);
+        return rp;
     }
 
     private static ProductSummaryView view(UUID id, String slug, String name, String shortDescription,

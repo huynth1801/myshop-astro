@@ -1,5 +1,7 @@
 package com.shop.catalog;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -9,6 +11,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
+
+    boolean existsBySlugAndStatus(String slug, ProductStatus status);
+
+    @Query("select p.id from Product p "
+            + "where p.slug = :slug and p.status = com.shop.catalog.ProductStatus.ACTIVE")
+    Optional<UUID> findIdBySlugAndStatus(@Param("slug") String slug);
 
     String SUMMARIES_SELECT = """
             select p.id as id,
@@ -53,6 +61,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     String CATEGORY_FILTER = " and c.slug = :categorySlug ";
 
+    String ID_IN_FILTER = " and p.id in :ids ";
+
     @Query(value = SUMMARIES_SELECT + "group by p.id, p.slug, p.name, p.shortDescription, p.createdAt, c.slug, c.name "
             + "order by min(v.priceCents) asc, p.id asc", countQuery = COUNT_ACTIVE)
     Page<ProductSummaryView> findSummariesOrderByPriceAsc(Pageable pageable);
@@ -79,6 +89,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             countQuery = COUNT_ACTIVE_IN_CATEGORY)
     Page<ProductSummaryView> findSummariesByCategoryOrderByNewest(@Param("categorySlug") String categorySlug,
             Pageable pageable);
+
+    /** For recommendation lists — the service re-orders by the mapping and limits. */
+    @Query(value = SUMMARIES_SELECT + ID_IN_FILTER + GROUP_AND_ORDER_NEWEST,
+            countQuery = COUNT_ACTIVE)
+    List<ProductSummaryView> findSummariesByIdIn(@Param("ids") Collection<UUID> ids);
 
     /**
      * Detail fetch: one collection (variants) join-fetched — images are loaded

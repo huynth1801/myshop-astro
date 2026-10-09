@@ -4,7 +4,9 @@ import com.shop.catalog.dto.CategoryResponse;
 import com.shop.catalog.dto.ProductDetailResponse;
 import com.shop.catalog.dto.ProductSummaryResponse;
 import com.shop.common.web.PagedResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,13 +22,16 @@ public class CatalogService {
     private final ProductImageRepository images;
     private final ProductVariantRepository variants;
     private final CategoryRepository categories;
+    private final RelatedProductRepository relatedProducts;
 
     public CatalogService(ProductRepository products, ProductImageRepository images,
-            ProductVariantRepository variants, CategoryRepository categories) {
+            ProductVariantRepository variants, CategoryRepository categories,
+            RelatedProductRepository relatedProducts) {
         this.products = products;
         this.images = images;
         this.variants = variants;
         this.categories = categories;
+        this.relatedProducts = relatedProducts;
     }
 
     public PagedResponse<ProductSummaryResponse> listProducts(int page, int size, String sort) {
@@ -67,31 +72,60 @@ public class CatalogService {
     }
 
     /**
+     * Curated recommendations for a surface (PLAN.md §9: every recommendation
+     * surface reads from the API so strategy can change without UI changes).
+     * Ordered by the curated mapping, capped at limit; unknown slug → 404.
+     */
+    public List<ProductSummaryResponse> listRecommendations(String slug, RelatedType type, int limit) {
+        UUID productId = products.findIdBySlugAndStatus(slug)
+                .orElseThrow(() -> new ProductNotFoundException(slug));
+        List<UUID> relatedIds = relatedProducts
+                .findByProductIdAndTypeOrderByRelatedProductIdAsc(productId, type)
+                .stream()
+                .map(RelatedProduct::getRelatedProductId)
+                .toList();
+        if (relatedIds.isEmpty()) {
+            return List.of();
+        }
+        Map<UUID, ProductSummaryResponse> byId = new LinkedHashMap<>();
+        enrichSummaries(products.findSummariesByIdIn(relatedIds))
+                .forEach(summary -> byId.put(summary.id(), summary));
+        return relatedIds.stream()
+                .map(byId::get)
+                .filter(summary -> summary != null) // archived/deleted related product
+                .limit(limit)
+                .toList();
+    }
+
+    /**
      * Enriches a whole page in THREE queries total: the page itself, one batched
      * image query (primary + hover), one batched variant query (quick-add
      * default variant + inStock). Never per-row — no N+1 (AGENTS.md).
      */
     private PagedResponse<ProductSummaryResponse> toPagedResponse(Page<ProductSummaryView> result) {
-        List<ProductSummaryView> views = result.getContent();
+        List<ProductSummaryResponse> content = enrichSummaries(result.getContent());
+        return new PagedResponse<>(content, result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
+    }
+
+    private List<ProductSummaryResponse> enrichSummaries(List<ProductSummaryView> views) {
         List<UUID> productIds = views.stream().map(ProductSummaryView::getId).toList();
 
         Map<UUID, List<ProductImage>> imagesByProduct = new HashMap<>();
         for (ProductImage image : images.findByProductIdInOrderByPositionAsc(productIds)) {
-            imagesByProduct.computeIfAbsent(image.getProduct().getId(), k -> new java.util.ArrayList<>())
+            imagesByProduct.computeIfAbsent(image.getProduct().getId(), k -> new ArrayList<>())
                     .add(image);
         }
 
         Map<UUID, List<ProductVariant>> variantsByProduct = new HashMap<>();
         for (ProductVariant variant : variants.findByProductIdInOrderBySkuAsc(productIds)) {
-            variantsByProduct.computeIfAbsent(variant.getProduct().getId(), k -> new java.util.ArrayList<>())
+            variantsByProduct.computeIfAbsent(variant.getProduct().getId(), k -> new ArrayList<>())
                     .add(variant);
         }
 
-        List<ProductSummaryResponse> content = views.stream()
+        return views.stream()
                 .map(view -> toSummary(view, imagesByProduct, variantsByProduct))
                 .toList();
-        return new PagedResponse<>(content, result.getNumber(), result.getSize(),
-                result.getTotalElements(), result.getTotalPages());
     }
 
     private ProductSummaryResponse toSummary(ProductSummaryView view,
