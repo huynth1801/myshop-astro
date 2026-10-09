@@ -1,8 +1,10 @@
 import { atom, computed } from 'nanostores';
 import {
   addToCart as apiAdd,
+  applyCoupon as apiApplyCoupon,
   getCart,
   removeCartItem as apiRemove,
+  removeCoupon as apiRemoveCoupon,
   setItemQty as apiSetQty,
   type CartData,
 } from '../api/cart';
@@ -31,4 +33,12 @@ export async function setItemQty(itemId: string, qty: number): Promise<void> {
 
 export async function removeItem(itemId: string): Promise<void> {
   cart.set(await apiRemove(itemId));
+}
+
+export async function applyCouponCode(code: string): Promise<void> {
+  cart.set(await apiApplyCoupon(code));
+}
+
+export async function removeCoupon(): Promise<void> {
+  cart.set(await apiRemoveCoupon());
 }

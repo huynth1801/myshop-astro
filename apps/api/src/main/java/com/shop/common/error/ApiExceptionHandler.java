@@ -30,12 +30,19 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler({com.shop.cart.VariantNotFoundException.class,
             com.shop.cart.CartNotFoundException.class,
-            com.shop.cart.CartItemNotFoundException.class})
+            com.shop.cart.CartItemNotFoundException.class,
+            com.shop.cart.CouponNotFoundException.class})
     public ProblemDetail handleCartNotFound(RuntimeException ex) {
         String code = ex instanceof com.shop.cart.VariantNotFoundException ? "VARIANT_NOT_FOUND"
                 : ex instanceof com.shop.cart.CartNotFoundException ? "CART_NOT_FOUND"
+                : ex instanceof com.shop.cart.CouponNotFoundException ? "COUPON_NOT_FOUND"
                 : "CART_ITEM_NOT_FOUND";
         return problem(HttpStatus.NOT_FOUND, code, ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.cart.CouponMinOrderNotMetException.class)
+    public ProblemDetail handleCouponMinOrder(com.shop.cart.CouponMinOrderNotMetException ex) {
+        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "COUPON_MIN_ORDER_NOT_MET", ex.getMessage());
     }
 
     @ExceptionHandler(com.shop.cart.OutOfStockException.class)

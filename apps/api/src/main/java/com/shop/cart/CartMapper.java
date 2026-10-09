@@ -9,8 +9,9 @@ import java.util.Map;
 
 /**
  * Cart → DTO with CURRENT variant prices (the cart always recalculates;
- * priceAtAddCents is kept only as an informational snapshot). Totals are
- * computed here from DB prices, never from client input (AGENTS.md).
+ * priceAtAddCents is kept only as an informational snapshot). Totals and the
+ * coupon discount are computed HERE from DB rows — never from client input
+ * (AGENTS.md).
  */
 public final class CartMapper {
 
@@ -20,12 +21,26 @@ public final class CartMapper {
     private CartMapper() {
     }
 
-    public static CartResponse toResponse(Cart cart, List<CartItem> items) {
+    public static CartResponse toResponse(Cart cart, List<CartItem> items, Coupon coupon) {
         List<CartItemResponse> itemDtos = items.stream().map(CartMapper::toItemResponse).toList();
         long subtotalCents = itemDtos.stream().mapToLong(CartItemResponse::lineTotalCents).sum();
+        long discountCents = coupon == null ? 0L : discountCents(coupon, subtotalCents);
+        String couponCode = coupon == null ? null : coupon.getCode();
         int itemCount = itemDtos.stream().mapToInt(CartItemResponse::qty).sum();
-        return new CartResponse(cart.getId(), itemDtos, subtotalCents, 0L, null, 0L,
-                FREE_SHIPPING_THRESHOLD_CENTS, itemCount);
+        return new CartResponse(cart.getId(), itemDtos, subtotalCents, discountCents, couponCode,
+                0L, FREE_SHIPPING_THRESHOLD_CENTS, itemCount);
+    }
+
+    /**
+     * PERCENT floors to whole minor units; FIXED is clamped to the subtotal so
+     * the cart total can never go negative.
+     */
+    static long discountCents(Coupon coupon, long subtotalCents) {
+        return switch (coupon.getType()) {
+            case PERCENT -> Math.min(subtotalCents,
+                    subtotalCents * Math.min(coupon.getValue(), 100) / 100);
+            case FIXED -> Math.min(coupon.getValue(), subtotalCents);
+        };
     }
 
     private static CartItemResponse toItemResponse(CartItem item) {

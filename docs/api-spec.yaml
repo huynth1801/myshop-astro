@@ -249,7 +249,12 @@ paths:
   /api/v1/cart/coupon:
     post:
       tags: [Cart]
-      summary: Apply a coupon code (Phase 2)
+      summary: Apply a coupon code ✅
+      description: |
+        Case-insensitive code. Active + unexpired coupon only; min-order checked
+        against the server-computed subtotal. PERCENT floors to whole minor units,
+        FIXED clamps to the subtotal (total never negative). Applied coupon that
+        later expires/vanishes silently drops from the cart response.
       requestBody:
         required: true
         content:
@@ -265,10 +270,16 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Cart' }
+        '404':
+          description: Unknown / inactive / expired code (or no cart cookie)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+              example: { code: COUPON_NOT_FOUND }
         '422': { $ref: '#/components/responses/BusinessRule' }
     delete:
       tags: [Cart]
-      summary: Remove the applied coupon (Phase 2)
+      summary: Remove the applied coupon ✅
       responses:
         '200':
           description: Updated cart

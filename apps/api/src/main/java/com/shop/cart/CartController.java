@@ -2,6 +2,7 @@ package com.shop.cart;
 
 import com.shop.auth.AuthPrincipal;
 import com.shop.cart.dto.AddItemRequest;
+import com.shop.cart.dto.ApplyCouponRequest;
 import com.shop.cart.dto.CartResponse;
 import com.shop.cart.dto.UpdateQtyRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,6 +60,19 @@ public class CartController {
     public CartResponse removeItem(@PathVariable UUID itemId, HttpServletRequest request) {
         Cart cart = mutatingCart(request);
         return cartService.removeItem(cart, itemId);
+    }
+
+    @PostMapping("/coupon")
+    public CartResponse applyCoupon(@Valid @RequestBody ApplyCouponRequest body,
+            HttpServletRequest request) {
+        Cart cart = mutatingCart(request);
+        return cartService.applyCoupon(cart, body.code().trim());
+    }
+
+    @DeleteMapping("/coupon")
+    public CartResponse removeCoupon(HttpServletRequest request) {
+        Cart cart = mutatingCart(request);
+        return cartService.removeCoupon(cart);
     }
 
     /** Read-style endpoints create the cart (and cookie) on first touch. */

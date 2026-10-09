@@ -37,6 +37,9 @@ class CartServiceTest {
     @Mock
     private ProductVariantRepository variants;
 
+    @Mock
+    private CouponRepository coupons;
+
     @InjectMocks
     private CartService cartService;
 
@@ -266,6 +269,115 @@ class CartServiceTest {
         verify(items).delete(existing);
         assertThat(response.items()).isEmpty();
         assertThat(response.subtotalCents()).isZero();
+    }
+
+    // --- coupons ---
+
+    @Test
+    void applyCouponPercentFloorsAndComputesDiscount() {
+        Cart cart = cart("token-1");
+        // 3 × 1900 = 5700 subtotal → 10% = 570
+        CartItem existing = item(cart, variant(UUID.randomUUID(), "TEE-CLS-M", 1900, 35), 3);
+        Coupon coupon = coupon("WELCOME10", Coupon.Type.PERCENT, 10, 0);
+
+        when(coupons.findByCodeIgnoreCaseAndActiveTrue("WELCOME10"))
+                .thenReturn(Optional.of(coupon));
+        when(items.findAllByCartWithDetails(cart.getId())).thenReturn(List.of(existing));
+
+        CartResponse response = cartService.applyCoupon(cart, "WELCOME10");
+
+        assertThat(cart.getCouponId()).isEqualTo(coupon.getId());
+        assertThat(response.couponCode()).isEqualTo("WELCOME10");
+        assertThat(response.subtotalCents()).isEqualTo(5700L);
+        assertThat(response.discountCents()).isEqualTo(570L);
+    }
+
+    @Test
+    void applyCouponFixedClampsToSubtotal() {
+        Cart cart = cart("token-1");
+        // subtotal 1900, FIXED value 5000 → discount = 1900 (never negative)
+        CartItem existing = item(cart, variant(UUID.randomUUID(), "TEE-CLS-M", 1900, 35), 1);
+        Coupon coupon = coupon("BIGOFF", Coupon.Type.FIXED, 5000, 0);
+
+        when(coupons.findByCodeIgnoreCaseAndActiveTrue("BIGOFF")).thenReturn(Optional.of(coupon));
+        when(items.findAllByCartWithDetails(cart.getId())).thenReturn(List.of(existing));
+
+        CartResponse response = cartService.applyCoupon(cart, "BIGOFF");
+
+        assertThat(response.discountCents()).isEqualTo(1900L);
+    }
+
+    @Test
+    void applyCouponRejectsMinOrderNotMet() {
+        Cart cart = cart("token-1");
+        CartItem existing = item(cart, variant(UUID.randomUUID(), "TEE-CLS-M", 1900, 35), 1);
+        Coupon coupon = coupon("GIAM50K", Coupon.Type.FIXED, 5000, 300000);
+
+        when(coupons.findByCodeIgnoreCaseAndActiveTrue("GIAM50K")).thenReturn(Optional.of(coupon));
+        when(items.findAllByCartWithDetails(cart.getId())).thenReturn(List.of(existing));
+
+        assertThatThrownBy(() -> cartService.applyCoupon(cart, "GIAM50K"))
+                .isInstanceOf(CouponMinOrderNotMetException.class);
+        assertThat(cart.getCouponId()).isNull();
+    }
+
+    @Test
+    void applyCouponRejectsUnknownCode() {
+        Cart cart = cart("token-1");
+        when(coupons.findByCodeIgnoreCaseAndActiveTrue("NOPE")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> cartService.applyCoupon(cart, "NOPE"))
+                .isInstanceOf(CouponNotFoundException.class);
+    }
+
+    @Test
+    void applyCouponRejectsExpired() {
+        Cart cart = cart("token-1");
+        Coupon expired = coupon("OLD", Coupon.Type.PERCENT, 10, 0);
+        when(expired.isUsable(any(Instant.class))).thenReturn(false); // helper mặc định true
+        when(coupons.findByCodeIgnoreCaseAndActiveTrue("OLD")).thenReturn(Optional.of(expired));
+
+        assertThatThrownBy(() -> cartService.applyCoupon(cart, "OLD"))
+                .isInstanceOf(CouponNotFoundException.class);
+    }
+
+    @Test
+    void removeCouponClearsDiscount() {
+        Cart cart = cart("token-1");
+        Coupon coupon = coupon("WELCOME10", Coupon.Type.PERCENT, 10, 0);
+        cart.applyCoupon(coupon.getId());
+        when(items.findAllByCartWithDetails(cart.getId())).thenReturn(List.of());
+
+        CartResponse response = cartService.removeCoupon(cart);
+
+        assertThat(cart.getCouponId()).isNull();
+        assertThat(response.couponCode()).isNull();
+        assertThat(response.discountCents()).isZero();
+    }
+
+    @Test
+    void toResponseDropsCouponThatVanished() {
+        Cart cart = cart("token-1");
+        cart.applyCoupon(UUID.randomUUID());
+        when(coupons.findById(cart.getCouponId())).thenReturn(Optional.empty());
+        when(items.findAllByCartWithDetails(cart.getId())).thenReturn(List.of());
+
+        CartResponse response = cartService.toResponse(cart);
+
+        assertThat(response.couponCode()).isNull();
+        assertThat(response.discountCents()).isZero();
+    }
+
+    private static Coupon coupon(String code, Coupon.Type type, int value, long minOrderCents) {
+        Coupon coupon = mock(Coupon.class);
+        lenient().when(coupon.getId()).thenReturn(UUID.randomUUID());
+        lenient().when(coupon.getCode()).thenReturn(code);
+        lenient().when(coupon.getType()).thenReturn(type);
+        lenient().when(coupon.getValue()).thenReturn(value);
+        lenient().when(coupon.getMinOrderCents()).thenReturn(minOrderCents);
+        lenient().when(coupon.isUsable(any(Instant.class))).thenReturn(true);
+        lenient().when(coupon.isActive()).thenReturn(true);
+        return coupon;
     }
 
     private static Cart cart(String token) {

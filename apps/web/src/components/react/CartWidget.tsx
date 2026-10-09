@@ -1,7 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ApiError } from '../../lib/api/cart';
 import { formatCents } from '../../lib/money';
-import { cart, cartCount, cartOpen, refreshCart, removeItem, setItemQty } from '../../lib/stores/cart';
+import {
+  applyCouponCode,
+  cart,
+  cartCount,
+  cartOpen,
+  refreshCart,
+  removeCoupon,
+  removeItem,
+  setItemQty,
+} from '../../lib/stores/cart';
 import { useStore } from '../../lib/stores/useStore';
+
+const COUPON_ERRORS: Record<string, string> = {
+  COUPON_NOT_FOUND: 'Mã không tồn tại hoặc đã hết hiệu lực.',
+  COUPON_MIN_ORDER_NOT_MET: 'Đơn của bạn chưa đạt giá trị tối thiểu của mã này.',
+};
 
 /**
  * Header cart island: badge button + slide-in drawer. Hydrates client:load
@@ -11,6 +26,9 @@ export default function CartWidget() {
   const count = useStore(cartCount);
   const open = useStore(cartOpen);
   const data = useStore(cart);
+  const [couponInput, setCouponInput] = useState('');
+  const [couponBusy, setCouponBusy] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
 
   // Fetch the cart on first open (not on page load — bots would mint carts)
   useEffect(() => {
@@ -34,6 +52,27 @@ export default function CartWidget() {
     data && data.subtotalCents < data.freeShippingThresholdCents
       ? data.freeShippingThresholdCents - data.subtotalCents
       : 0;
+
+  async function handleApplyCoupon(event: React.FormEvent) {
+    event.preventDefault();
+    const code = couponInput.trim();
+    if (!code || couponBusy) return;
+    setCouponBusy(true);
+    setCouponError(null);
+    try {
+      await applyCouponCode(code);
+      setCouponInput('');
+    } catch (e) {
+      const errorCode = e instanceof ApiError ? e.code : undefined;
+      setCouponError(
+        errorCode && COUPON_ERRORS[errorCode]
+          ? COUPON_ERRORS[errorCode]
+          : 'Không áp dụng được mã. Vui lòng thử lại.',
+      );
+    } finally {
+      setCouponBusy(false);
+    }
+  }
 
   return (
     <>
@@ -140,9 +179,68 @@ export default function CartWidget() {
                 ) : (
                   <p className="text-sm font-medium text-foreground">Đã đạt mức freeship 🎉</p>
                 )}
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-muted-foreground">Tạm tính</span>
-                  <span className="text-lg font-semibold">{formatCents(data.subtotalCents)}</span>
+
+                {data.couponCode ? (
+                  <div className="mt-3 flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-sm">
+                    <span>
+                      Mã <strong>{data.couponCode}</strong>
+                      {data.discountCents > 0 && (
+                        <span className="ml-2 text-accent">−{formatCents(data.discountCents)}</span>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => void removeCoupon()}
+                      className="text-xs text-muted-foreground transition hover:text-accent"
+                    >
+                      Xóa mã
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={(event) => void handleApplyCoupon(event)} className="mt-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(event) => setCouponInput(event.target.value)}
+                        placeholder="Mã giảm giá (vd: WELCOME10)"
+                        aria-label="Mã giảm giá"
+                        autoComplete="off"
+                        className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-card px-3 text-sm uppercase outline-none focus:border-foreground"
+                      />
+                      <button
+                        type="submit"
+                        disabled={couponBusy || couponInput.trim().length === 0}
+                        className="h-9 shrink-0 rounded-full border border-foreground px-4 text-sm font-medium transition hover:bg-muted disabled:opacity-40"
+                      >
+                        {couponBusy ? '…' : 'Áp dụng'}
+                      </button>
+                    </div>
+                    {couponError && (
+                      <p className="mt-2 text-xs text-accent" role="alert">
+                        {couponError}
+                      </p>
+                    )}
+                  </form>
+                )}
+
+                <div className="mt-3 space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Tạm tính</span>
+                    <span>{formatCents(data.subtotalCents)}</span>
+                  </div>
+                  {data.discountCents > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Giảm giá</span>
+                      <span className="text-accent">−{formatCents(data.discountCents)}</span>
+                    </div>
+                  )}
+                  {data.discountCents > 0 && (
+                    <div className="flex items-center justify-between pt-1 text-base font-semibold">
+                      <span>Tổng cộng</span>
+                      <span>{formatCents(data.subtotalCents - data.discountCents)}</span>
+                    </div>
+                  )}
                 </div>
                 <button
                   type="button"
