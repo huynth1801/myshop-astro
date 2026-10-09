@@ -45,13 +45,13 @@ export default function AuthButton() {
       setPassword('');
     } catch (e) {
       if (e instanceof AuthError && e.code === 'EMAIL_TAKEN') {
-        setError('That email already has an account — switch to Sign in.');
+        setError('That email already has an account — switch to Đăng nhập.');
       } else if (e instanceof AuthError && e.code === 'INVALID_CREDENTIALS') {
-        setError('Email or password is incorrect.');
+        setError('Email hoặc mật khẩu không đúng.');
       } else if (e instanceof AuthError && e.code === 'VALIDATION_ERROR') {
-        setError('Check the form — password needs at least 12 characters.');
+        setError('Kiểm tra lại form — mật khẩu cần tối thiểu 12 ký tự.');
       } else {
-        setError('Something went wrong. Please try again.');
+        setError('Có lỗi xảy ra. Vui lòng thử lại.');
       }
     } finally {
       setBusy(false);
@@ -62,24 +62,24 @@ export default function AuthButton() {
     <>
       {user ? (
         <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-neutral-600 sm:inline">
-            Hi, <strong>{user.name}</strong>
+          <span className="hidden text-muted-foreground sm:inline">
+            Chào, <strong>{user.name}</strong>
           </span>
           <button
             type="button"
             onClick={() => void signOut()}
-            className="text-neutral-500 transition hover:text-neutral-900"
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Sign out
+            Đăng xuất
           </button>
         </div>
       ) : (
         <button
           type="button"
           onClick={() => authOpen.set(true)}
-          className="text-sm text-neutral-600 transition hover:text-neutral-900"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          Sign in
+          Đăng nhập
         </button>
       )}
 
@@ -94,10 +94,10 @@ export default function AuthButton() {
             <div
               role="dialog"
               aria-modal="true"
-              aria-label={mode === 'login' ? 'Sign in' : 'Create account'}
-              className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+              aria-label={mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+              className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
             >
-              <div className="mb-4 flex gap-4 border-b border-neutral-200 text-sm">
+              <div className="mb-4 flex gap-4 border-b border-border text-sm">
                 {(['login', 'register'] as const).map((tab) => (
                   <button
                     key={tab}
@@ -110,11 +110,11 @@ export default function AuthButton() {
                     className={[
                       '-mb-px border-b-2 pb-2 transition',
                       mode === tab
-                        ? 'border-neutral-900 font-medium text-neutral-900'
-                        : 'border-transparent text-neutral-500 hover:text-neutral-900',
+                        ? 'border-foreground font-medium text-foreground'
+                        : 'border-transparent text-muted-foreground hover:text-foreground',
                     ].join(' ')}
                   >
-                    {tab === 'login' ? 'Sign in' : 'Create account'}
+                    {tab === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
                   </button>
                 ))}
               </div>
@@ -122,30 +122,30 @@ export default function AuthButton() {
               <form onSubmit={(event) => void handleSubmit(event)} className="space-y-3">
                 {mode === 'register' && (
                   <label className="block text-sm">
-                    <span className="text-neutral-600">Name</span>
+                    <span className="text-muted-foreground">Name</span>
                     <input
                       type="text"
                       value={name}
                       onChange={(event) => setName(event.target.value)}
                       required
                       autoComplete="name"
-                      className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+                      className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
                     />
                   </label>
                 )}
                 <label className="block text-sm">
-                  <span className="text-neutral-600">Email</span>
+                  <span className="text-muted-foreground">Email</span>
                   <input
                     type="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     required
                     autoComplete="email"
-                    className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
                   />
                 </label>
                 <label className="block text-sm">
-                  <span className="text-neutral-600">Password</span>
+                  <span className="text-muted-foreground">Password</span>
                   <input
                     type="password"
                     value={password}
@@ -153,15 +153,15 @@ export default function AuthButton() {
                     required
                     minLength={mode === 'register' ? 12 : undefined}
                     autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                    className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
                   />
                   {mode === 'register' && (
-                    <span className="mt-1 block text-xs text-neutral-400">At least 12 characters</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">Tối thiểu 12 ký tự</span>
                   )}
                 </label>
 
                 {error && (
-                  <p className="text-sm text-red-600" role="alert">
+                  <p className="text-sm text-accent" role="alert">
                     {error}
                   </p>
                 )}
@@ -169,9 +169,9 @@ export default function AuthButton() {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="w-full rounded-lg bg-neutral-900 px-6 py-2.5 font-medium text-white transition hover:bg-neutral-700 disabled:opacity-50"
+                  className="w-full rounded-full bg-primary px-6 py-2.5 font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
                 >
-                  {busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+                  {busy ? 'Vui lòng đợi…' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
                 </button>
               </form>
             </div>

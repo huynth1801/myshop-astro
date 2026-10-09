@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public final class CartMapper {
 
-    /** $75 free-shipping threshold — powers the progress bar (PLAN.md §9). */
-    static final long FREE_SHIPPING_THRESHOLD_CENTS = 75_00L;
+    /** Free-shipping threshold: 500,000₫ stored as minor units (ADR 0003). */
+    static final long FREE_SHIPPING_THRESHOLD_CENTS = 50_000_000L;
 
     private CartMapper() {
     }

@@ -5,39 +5,92 @@ import { formatCents } from '../../lib/money';
 
 interface Props {
   product: ProductSummary;
+  eager?: boolean;
 }
 
-const { product } = Astro.props;
-const priceLabel =
-  product.priceFromCents != null ? `from ${formatCents(product.priceFromCents)}` : null;
+const { product, eager = false } = Astro.props;
+
+const compareAt = product.compareAtFromCents ?? null;
+const discount =
+  compareAt != null && product.priceFromCents != null && compareAt > product.priceFromCents
+    ? Math.round((1 - product.priceFromCents / compareAt) * 100)
+    : 0;
+const isNew = Date.now() - Date.parse(product.createdAt) < 14 * 24 * 3600 * 1000;
+const quickAddVariant = product.inStock ? product.defaultVariantId : null;
 ---
 
-<article class="group">
-  <a href={`/products/${product.slug}/`} class="block">
-    <div class="aspect-square overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
+<article class="group relative">
+  <div class="relative aspect-[3/4] overflow-hidden rounded-2xl bg-muted">
+    <a href={`/products/${product.slug}/`} aria-label={product.name}>
       {product.image ? (
         <Image
           src={product.image.url}
           alt={product.image.alt}
-          width={800}
+          width={600}
           height={800}
-          loading="lazy"
-          class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          loading={eager ? 'eager' : 'lazy'}
+          class:list={[
+            'h-full w-full object-cover transition duration-500 ease-out',
+            product.hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-[1.04]',
+          ]}
         />
       ) : (
-        <div class="flex h-full w-full items-center justify-center text-sm text-neutral-400">
-          No image
+        <div class="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+          Không có ảnh
         </div>
       )}
-    </div>
-    <div class="mt-3 space-y-1">
-      <p class="text-xs uppercase tracking-wide text-neutral-500">{product.category.name}</p>
-      <h2 class="font-medium">{product.name}</h2>
-      {priceLabel ? (
-        <p class="text-sm text-neutral-900">{priceLabel}</p>
-      ) : (
-        <p class="text-sm text-neutral-400">Unavailable</p>
+      {product.hoverImage && (
+        <Image
+          src={product.hoverImage.url}
+          alt=""
+          aria-hidden="true"
+          width={600}
+          height={800}
+          loading="lazy"
+          class="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-500 group-hover:opacity-100"
+        />
+      )}
+    </a>
+
+    <div class="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
+      {isNew && (
+        <span class="rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide backdrop-blur">
+          Mới
+        </span>
+      )}
+      {discount > 0 && (
+        <span class="rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-white">−{discount}%</span>
+      )}
+      {!product.inStock && (
+        <span class="rounded-full bg-foreground/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-background">
+          Hết hàng
+        </span>
       )}
     </div>
-  </a>
+
+    {quickAddVariant && (
+      <button
+        type="button"
+        data-quick-add={quickAddVariant}
+        class="absolute inset-x-3 bottom-3 hidden h-9 items-center justify-center rounded-full bg-background/90 text-xs font-semibold shadow-sm backdrop-blur transition-all duration-300 hover:bg-background md:flex md:translate-y-2 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100"
+      >
+        Thêm vào giỏ
+      </button>
+    )}
+  </div>
+
+  <div class="mt-3 flex items-start justify-between gap-3 px-0.5">
+    <h3 class="text-sm font-medium leading-snug">
+      <a href={`/products/${product.slug}/`} class="underline-offset-4 hover:underline">
+        {product.name}
+      </a>
+    </h3>
+    <div class="shrink-0 text-right text-sm">
+      {product.priceFromCents != null ? (
+        <p class="font-semibold">{formatCents(product.priceFromCents)}</p>
+      ) : (
+        <p class="text-muted-foreground">Ngừng bán</p>
+      )}
+    </div>
+  </div>
 </article>

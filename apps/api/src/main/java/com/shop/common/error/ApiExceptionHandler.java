@@ -22,9 +22,10 @@ public class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
-    @ExceptionHandler(ProductNotFoundException.class)
-    public ProblemDetail handleNotFound(ProductNotFoundException ex) {
-        return problem(HttpStatus.NOT_FOUND, "PRODUCT_NOT_FOUND", ex.getMessage());
+    @ExceptionHandler({ProductNotFoundException.class, com.shop.catalog.CategoryNotFoundException.class})
+    public ProblemDetail handleNotFound(RuntimeException ex) {
+        String code = ex instanceof ProductNotFoundException ? "PRODUCT_NOT_FOUND" : "CATEGORY_NOT_FOUND";
+        return problem(HttpStatus.NOT_FOUND, code, ex.getMessage());
     }
 
     @ExceptionHandler({com.shop.cart.VariantNotFoundException.class,

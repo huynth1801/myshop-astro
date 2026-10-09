@@ -1,11 +1,18 @@
-const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const vnd = new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+  maximumFractionDigits: 0,
+});
 
-/** Money is cents end-to-end (AGENTS.md); format only at the display boundary. */
+/**
+ * Money is cents (minor units x100) end-to-end (AGENTS.md / ADR 0003);
+ * 45_000_000 → "450.000₫". Format only at the display boundary.
+ */
 export function formatCents(cents: number): string {
-  return usd.format(cents / 100);
+  return vnd.format(cents / 100);
 }
 
-/** Schema.org expects "29.90", never cents (PLAN.md §10). */
+/** Schema.org expects the major amount: VND has no decimals → "450000". */
 export function centsToDecimalString(cents: number): string {
-  return (cents / 100).toFixed(2);
+  return String(cents / 100);
 }

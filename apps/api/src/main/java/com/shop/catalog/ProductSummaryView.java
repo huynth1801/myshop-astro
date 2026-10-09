@@ -20,6 +20,9 @@ public interface ProductSummaryView {
 
     Long getPriceFromCents();
 
+    /** Lowest compare-at price across variants (for −% badges); null when none set. */
+    Long getCompareAtFromCents();
+
     Instant getCreatedAt();
 
     String getCategorySlug();

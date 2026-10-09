@@ -43,8 +43,13 @@ export const productSummarySchema = z.object({
   name: z.string(),
   shortDescription: z.string().nullish(),
   priceFromCents: z.number().int().nonnegative().nullish(),
+  compareAtFromCents: z.number().int().nonnegative().nullish(),
   image: imageSchema.nullish(),
+  hoverImage: imageSchema.nullish(),
   category: categoryRefSchema,
+  defaultVariantId: z.string().uuid().nullish(),
+  inStock: z.boolean(),
+  createdAt: z.string(),
 });
 
 export const pagedProductsSchema = z.object({
@@ -77,6 +82,19 @@ export type ProductSort = 'newest' | 'price_asc' | 'price_desc';
 export async function getProducts(page = 0, size = 60, sort: ProductSort = 'newest') {
   const query = new URLSearchParams({ page: String(page), size: String(size), sort });
   return apiGet(`/api/v1/products?${query}`, pagedProductsSchema);
+}
+
+export async function getCategoryProducts(
+  categorySlug: string,
+  page = 0,
+  size = 60,
+  sort: ProductSort = 'newest',
+) {
+  const query = new URLSearchParams({ page: String(page), size: String(size), sort });
+  return apiGet(
+    `/api/v1/categories/${encodeURIComponent(categorySlug)}/products?${query}`,
+    pagedProductsSchema,
+  );
 }
 
 export async function getProduct(slug: string) {
