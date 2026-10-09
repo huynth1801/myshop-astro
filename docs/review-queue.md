@@ -21,3 +21,4 @@ Commits pending review. Auto-managed:
 - c3eb09e (2026-10-08) feat(web): Modern DTC redesign - glass header, hero, hover-swap cards, quick-add, VND
 - 695e84c (2026-10-08) docs: spec marks categories + summary fields; ADR 0003 VND
 - ebba012 (2026-10-09) feat(api): coupons - apply/remove on cart, min-order check, PERCENT floor + FIXED clamp
+- 7408264 (2026-10-09) feat(web): coupon UI in cart drawer; docs: spec marks coupon endpoints; env split build/browser URLs
