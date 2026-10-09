@@ -6,6 +6,7 @@ import com.shop.common.web.PagedResponse;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import java.util.List;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,5 +38,13 @@ public class ProductController {
     @GetMapping("/{slug}")
     public ProductDetailResponse getProduct(@PathVariable String slug) {
         return catalog.getProduct(slug);
+    }
+
+    @GetMapping("/{slug}/recommendations")
+    public List<ProductSummaryResponse> recommendations(
+            @PathVariable String slug,
+            @RequestParam(defaultValue = "CROSS_SELL") RelatedType type,
+            @RequestParam(defaultValue = "3") @Min(1) @Max(10) int limit) {
+        return catalog.listRecommendations(slug, type, limit);
     }
 }
