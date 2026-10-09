@@ -85,3 +85,14 @@ export function setItemQty(itemId: string, qty: number): Promise<CartData> {
 export function removeCartItem(itemId: string): Promise<CartData> {
   return cartRequest(`/api/v1/cart/items/${itemId}`, { method: 'DELETE' });
 }
+
+export function applyCoupon(code: string): Promise<CartData> {
+  return cartRequest('/api/v1/cart/coupon', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
+
+export function removeCoupon(): Promise<CartData> {
+  return cartRequest('/api/v1/cart/coupon', { method: 'DELETE' });
+}

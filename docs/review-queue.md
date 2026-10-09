@@ -20,3 +20,4 @@ Commits pending review. Auto-managed:
 - 74456eb (2026-10-08) feat(api): VND demo prices (ADR 0003), category endpoints, richer product summaries
 - c3eb09e (2026-10-08) feat(web): Modern DTC redesign - glass header, hero, hover-swap cards, quick-add, VND
 - 695e84c (2026-10-08) docs: spec marks categories + summary fields; ADR 0003 VND
+- ebba012 (2026-10-09) feat(api): coupons - apply/remove on cart, min-order check, PERCENT floor + FIXED clamp
