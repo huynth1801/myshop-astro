@@ -24,3 +24,6 @@ Commits pending review. Auto-managed:
 - 7408264 (2026-10-09) feat(web): coupon UI in cart drawer; docs: spec marks coupon endpoints; env split build/browser URLs
 - df179b6 (2026-10-09) feat(api): curated recommendations endpoint - CROSS_SELL/UPSELL/BUNDLE with ordered limit
 - 7e73825 (2026-10-09) feat(web): 'Thuong mua cung' cross-sell section on PDP; docs: spec marks recommendations
+- eed1f17 (2026-10-09) chore: review queue
+- f44de27 (2026-10-09) feat(seed): standalone demo-catalog seed with real Shopee images (./scripts/seed.sh)
+- 653b415 (2026-10-09) fix(web): accept site-relative image paths in Zod schema; docs: seed runbook
