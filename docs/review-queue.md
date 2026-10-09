@@ -23,3 +23,4 @@ Commits pending review. Auto-managed:
 - ebba012 (2026-10-09) feat(api): coupons - apply/remove on cart, min-order check, PERCENT floor + FIXED clamp
 - 7408264 (2026-10-09) feat(web): coupon UI in cart drawer; docs: spec marks coupon endpoints; env split build/browser URLs
 - df179b6 (2026-10-09) feat(api): curated recommendations endpoint - CROSS_SELL/UPSELL/BUNDLE with ordered limit
+- 7e73825 (2026-10-09) feat(web): 'Thuong mua cung' cross-sell section on PDP; docs: spec marks recommendations
