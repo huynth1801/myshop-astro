@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AuthError } from '../../lib/api/auth';
 import { login, register } from '../../lib/api/auth';
 import { authOpen, authUser, bootstrapAuth, setUser, signOut } from '../../lib/stores/auth';
@@ -45,7 +46,7 @@ export default function AuthButton() {
       setPassword('');
     } catch (e) {
       if (e instanceof AuthError && e.code === 'EMAIL_TAKEN') {
-        setError('That email already has an account — switch to Đăng nhập.');
+        setError('Email này đã có tài khoản — chuyển sang Đăng nhập.');
       } else if (e instanceof AuthError && e.code === 'INVALID_CREDENTIALS') {
         setError('Email hoặc mật khẩu không đúng.');
       } else if (e instanceof AuthError && e.code === 'VALIDATION_ERROR') {
@@ -83,7 +84,8 @@ export default function AuthButton() {
         </button>
       )}
 
-      {open && (
+      {open &&
+        createPortal(
         <div className="fixed inset-0 z-50">
           <div
             className="absolute inset-0 bg-black/40"
@@ -176,7 +178,8 @@ export default function AuthButton() {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
