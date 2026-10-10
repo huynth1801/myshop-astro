@@ -117,3 +117,15 @@ export async function bootstrapSession(): Promise<AuthUser | null> {
     return null;
   }
 }
+
+/**
+ * Full-page navigation target for Google sign-in (ADR 0004). The API redirects
+ * to Google and finally back here; the silent bootstrap above then restores
+ * the session from the refresh cookie — no token ever touches the browser URL.
+ * Browser-only (reads location) — call from islands, never at module scope.
+ */
+export function googleLoginUrl(): string {
+  return `${BASE_URL}/api/v1/auth/oauth/google/authorize?redirect_uri=${encodeURIComponent(
+    window.location.origin,
+  )}`;
+}

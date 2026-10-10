@@ -429,6 +429,49 @@ paths:
                   role: { type: string, example: CUSTOMER }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/v1/auth/oauth/google/authorize:
+    get:
+      tags: [Auth]
+      summary: Start Google sign-in ✅ (ADR 0004)
+      description: |
+        302 to Google's consent screen. `redirect_uri` is the storefront origin
+        to return to afterwards — it must be in the server allowlist
+        (`shop.auth.oauth.allowed-redirect-origins`). Two short-lived httpOnly
+        cookies are planted: `oauth_state` (random CSRF token) and
+        `oauth_redirect` (the validated return origin).
+      security: []
+      parameters:
+        - in: query
+          name: redirect_uri
+          required: true
+          schema: { type: string, format: uri }
+          description: Allowlisted storefront origin (e.g. http://localhost:4321)
+      responses:
+        '302': { description: "Location: Google's consent screen" }
+
+  /api/v1/auth/oauth/google/callback:
+    get:
+      tags: [Auth]
+      summary: Google redirects the browser back here ✅ (ADR 0004)
+      description: |
+        Verifies `state` against the `oauth_state` cookie (constant-time),
+        exchanges the code server-side, requires a Google-verified email, then
+        resolves the local account — existing identity → its user; verified
+        email already registered → linked; otherwise a new passwordless user.
+        Issues our own JWT pair, sets the refresh cookie, adopts the guest cart
+        (same as password login), and 302s back to the storefront, which
+        restores the session silently via its existing /refresh bootstrap.
+        Failures redirect with `?auth_error=<code>` (access_denied |
+        state_mismatch | oauth_email | oauth_not_configured | bad_redirect |
+        oauth_failed). No tokens ever appear in URLs.
+      security: []
+      parameters:
+        - { in: query, name: code, schema: { type: string } }
+        - { in: query, name: state, schema: { type: string } }
+        - { in: query, name: error, schema: { type: string }, description: 'e.g. access_denied' }
+      responses:
+        '302': { description: Back to the storefront (with ?auth_error=… on failure) }
+
 components:
   parameters:
     Slug:
