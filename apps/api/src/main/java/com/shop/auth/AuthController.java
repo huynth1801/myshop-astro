@@ -4,9 +4,6 @@ import com.shop.auth.dto.LoginRequest;
 import com.shop.auth.dto.MeResponse;
 import com.shop.auth.dto.RegisterRequest;
 import com.shop.auth.dto.TokenResponse;
-import com.shop.cart.Cart;
-import com.shop.cart.CartService;
-import com.shop.cart.CartTokens;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -25,18 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService auth;
-    private final JwtService jwt;
+    private final AuthSessions sessions;
     private final RefreshCookies refreshCookies;
-    private final CartService cartService;
-    private final CartTokens cartTokens;
 
-    public AuthController(AuthService auth, JwtService jwt, RefreshCookies refreshCookies,
-            CartService cartService, CartTokens cartTokens) {
+    public AuthController(AuthService auth, AuthSessions sessions, RefreshCookies refreshCookies) {
         this.auth = auth;
-        this.jwt = jwt;
+        this.sessions = sessions;
         this.refreshCookies = refreshCookies;
-        this.cartService = cartService;
-        this.cartTokens = cartTokens;
     }
 
     @PostMapping("/register")
@@ -78,20 +70,12 @@ public class AuthController {
     }
 
     /**
-     * Issue tokens and adopt the caller's guest cart: a cart created while signed
+     * Issues tokens and adopts the caller's guest cart: a cart created while signed
      * out follows the user into their account (merged if they already had one).
      */
     private TokenResponse issueAndAttachCart(User user, HttpServletRequest request,
             HttpServletResponse response) {
-        JwtService.Tokens tokens =
-                jwt.issue(user.getId(), user.getEmail(), user.getName(), user.getRole());
-        refreshCookies.write(response, tokens.refreshToken(), Duration.ofDays(7));
-
-        String guestToken = cartTokens.read(request).orElse(null);
-        Cart cart = cartService.getOrCreateCart(user.getId(), guestToken);
-        if (!cart.getCartToken().equals(guestToken)) {
-            cartTokens.write(response, cart.getCartToken());
-        }
+        JwtService.Tokens tokens = sessions.establish(user, request, response);
         return new TokenResponse(tokens.accessToken(), tokens.expiresInSeconds(),
                 user.getEmail(), user.getName());
     }

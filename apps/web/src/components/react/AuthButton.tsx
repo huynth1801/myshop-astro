@@ -4,6 +4,7 @@ import { AuthError } from '../../lib/api/auth';
 import { login, register } from '../../lib/api/auth';
 import { authOpen, authUser, bootstrapAuth, setUser, signOut } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
+import GoogleLoginLink, { oauthErrorMessage } from './GoogleLoginLink';
 
 /**
  * Header auth island: silent session restore on mount, sign-in/register modal,
@@ -22,6 +23,15 @@ export default function AuthButton() {
 
   useEffect(() => {
     void bootstrapAuth();
+  }, []);
+
+  // Arriving back from Google sign-in with ?auth_error=… — surface it, then clean the URL.
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get('auth_error');
+    if (!code) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    setError(oauthErrorMessage(code));
+    authOpen.set(true);
   }, []);
 
   useEffect(() => {
@@ -176,6 +186,17 @@ export default function AuthButton() {
                   {busy ? 'Vui lòng đợi…' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
                 </button>
               </form>
+              <div
+                className="mt-4 flex items-center gap-3 text-xs text-muted-foreground"
+                aria-hidden="true"
+              >
+                <span className="h-px flex-1 bg-border" />
+                hoặc
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <div className="mt-4">
+                <GoogleLoginLink />
+              </div>
             </div>
           </div>
         </div>,

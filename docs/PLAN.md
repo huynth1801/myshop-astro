@@ -65,6 +65,10 @@ Stripe test-mode keys.
   on payments. Revisit before launch: the Launch Checklist §15 still requires it.
 - 2026-10-08 — **Git workflow adopted:** feature branch → PR → CI green (`api / verify`,
   `web / build`) → squash-merge. See `AGENTS.md`.
+- 2026-10-10 — **Google sign-in added** (ADR 0004): OAuth authorization-code on top
+  of the existing JWT session; `users.password_hash` now nullable (V7
+  `user_identities`). Requires `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` — the
+  app boots with them unset (Google button then reports not-configured).
 
 ## 4. Data Model (core tables)
 

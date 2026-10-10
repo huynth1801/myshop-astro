@@ -23,7 +23,9 @@ server:
 
 shop:
   cors:
-    allowed-origins: http://localhost:4321
+    # 127.0.0.1 matters: devs often browse the dev server via 127.0.0.1:4321.
+    # (Cookies still need the same site name as PUBLIC_API_URL — see apps/web/.env.example.)
+    allowed-origins: http://localhost:4321,http://127.0.0.1:4321
   cookie:
     secure: false # true in staging/prod behind HTTPS
   auth:
@@ -31,3 +33,12 @@ shop:
     jwt-secret: ${AUTH_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
     access-token-minutes: 15
     refresh-token-days: 7
+    oauth:
+      # Only these storefront origins may receive the post-login redirect (ADR 0004).
+      allowed-redirect-origins: http://localhost:4321,http://127.0.0.1:4321
+      google:
+        # Empty = Google sign-in disabled but the app still boots (CI, new devs).
+        # Create at console.cloud.google.com → Credentials → OAuth client (Web app);
+        # authorized redirect URI: http://localhost:8080/api/v1/auth/oauth/google/callback
+        client-id: ${GOOGLE_CLIENT_ID:}
+        client-secret: ${GOOGLE_CLIENT_SECRET:}
