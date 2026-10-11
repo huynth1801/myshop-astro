@@ -18,5 +18,5 @@ if [[ -n "${DATABASE_URL:-}" ]]; then
 else
   psql -d "${1:-myshop}" -v ON_ERROR_STOP=1 -f "$SEED_FILE"
 fi
-echo "✓ Xong: 6 sản phẩm, 12 variants, 12 ảnh, 3 coupons, 12 cross-sell."
+echo "✓ Xong: 29 sản phẩm, 29 variants, 58 ảnh, 3 coupons, 58 cross-sell."
 echo "  (web cần rebuild để trang tĩnh nhận data mới: cd apps/web && npm run build)"
