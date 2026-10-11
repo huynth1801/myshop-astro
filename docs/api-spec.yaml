@@ -993,7 +993,14 @@ components:
         images:
           type: array
           description: Ordered by position; index 0 is the primary/hero image
-          items: { $ref: '#/components/schemas/Image' }
+          items:
+            type: object
+            required: [id, url, alt, position]
+            properties:
+              id: { type: string, format: uuid }
+              url: { type: string }
+              alt: { type: string }
+              position: { type: integer }
         createdAt: { type: string, format: date-time }
 
     Category:

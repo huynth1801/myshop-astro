@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { ProductSummary } from '../../lib/api/products';
+import { resolveImageUrl } from '../../lib/api/urls';
 import { formatCents } from '../../lib/money';
 
 interface Props {
@@ -9,6 +10,8 @@ interface Props {
 }
 
 const { product, eager = false } = Astro.props;
+const primarySrc = resolveImageUrl(product.image?.url);
+const hoverSrc = resolveImageUrl(product.hoverImage?.url);
 
 const compareAt = product.compareAtFromCents ?? null;
 const discount =
@@ -22,16 +25,16 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
 <article class="group relative">
   <div class="relative aspect-[3/4] overflow-hidden rounded-2xl bg-muted">
     <a href={`/products/${product.slug}/`} aria-label={product.name}>
-      {product.image ? (
+      {primarySrc && product.image ? (
         <Image
-          src={product.image.url}
+          src={primarySrc}
           alt={product.image.alt}
           width={600}
           height={800}
           loading={eager ? 'eager' : 'lazy'}
           class:list={[
             'h-full w-full object-cover transition duration-500 ease-out',
-            product.hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-[1.04]',
+            hoverSrc ? 'group-hover:opacity-0' : 'group-hover:scale-[1.04]',
           ]}
         />
       ) : (
@@ -39,9 +42,9 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
           Không có ảnh
         </div>
       )}
-      {product.hoverImage && (
+      {hoverSrc && (
         <Image
-          src={product.hoverImage.url}
+          src={hoverSrc}
           alt=""
           aria-hidden="true"
           width={600}

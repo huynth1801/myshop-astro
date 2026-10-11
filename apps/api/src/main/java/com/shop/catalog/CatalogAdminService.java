@@ -297,7 +297,8 @@ public class CatalogAdminService {
                 toCategoryRef(product),
                 product.getVariants().stream().map(CatalogAdminService::toVariantDto).toList(),
                 productImages.stream()
-                        .map(i -> new ImageResponse(i.getUrl(), i.getAlt(), i.getPosition())).toList(),
+                        .map(i -> new com.shop.admin.dto.AdminImageResponse(
+                                i.getId(), i.getUrl(), i.getAlt(), i.getPosition())).toList(),
                 product.getCreatedAt());
     }
 
