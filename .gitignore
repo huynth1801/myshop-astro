@@ -25,3 +25,4 @@ build/
 # local db dumps
 *.dump
 *.sql.gz
+.zcode/
