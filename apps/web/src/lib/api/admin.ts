@@ -25,6 +25,12 @@ export class AdminError extends Error {
 
 const categoryRefSchema = z.object({ slug: z.string(), name: z.string() });
 
+const imageSchema = z.object({
+  url: z.string(),
+  alt: z.string(),
+  position: z.number().int(),
+});
+
 const variantSchema = z.object({
   id: z.string().uuid(),
   sku: z.string(),
@@ -43,9 +49,11 @@ export const adminProductSummarySchema = z.object({
   status: productStatusSchema,
   category: categoryRefSchema,
   priceFromCents: z.number().int().nonnegative().nullish(),
+  priceToCents: z.number().int().nonnegative().nullish(),
   variantCount: z.number().int(),
   totalStock: z.number().int(),
   inStock: z.boolean(),
+  image: imageSchema.nullish(),
   createdAt: z.string(),
 });
 
@@ -66,6 +74,7 @@ const adminDetailSchema = z.object({
   status: productStatusSchema,
   category: categoryRefSchema,
   variants: z.array(variantSchema),
+  images: z.array(imageSchema),
   createdAt: z.string(),
 });
 
@@ -107,8 +116,14 @@ export async function listCategories(): Promise<AdminCategory[]> {
   return adminFetch('/api/v1/admin/categories', {}, z.array(categorySchema));
 }
 
-export async function listProducts(page = 0, size = 20): Promise<z.infer<typeof adminPagedSchema>> {
-  return adminFetch(`/api/v1/admin/products?page=${page}&size=${size}`, {}, adminPagedSchema);
+export async function listProducts(
+  params: { q?: string; status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'; categoryId?: string; page?: number } = {},
+): Promise<z.infer<typeof adminPagedSchema>> {
+  const query = new URLSearchParams({ page: String(params.page ?? 0), size: '20' });
+  if (params.q && params.q.trim() !== '') query.set('q', params.q.trim());
+  if (params.status) query.set('status', params.status);
+  if (params.categoryId) query.set('categoryId', params.categoryId);
+  return adminFetch(`/api/v1/admin/products?${query}`, {}, adminPagedSchema);
 }
 
 export async function getProduct(id: string): Promise<AdminProductDetail> {
