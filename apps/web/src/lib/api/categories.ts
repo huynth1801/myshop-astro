@@ -28,6 +28,7 @@ export async function getCategories(): Promise<Category[]> {
 const VI_NAMES: Record<string, string> = {
   apparel: 'Đồ mặc',
   accessories: 'Phụ kiện',
+  underwear: 'Đồ lót & định hình',
 };
 
 export function categoryDisplayName(category: Category): string {
