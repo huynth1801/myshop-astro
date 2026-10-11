@@ -75,6 +75,26 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "VARIANT_NOT_FOUND", ex.getMessage());
     }
 
+    @ExceptionHandler(com.shop.catalog.ImageNotFoundException.class)
+    public ProblemDetail handleImageNotFound(com.shop.catalog.ImageNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "IMAGE_NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.catalog.VariantInUseException.class)
+    public ProblemDetail handleVariantInUse(com.shop.catalog.VariantInUseException ex) {
+        return problem(HttpStatus.CONFLICT, "VARIANT_IN_USE", ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.catalog.ImageSetMismatchException.class)
+    public ProblemDetail handleImageSetMismatch(com.shop.catalog.ImageSetMismatchException ex) {
+        return problem(HttpStatus.CONFLICT, "IMAGE_SET_MISMATCH", ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.common.file.InvalidUploadException.class)
+    public ProblemDetail handleInvalidUpload(com.shop.common.file.InvalidUploadException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "INVALID_UPLOAD", ex.getMessage());
+    }
+
     @ExceptionHandler({com.shop.catalog.SlugTakenException.class, com.shop.catalog.SkuTakenException.class})
     public ProblemDetail handleTaken(RuntimeException ex) {
         String code = ex instanceof com.shop.catalog.SlugTakenException ? "SLUG_TAKEN" : "SKU_TAKEN";

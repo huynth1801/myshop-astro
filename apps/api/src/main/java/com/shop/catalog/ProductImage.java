@@ -34,6 +34,27 @@ public class ProductImage {
         }
     }
 
+    /** Admin create — appends at the given position (CatalogAdminService computes it). */
+    static ProductImage newImage(Product product, String url, String alt, int position) {
+        ProductImage image = new ProductImage();
+        image.product = product;
+        image.url = url;
+        image.alt = alt == null ? "" : alt;
+        image.position = position;
+        product.getImages().add(image);
+        return image;
+    }
+
+    /** Admin update — alt text (reorder goes through the dedicated order endpoint). */
+    void update(String alt) {
+        this.alt = alt == null ? "" : alt;
+    }
+
+    /** Admin reorder — position is only ever assigned by the order endpoint. */
+    void reposition(int position) {
+        this.position = position;
+    }
+
     public UUID getId() {
         return id;
     }
