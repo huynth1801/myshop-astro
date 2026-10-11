@@ -34,6 +34,16 @@ public class Category {
         }
     }
 
+    /** Admin create — position 0 (head of the list) matches the column default. */
+    static Category newCategory(String name, String slug, Category parent) {
+        Category category = new Category();
+        category.name = name;
+        category.slug = slug;
+        category.parent = parent;
+        category.position = 0;
+        return category;
+    }
+
     public UUID getId() {
         return id;
     }

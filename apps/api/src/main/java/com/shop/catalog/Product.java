@@ -59,6 +59,29 @@ public class Product {
         }
     }
 
+    /** Admin create (CatalogAdminService) — NOT NULL columns get defaults, never null. */
+    static Product newProduct(String name, String slug, String description, String shortDescription,
+            ProductStatus status, Category category) {
+        Product product = new Product();
+        product.name = name;
+        product.slug = slug;
+        product.description = description == null ? "" : description;
+        product.shortDescription = shortDescription == null ? "" : shortDescription;
+        product.status = status;
+        product.category = category;
+        return product;
+    }
+
+    /** Admin full-field update — the service merges the request over current values. */
+    void update(String name, String description, String shortDescription, ProductStatus status,
+            Category category) {
+        this.name = name;
+        this.description = description == null ? "" : description;
+        this.shortDescription = shortDescription == null ? "" : shortDescription;
+        this.status = status;
+        this.category = category;
+    }
+
     public UUID getId() {
         return id;
     }

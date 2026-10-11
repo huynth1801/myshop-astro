@@ -45,6 +45,27 @@ public class ProductVariant {
         }
     }
 
+    /** Admin create — wires both sides of the association so the in-memory graph stays consistent. */
+    static ProductVariant newVariant(Product product, String sku, long priceCents,
+            Long compareAtPriceCents, int stock, Map<String, Object> attributes) {
+        ProductVariant variant = new ProductVariant();
+        variant.product = product;
+        variant.sku = sku;
+        variant.priceCents = priceCents;
+        variant.compareAtPriceCents = compareAtPriceCents;
+        variant.stock = stock;
+        variant.attributes = attributes;
+        product.getVariants().add(variant);
+        return variant;
+    }
+
+    /** Admin price/stock update — the service merges the request over current values. */
+    void updatePriceStock(long priceCents, Long compareAtPriceCents, int stock) {
+        this.priceCents = priceCents;
+        this.compareAtPriceCents = compareAtPriceCents;
+        this.stock = stock;
+    }
+
     public UUID getId() {
         return id;
     }

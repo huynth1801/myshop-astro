@@ -16,4 +16,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     /** Stock + id per product for list pages (quick-add default variant, inStock). */
     List<ProductVariant> findByProductIdInOrderBySkuAsc(Collection<UUID> productIds);
+
+    boolean existsBySku(String sku);
 }
