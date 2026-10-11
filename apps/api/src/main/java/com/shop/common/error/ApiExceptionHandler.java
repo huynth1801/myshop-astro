@@ -70,6 +70,17 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN", ex.getMessage());
     }
 
+    @ExceptionHandler(com.shop.catalog.VariantNotFoundException.class)
+    public ProblemDetail handleCatalogVariantNotFound(com.shop.catalog.VariantNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "VARIANT_NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler({com.shop.catalog.SlugTakenException.class, com.shop.catalog.SkuTakenException.class})
+    public ProblemDetail handleTaken(RuntimeException ex) {
+        String code = ex instanceof com.shop.catalog.SlugTakenException ? "SLUG_TAKEN" : "SKU_TAKEN";
+        return problem(HttpStatus.CONFLICT, code, ex.getMessage());
+    }
+
     /** Unmapped URLs — without this the generic handler turns them into 500s. */
     @ExceptionHandler(NoResourceFoundException.class)
     public ProblemDetail handleNoResource(NoResourceFoundException ex) {

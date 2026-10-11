@@ -9,6 +9,8 @@ if (!BASE_URL) {
 export interface AuthUser {
   email: string;
   name: string;
+  /** Present after /me (bootstrap/refresh) — absent right after login/register. */
+  role?: string;
 }
 
 const tokenResponseSchema = z.object({
@@ -65,13 +67,21 @@ async function authPost(path: string, body: unknown): Promise<z.infer<typeof tok
 export async function register(email: string, password: string, name: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/register', { email, password, name });
   accessToken = tokens.accessToken;
-  return { email: tokens.email ?? email, name: tokens.name ?? name };
+  try {
+    return await me(); // full profile incl. role (the admin page needs it right away)
+  } catch {
+    return { email: tokens.email ?? email, name: tokens.name ?? name };
+  }
 }
 
 export async function login(email: string, password: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/login', { email, password });
   accessToken = tokens.accessToken;
-  return { email: tokens.email ?? email, name: tokens.name ?? '' };
+  try {
+    return await me(); // full profile incl. role (the admin page needs it right away)
+  } catch {
+    return { email: tokens.email ?? email, name: tokens.name ?? '' };
+  }
 }
 
 export async function logout(): Promise<void> {
@@ -95,7 +105,15 @@ async function me(): Promise<AuthUser> {
     throw new AuthError('Session expired', 'UNAUTHENTICATED', res.status);
   }
   const parsed = meResponseSchema.parse(await res.json());
-  return { email: parsed.email, name: parsed.name };
+  return { email: parsed.email, name: parsed.name, role: parsed.role };
+}
+
+/**
+ * Bearer headers for authenticated islands (admin) — empty when signed out.
+ * Callers must re-run after bootstrapAuth()/login() so a fresh token is used.
+ */
+export function authHeaders(): Record<string, string> {
+  return accessToken ? { authorization: `Bearer ${accessToken}` } : {};
 }
 
 /**

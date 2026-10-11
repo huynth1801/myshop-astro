@@ -31,6 +31,7 @@ tags:
   - name: Checkout
   - name: Webhooks
   - name: Auth
+  - name: Admin
 
 paths:
   /api/health:
@@ -429,6 +430,201 @@ paths:
                   role: { type: string, example: CUSTOMER }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/v1/admin/products:
+    get:
+      tags: [Admin]
+      summary: List all products (any status) ✅
+      description: Requires an ADMIN Bearer token (403 otherwise). Includes DRAFT and ARCHIVED.
+      security:
+        - bearerAuth: []
+      parameters:
+        - { in: query, name: page, schema: { type: integer, minimum: 0, default: 0 } }
+        - { in: query, name: size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200':
+          description: Paged admin summaries (variant count, stock, price range)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedAdminProducts' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+    post:
+      tags: [Admin]
+      summary: Create a product ✅
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug, categoryId, status]
+              properties:
+                name: { type: string, maxLength: 255 }
+                slug: { type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$', maxLength: 255 }
+                description: { type: string, default: '' }
+                shortDescription: { type: string, maxLength: 200 }
+                status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+                categoryId: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Created — full product with (empty) variant list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '409': { description: SLUG_TAKEN }
+        '404': { description: CATEGORY_NOT_FOUND (unknown categoryId) }
+
+  /api/v1/admin/products/{id}:
+    get:
+      tags: [Admin]
+      summary: Product detail with variants ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Any status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Admin]
+      summary: Update product fields ✅
+      description: |
+        Partial update — absent fields stay unchanged. The slug is immutable
+(stable-URL rule); change status here (e.g. DRAFT → ACTIVE to publish).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 255 }
+                description: { type: string }
+                shortDescription: { type: string, maxLength: 200 }
+                status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+                categoryId: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/variants:
+    post:
+      tags: [Admin]
+      summary: Add a variant ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku, priceCents, stock]
+              properties:
+                sku: { type: string, pattern: '^[A-Za-z0-9-]+$', maxLength: 64 }
+                priceCents: { type: integer, format: int64, minimum: 0 }
+                compareAtPriceCents: { type: integer, format: int64, minimum: 0 }
+                stock: { type: integer, minimum: 0 }
+                attributes: { type: object, additionalProperties: true }
+      responses:
+        '201':
+          description: Variant added — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: SKU_TAKEN }
+
+  /api/v1/admin/variants/{variantId}:
+    patch:
+      tags: [Admin]
+      summary: Update price / stock of a variant ✅
+      description: Partial — absent fields stay unchanged.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: variantId, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                priceCents: { type: integer, format: int64, minimum: 0 }
+                compareAtPriceCents: { type: integer, format: int64, minimum: 0, nullable: true }
+                stock: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Updated variant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variant' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/categories:
+    get:
+      tags: [Admin]
+      summary: List categories with ids ✅
+      description: Category options for the product form — the public list has no ids.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Ordered by position
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, slug, name, hasParent]
+                  properties:
+                    id: { type: string, format: uuid }
+                    slug: { type: string }
+                    name: { type: string }
+                    hasParent: { type: boolean }
+    post:
+      tags: [Admin]
+      summary: Create a category ✅
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string, maxLength: 255 }
+                slug: { type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$', maxLength: 255 }
+                parentId: { type: string, format: uuid, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [slug, name, hasParent]
+                properties:
+                  slug: { type: string }
+                  name: { type: string }
+                  hasParent: { type: boolean }
+        '409': { description: SLUG_TAKEN }
+        '404': { description: CATEGORY_NOT_FOUND (unknown parentId) }
+
 components:
   parameters:
     Slug:
@@ -459,6 +655,11 @@ components:
           schema: { $ref: '#/components/schemas/Problem' }
     Unauthorized:
       description: Missing or expired credentials
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: Authenticated but not an ADMIN
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
@@ -599,6 +800,49 @@ components:
         size: { type: integer, example: 12 }
         totalElements: { type: integer, example: 342 }
         totalPages: { type: integer, example: 29 }
+
+    PagedAdminProducts:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AdminProduct' }
+        page: { type: integer, example: 0 }
+        size: { type: integer, example: 20 }
+        totalElements: { type: integer, example: 29 }
+        totalPages: { type: integer, example: 2 }
+
+    AdminProduct:
+      type: object
+      required: [id, slug, name, status, category, variantCount, totalStock, inStock, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        category: { $ref: '#/components/schemas/CategoryRef' }
+        priceFromCents: { type: integer, format: int64, nullable: true }
+        variantCount: { type: integer }
+        totalStock: { type: integer }
+        inStock: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    AdminProductDetail:
+      type: object
+      required: [id, slug, name, description, shortDescription, status, category, variants, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string, description: Immutable }
+        name: { type: string }
+        description: { type: string }
+        shortDescription: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        category: { $ref: '#/components/schemas/CategoryRef' }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/Variant' }
+        createdAt: { type: string, format: date-time }
 
     Category:
       allOf:

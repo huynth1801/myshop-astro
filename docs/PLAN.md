@@ -65,6 +65,11 @@ Stripe test-mode keys.
   on payments. Revisit before launch: the Launch Checklist §15 still requires it.
 - 2026-10-08 — **Git workflow adopted:** feature branch → PR → CI green (`api / verify`,
   `web / build`) → squash-merge. See `AGENTS.md`.
+- 2026-10-11 — **Admin CRUD API** (Phase 2): `/api/v1/admin/**` behind `hasRole(ADMIN)` —
+  paged any-status product list, product create/update (slug immutable), variant
+  add + price/stock update, category create. Spec in `docs/api-spec.yaml` (Admin tag).
+  Admin UI (web) is the follow-up PR. Promote an admin locally with
+  `update users set role='ADMIN' where email='…';`.
 
 ## 4. Data Model (core tables)
 
