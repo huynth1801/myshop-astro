@@ -125,6 +125,15 @@ public class CatalogAdminService {
         return new CategoryResponse(saved.getSlug(), saved.getName(), saved.getParent() != null);
     }
 
+    /** For the admin product form — the public endpoint has no ids. */
+    @Transactional(readOnly = true)
+    public List<com.shop.admin.dto.AdminCategoryResponse> listCategories() {
+        return categories.findAllByOrderByPositionAsc().stream()
+                .map(c -> new com.shop.admin.dto.AdminCategoryResponse(c.getId(), c.getSlug(),
+                        c.getName(), c.getParent() != null))
+                .toList();
+    }
+
     private Category resolveCategory(UUID id) {
         return categories.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
     }
