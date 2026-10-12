@@ -1,6 +1,10 @@
 spring:
   application:
     name: shop-api
+  servlet:
+    multipart:
+      max-file-size: 6MB # app rule is 5MB; slack for multipart overhead
+      max-request-size: 6MB
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/myshop}
     username: ${DB_USERNAME:tgm-mac007}
@@ -23,9 +27,13 @@ server:
 
 shop:
   cors:
-    allowed-origins: http://localhost:4321
+    # 127.0.0.1 matters: devs often browse the dev server via 127.0.0.1:4321.
+    allowed-origins: http://localhost:4321,http://127.0.0.1:4321
   cookie:
     secure: false # true in staging/prod behind HTTPS
+  uploads:
+    # Product image uploads (ADR 0005) — swap for S3/Cloudinary before scale-out.
+    dir: ${UPLOAD_DIR:./data/uploads}
   auth:
     # HS256 key must be >= 32 chars. Override in every real environment.
     jwt-secret: ${AUTH_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}

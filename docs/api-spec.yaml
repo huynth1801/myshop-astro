@@ -440,9 +440,12 @@ paths:
       parameters:
         - { in: query, name: page, schema: { type: integer, minimum: 0, default: 0 } }
         - { in: query, name: size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { in: query, name: q, schema: { type: string }, description: 'Case-insensitive contains on name or slug' }
+        - { in: query, name: status, schema: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] } }
+        - { in: query, name: categoryId, schema: { type: string, format: uuid } }
       responses:
         '200':
-          description: Paged admin summaries (variant count, stock, price range)
+          description: Paged admin summaries (primary image, variant count, stock, price range)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/PagedAdminProducts' }
@@ -479,7 +482,7 @@ paths:
   /api/v1/admin/products/{id}:
     get:
       tags: [Admin]
-      summary: Product detail with variants ✅
+      summary: Product detail with variants and images ✅
       security: [{ bearerAuth: [] }]
       parameters:
         - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
@@ -572,6 +575,149 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Variant' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Admin]
+      summary: Delete a variant ✅ (ADR 0005)
+      description: |
+        409 VARIANT_IN_USE when the variant is referenced by a cart item
+        (cart_items FK is RESTRICT). Carts expire on their own; retry later.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: variantId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: VARIANT_IN_USE }
+
+  /api/v1/admin/products/{id}/images:
+    post:
+      tags: [Admin]
+      summary: Add an image by URL ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url: { type: string, maxLength: 1024 }
+                alt: { type: string, maxLength: 255, default: '' }
+      responses:
+        '201':
+          description: Image added — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/images/upload:
+    post:
+      tags: [Admin]
+      summary: Upload an image file ✅ (ADR 0005)
+      description: |
+        multipart/form-data with `file` (+ optional `alt`). jpg/png/webp only,
+        ≤ 5 MB. Stored in the API's upload dir and served from
+        /api/v1/files/{name}; the product_images row gets that URL.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                alt: { type: string }
+      responses:
+        '201':
+          description: Uploaded + attached — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/images/order:
+    put:
+      tags: [Admin]
+      summary: Reorder images ✅
+      description: Full ordered id list; positions are reassigned 0..n. Position 0 = primary.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageIds]
+              properties:
+                imageIds:
+                  type: array
+                  items: { type: string, format: uuid }
+                  minItems: 1
+      responses:
+        '200':
+          description: Reordered — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: 'IMAGE_SET_MISMATCH — ids do not match the product exactly' }
+
+  /api/v1/admin/products/{id}/images/{imageId}:
+    patch:
+      tags: [Admin]
+      summary: Update image alt ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: imageId, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alt: { type: string, maxLength: 255 }
+      responses:
+        '200':
+          description: Updated — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Admin]
+      summary: Delete an image ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: imageId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/files/{name}:
+    get:
+      tags: [Admin]
+      summary: Serve an uploaded file ✅ (ADR 0005)
+      description: Public, immutable-cached. Only names this API generated (UUID.ext) resolve.
+      security: []
+      parameters:
+        - { in: path, name: name, required: true, schema: { type: string } }
+      responses:
+        '200': { description: File bytes (image/jpeg | image/png | image/webp) }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /api/v1/admin/categories:
@@ -823,14 +969,16 @@ components:
         status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
         category: { $ref: '#/components/schemas/CategoryRef' }
         priceFromCents: { type: integer, format: int64, nullable: true }
+        priceToCents: { type: integer, format: int64, nullable: true }
         variantCount: { type: integer }
         totalStock: { type: integer }
         inStock: { type: boolean }
+        image: { $ref: '#/components/schemas/Image', description: Primary image (position 0), null when none }
         createdAt: { type: string, format: date-time }
 
     AdminProductDetail:
       type: object
-      required: [id, slug, name, description, shortDescription, status, category, variants, createdAt]
+      required: [id, slug, name, description, shortDescription, status, category, variants, images, createdAt]
       properties:
         id: { type: string, format: uuid }
         slug: { type: string, description: Immutable }
@@ -842,6 +990,10 @@ components:
         variants:
           type: array
           items: { $ref: '#/components/schemas/Variant' }
+        images:
+          type: array
+          description: Ordered by position; index 0 is the primary/hero image
+          items: { $ref: '#/components/schemas/Image' }
         createdAt: { type: string, format: date-time }
 
     Category:

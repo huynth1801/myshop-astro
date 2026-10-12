@@ -3,11 +3,14 @@ package com.shop.catalog;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shop.admin.dto.AdminProductSummaryResponse;
 import com.shop.admin.dto.CreateCategoryRequest;
 import com.shop.admin.dto.CreateProductRequest;
 import com.shop.admin.dto.CreateVariantRequest;
@@ -15,6 +18,8 @@ import com.shop.admin.dto.UpdateProductRequest;
 import com.shop.admin.dto.UpdateVariantRequest;
 import com.shop.catalog.dto.CategoryResponse;
 import com.shop.catalog.dto.VariantResponse;
+import com.shop.common.file.FileStorage;
+import com.shop.common.file.InvalidUploadException;
 import com.shop.common.web.PagedResponse;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -27,8 +32,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class CatalogAdminServiceTest {
@@ -40,7 +48,13 @@ class CatalogAdminServiceTest {
     private ProductVariantRepository variants;
 
     @Mock
+    private ProductImageRepository images;
+
+    @Mock
     private CategoryRepository categories;
+
+    @Mock
+    private FileStorage storage;
 
     @InjectMocks
     private CatalogAdminService service;
@@ -48,31 +62,160 @@ class CatalogAdminServiceTest {
     private final Category apparel = Category.newCategory("Đồ mặc", "apparel", null);
 
     @Test
-    void listProductsAggregatesVariantStats() throws Exception {
-        Product withVariants = Product.newProduct("Áo", "ao", "mô tả", "ngắn",
-                ProductStatus.ACTIVE, apparel);
-        giveId(withVariants, UUID.randomUUID());
-        Product bare = Product.newProduct("Túi", "tui", null, null, ProductStatus.DRAFT, apparel);
-        giveId(bare, UUID.randomUUID());
-        ProductVariant cheap = ProductVariant.newVariant(withVariants, "SKU-1", 100_000L, null, 2, Map.of());
-        ProductVariant pricey = ProductVariant.newVariant(withVariants, "SKU-2", 250_000L, 300_000L, 0, Map.of());
+    void listProductsAppliesImageThumbnailAndPriceRange() throws Exception {
+        Product product = Product.newProduct("Áo", "ao", "mô tả", "ngắn", ProductStatus.ACTIVE, apparel);
+        UUID productId = UUID.randomUUID();
+        giveId(product, productId);
+        ProductVariant cheap = ProductVariant.newVariant(product, "SKU-1", 100_000L, null, 2, Map.of());
+        ProductVariant pricey = ProductVariant.newVariant(product, "SKU-2", 250_000L, null, 0, Map.of());
+        ProductImage hero = ProductImage.newImage(product, "/images/ao-1.jpg", "Áo", 0);
+        ProductImage hover = ProductImage.newImage(product, "/images/ao-2.jpg", "Áo lưng", 1);
 
-        when(products.findAll(any(PageRequest.class)))
-                .thenReturn(new PageImpl<>(List.of(withVariants, bare), PageRequest.of(0, 20), 2));
+        when(products.findAll(any(Specification.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of(product), PageRequest.of(0, 20), 1));
         when(variants.findByProductIdInOrderBySkuAsc(any())).thenReturn(List.of(cheap, pricey));
+        when(images.findByProductIdInOrderByPositionAsc(any())).thenReturn(List.of(hero, hover));
 
-        PagedResponse<com.shop.admin.dto.AdminProductSummaryResponse> page = service.listProducts(0, 20);
+        PagedResponse<AdminProductSummaryResponse> page =
+                service.listProducts("áo", ProductStatus.ACTIVE, null, 0, 20);
 
-        assertThat(page.totalElements()).isEqualTo(2);
-        var first = page.content().get(0);
-        assertThat(first.priceFromCents()).isEqualTo(100_000L);
-        assertThat(first.variantCount()).isEqualTo(2);
-        assertThat(first.totalStock()).isEqualTo(2);
-        assertThat(first.inStock()).isTrue();
-        var second = page.content().get(1);
-        assertThat(second.priceFromCents()).isNull();
-        assertThat(second.variantCount()).isZero();
-        assertThat(second.inStock()).isFalse();
+        var row = page.content().get(0);
+        assertThat(row.priceFromCents()).isEqualTo(100_000L);
+        assertThat(row.priceToCents()).isEqualTo(250_000L);
+        assertThat(row.image().url()).isEqualTo("/images/ao-1.jpg"); // primary = position 0
+    }
+
+    @Test
+    void addImageByUrlAppendsAtNextPosition() throws Exception {
+        Product product = Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel);
+        UUID productId = UUID.randomUUID();
+        giveId(product, productId);
+        when(products.findById(productId)).thenReturn(Optional.of(product));
+        ProductImage last = mock(ProductImage.class);
+        when(last.getPosition()).thenReturn(1);
+        when(images.findFirstByProductIdOrderByPositionDesc(productId)).thenReturn(Optional.of(last));
+        when(images.save(any(ProductImage.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of());
+
+        service.addImageByUrl(productId, "/images/new.jpg", "Ảnh mới");
+
+        ArgumentCaptor<ProductImage> saved = ArgumentCaptor.forClass(ProductImage.class);
+        verify(images).save(saved.capture());
+        assertThat(saved.getValue().getUrl()).isEqualTo("/images/new.jpg");
+        assertThat(saved.getValue().getPosition()).isEqualTo(2);
+        assertThat(saved.getValue().getAlt()).isEqualTo("Ảnh mới");
+    }
+
+    @Test
+    void reorderImagesReassignsPositionsInGivenOrder() throws Exception {
+        Product product = Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel);
+        UUID productId = UUID.randomUUID();
+        giveId(product, productId);
+        when(products.findById(productId)).thenReturn(Optional.of(product));
+        when(products.findDetailById(productId)).thenReturn(Optional.of(product));
+
+        UUID firstId = UUID.randomUUID();
+        UUID secondId = UUID.randomUUID();
+        ProductImage a = ProductImage.newImage(product, "/a.jpg", "a", 0);
+        ProductImage b = ProductImage.newImage(product, "/b.jpg", "b", 1);
+        giveImageIds(Map.of(a, firstId, b, secondId));
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of(a, b));
+
+        service.reorderImages(productId, List.of(secondId, firstId)); // b lên làm ảnh chính
+
+        assertThat(a.getPosition()).isEqualTo(1);
+        assertThat(b.getPosition()).isEqualTo(0);
+    }
+
+    @Test
+    void reorderImagesRejectsMismatchedIdSet() throws Exception {
+        Product product = Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel);
+        UUID productId = UUID.randomUUID();
+        giveId(product, productId);
+        when(products.findById(productId)).thenReturn(Optional.of(product));
+        ProductImage a = ProductImage.newImage(product, "/a.jpg", "a", 0);
+        ProductImage b = ProductImage.newImage(product, "/b.jpg", "b", 1);
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of(a, b));
+
+        assertThatThrownBy(() -> service.reorderImages(productId,
+                List.of(UUID.randomUUID()))) // không khớp bộ ảnh
+                .isInstanceOf(ImageSetMismatchException.class);
+    }
+
+    @Test
+    void deleteImageIsScopedToTheProduct() throws Exception {
+        Product product = Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel);
+        UUID productId = UUID.randomUUID();
+        giveId(product, productId);
+        UUID imageId = UUID.randomUUID();
+        when(products.findById(productId)).thenReturn(Optional.of(product));
+        when(images.findByIdAndProductId(imageId, productId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.deleteImage(productId, imageId))
+                .isInstanceOf(ImageNotFoundException.class);
+    }
+
+    @Test
+    void deleteVariantTranslatesFkViolationToInUse() {
+        ProductVariant variant = ProductVariant.newVariant(
+                Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel),
+                "SKU-1", 100_000L, null, 5, Map.of());
+        UUID variantId = UUID.randomUUID();
+        when(variants.findById(variantId)).thenReturn(Optional.of(variant));
+        doThrow(new DataIntegrityViolationException("cart_items FK"))
+                .when(variants).flush();
+
+        assertThatThrownBy(() -> service.deleteVariant(variantId))
+                .isInstanceOf(VariantInUseException.class);
+    }
+
+    @Test
+    void deleteVariantRemovesWhenNothingReferencesIt() {
+        ProductVariant variant = ProductVariant.newVariant(
+                Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel),
+                "SKU-1", 100_000L, null, 5, Map.of());
+        UUID variantId = UUID.randomUUID();
+        when(variants.findById(variantId)).thenReturn(Optional.of(variant));
+
+        service.deleteVariant(variantId);
+
+        verify(variants).delete(variant);
+        verify(variants).flush();
+    }
+
+    @Test
+    void uploadImageStoresFileAndAttachesServedUrl() throws Exception {
+        Product product = Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel);
+        UUID productId = UUID.randomUUID();
+        giveId(product, productId);
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "photo.jpg", "image/jpeg", new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 1, 2});
+        when(products.findById(productId)).thenReturn(Optional.of(product));
+        when(storage.store(any(), anyString())).thenReturn("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jpg");
+        when(images.findFirstByProductIdOrderByPositionDesc(productId)).thenReturn(Optional.empty());
+        when(images.save(any(ProductImage.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of());
+
+        service.uploadImage(productId, file, "Ảnh upload");
+
+        ArgumentCaptor<ProductImage> saved = ArgumentCaptor.forClass(ProductImage.class);
+        verify(images).save(saved.capture());
+        assertThat(saved.getValue().getUrl())
+                .isEqualTo("/api/v1/files/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jpg");
+        assertThat(saved.getValue().getPosition()).isZero(); // ảnh đầu tiên
+        assertThat(saved.getValue().getAlt()).isEqualTo("Ảnh upload");
+    }
+
+    @Test
+    void uploadImageRejectsFilesOver5Mb() throws Exception {
+        UUID productId = UUID.randomUUID();
+        byte[] tooBig = new byte[5 * 1024 * 1024 + 1];
+        MockMultipartFile file = new MockMultipartFile("file", "big.jpg", "image/jpeg", tooBig);
+
+        assertThatThrownBy(() -> service.uploadImage(productId, file, null))
+                .isInstanceOf(InvalidUploadException.class)
+                .hasMessageContaining("5 MB");
+        verify(storage, never()).store(any(), anyString());
     }
 
     @Test
@@ -119,6 +262,7 @@ class CatalogAdminServiceTest {
                 ProductStatus.DRAFT, apparel);
         UUID id = UUID.randomUUID();
         when(products.findDetailById(id)).thenReturn(Optional.of(stored));
+        when(images.findByProductIdOrderByPositionAsc(id)).thenReturn(List.of());
 
         service.updateProduct(id, new UpdateProductRequest(null, null, null, ProductStatus.ACTIVE, null));
 
@@ -158,6 +302,7 @@ class CatalogAdminServiceTest {
         when(products.findDetailById(id)).thenReturn(Optional.of(stored));
         when(variants.existsBySku("SKU-9")).thenReturn(false);
         when(variants.save(any(ProductVariant.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(images.findByProductIdOrderByPositionAsc(id)).thenReturn(List.of());
 
         var detail = service.addVariant(id, new CreateVariantRequest("SKU-9", 199_000L, 249_000L, 7, null));
 
@@ -221,5 +366,13 @@ class CatalogAdminServiceTest {
         Field field = Product.class.getDeclaredField("id");
         field.setAccessible(true);
         field.set(product, id);
+    }
+
+    private static void giveImageIds(Map<ProductImage, UUID> ids) throws Exception {
+        Field field = ProductImage.class.getDeclaredField("id");
+        field.setAccessible(true);
+        for (Map.Entry<ProductImage, UUID> entry : ids.entrySet()) {
+            field.set(entry.getKey(), entry.getValue());
+        }
     }
 }
