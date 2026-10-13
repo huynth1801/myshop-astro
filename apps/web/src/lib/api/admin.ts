@@ -220,16 +220,54 @@ export async function uploadImage(
   return adminDetailSchema.parse(await res.json());
 }
 
+export async function updateImage(
+  productId: string,
+  imageId: string,
+  patch: { url?: string; alt?: string },
+): Promise<AdminProductDetail> {
+  return adminFetch(
+    `/api/v1/admin/products/${productId}/images/${imageId}`,
+    { method: 'PATCH', body: JSON.stringify(patch) },
+    adminDetailSchema,
+  );
+}
+
 export async function updateImageAlt(
   productId: string,
   imageId: string,
   alt: string,
 ): Promise<AdminProductDetail> {
-  return adminFetch(
-    `/api/v1/admin/products/${productId}/images/${imageId}`,
-    { method: 'PATCH', body: JSON.stringify({ alt }) },
-    adminDetailSchema,
-  );
+  return updateImage(productId, imageId, { alt });
+}
+
+export async function replaceImageUpload(
+  productId: string,
+  imageId: string,
+  file: File | Blob,
+  alt?: string,
+): Promise<AdminProductDetail> {
+  const form = new FormData();
+  form.append('file', file, file instanceof File ? file.name : 'edited-image.webp');
+  if (alt) form.append('alt', alt);
+  const res = await fetch(`${BASE_URL}/api/v1/admin/products/${productId}/images/${imageId}/upload`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { accept: 'application/json', ...authHeaders() },
+    body: form,
+  });
+  if (!res.ok) {
+    let code: string | undefined;
+    let message = `Request failed (${res.status})`;
+    try {
+      const problem: { code?: string; detail?: string } = await res.json();
+      code = problem.code;
+      message = problem.detail ?? message;
+    } catch {
+      // keep generic message
+    }
+    throw new AdminError(message, code, res.status);
+  }
+  return adminDetailSchema.parse(await res.json());
 }
 
 export async function reorderImages(

@@ -50,6 +50,16 @@ public class ProductImage {
         this.alt = alt == null ? "" : alt;
     }
 
+    /** Admin replace/update — replace URL and/or alt text. */
+    void update(String url, String alt) {
+        if (url != null && !url.isBlank()) {
+            this.url = url.trim();
+        }
+        if (alt != null) {
+            this.alt = alt.trim();
+        }
+    }
+
     /** Admin reorder — position is only ever assigned by the order endpoint. */
     void reposition(int position) {
         this.position = position;

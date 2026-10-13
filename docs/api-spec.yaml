@@ -679,7 +679,8 @@ paths:
   /api/v1/admin/products/{id}/images/{imageId}:
     patch:
       tags: [Admin]
-      summary: Update image alt ✅
+      summary: Update image (url, alt) ✅
+      description: Update image URL or alt text while preserving position and id.
       security: [{ bearerAuth: [] }]
       parameters:
         - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
@@ -691,6 +692,7 @@ paths:
             schema:
               type: object
               properties:
+                url: { type: string, maxLength: 2048 }
                 alt: { type: string, maxLength: 255 }
       responses:
         '200':
@@ -708,6 +710,36 @@ paths:
         - { in: path, name: imageId, required: true, schema: { type: string, format: uuid } }
       responses:
         '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/images/{imageId}/upload:
+    post:
+      tags: [Admin]
+      summary: Replace image with an uploaded file ✅
+      description: |
+        multipart/form-data with `file` (+ optional `alt`). Replaces the file URL
+        and optional alt of an existing image while preserving its position and id.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: imageId, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                alt: { type: string }
+      responses:
+        '200':
+          description: Image replaced — returns updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /api/v1/files/{name}:

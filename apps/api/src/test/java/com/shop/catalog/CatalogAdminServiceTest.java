@@ -220,6 +220,49 @@ class CatalogAdminServiceTest {
     }
 
     @Test
+    void updateImageReplacesUrlAndAlt() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID imageId = UUID.randomUUID();
+        Product p = Product.newProduct("Áo", "ao", "mô tả", "ngắn", ProductStatus.ACTIVE, apparel);
+        giveId(p, productId);
+        ProductImage image = ProductImage.newImage(p, "/old.jpg", "old", 0);
+        giveImageIds(Map.of(image, imageId));
+
+        when(products.findById(productId)).thenReturn(Optional.of(p));
+        when(products.findDetailById(productId)).thenReturn(Optional.of(p));
+        when(images.findByIdAndProductId(imageId, productId)).thenReturn(Optional.of(image));
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of(image));
+
+        service.updateImage(productId, imageId, "/new.jpg", "new alt");
+
+        assertThat(image.getUrl()).isEqualTo("/new.jpg");
+        assertThat(image.getAlt()).isEqualTo("new alt");
+    }
+
+    @Test
+    void replaceImageUploadUpdatesExistingImageFile() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID imageId = UUID.randomUUID();
+        Product p = Product.newProduct("Áo", "ao", "mô tả", "ngắn", ProductStatus.ACTIVE, apparel);
+        giveId(p, productId);
+        ProductImage image = ProductImage.newImage(p, "/old.jpg", "old", 0);
+        giveImageIds(Map.of(image, imageId));
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "new-photo.webp", "image/webp", new byte[] {1, 2, 3});
+        when(products.findById(productId)).thenReturn(Optional.of(p));
+        when(products.findDetailById(productId)).thenReturn(Optional.of(p));
+        when(images.findByIdAndProductId(imageId, productId)).thenReturn(Optional.of(image));
+        when(storage.store(any(), anyString())).thenReturn("new-uuid.webp");
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of(image));
+
+        service.replaceImageUpload(productId, imageId, file, "replaced alt");
+
+        assertThat(image.getUrl()).isEqualTo("/api/v1/files/new-uuid.webp");
+        assertThat(image.getAlt()).isEqualTo("replaced alt");
+    }
+
+    @Test
     void createProductRejectsTakenSlug() {
         when(products.existsBySlug("ao")).thenReturn(true);
 

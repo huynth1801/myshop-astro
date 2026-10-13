@@ -103,7 +103,14 @@ public class AdminProductController {
     @PatchMapping("/{id}/images/{imageId}")
     public AdminProductDetailResponse updateImage(@PathVariable UUID id, @PathVariable UUID imageId,
             @Valid @RequestBody UpdateImageRequest body) {
-        return admin.updateImageAlt(id, imageId, body.alt());
+        return admin.updateImage(id, imageId, body.url(), body.alt());
+    }
+
+    @PostMapping("/{id}/images/{imageId}/upload")
+    public AdminProductDetailResponse replaceImageUpload(@PathVariable UUID id, @PathVariable UUID imageId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false) String alt) {
+        return admin.replaceImageUpload(id, imageId, file, alt);
     }
 
     @DeleteMapping("/{id}/images/{imageId}")

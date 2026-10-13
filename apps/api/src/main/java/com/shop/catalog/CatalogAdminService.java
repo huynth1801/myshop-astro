@@ -213,11 +213,39 @@ public class CatalogAdminService {
     }
 
     @Transactional
-    public AdminProductDetailResponse updateImageAlt(UUID productId, UUID imageId, String alt) {
+    public AdminProductDetailResponse updateImage(UUID productId, UUID imageId, String url, String alt) {
         products.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         ProductImage image = images.findByIdAndProductId(imageId, productId)
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
-        image.update(alt);
+        image.update(url, alt);
+        return toDetailWithId(productId);
+    }
+
+    @Transactional
+    public AdminProductDetailResponse updateImageAlt(UUID productId, UUID imageId, String alt) {
+        return updateImage(productId, imageId, null, alt);
+    }
+
+    /** Replace an existing image with a newly uploaded file, preserving id and position. */
+    @Transactional
+    public AdminProductDetailResponse replaceImageUpload(UUID productId, UUID imageId, MultipartFile file, String alt) {
+        byte[] content;
+        try {
+            content = file.getBytes();
+        } catch (IOException e) {
+            throw new InvalidUploadException("Cannot read the uploaded file");
+        }
+        if (content.length == 0) {
+            throw new InvalidUploadException("The uploaded file is empty");
+        }
+        if (content.length > MAX_UPLOAD_BYTES) {
+            throw new InvalidUploadException("Images must be at most 5 MB");
+        }
+        products.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
+        ProductImage image = images.findByIdAndProductId(imageId, productId)
+                .orElseThrow(() -> new ImageNotFoundException(imageId));
+        String name = storage.store(content, file.getOriginalFilename());
+        image.update("/api/v1/files/" + name, alt);
         return toDetailWithId(productId);
     }
 
