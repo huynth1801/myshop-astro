@@ -27,3 +27,4 @@ Commits pending review. Auto-managed:
 - eed1f17 (2026-10-09) chore: review queue
 - f44de27 (2026-10-09) feat(seed): standalone demo-catalog seed with real Shopee images (./scripts/seed.sh)
 - 653b415 (2026-10-09) fix(web): accept site-relative image paths in Zod schema; docs: seed runbook
+- 533231d (2026-10-13) feat(web): redesign storefront with boutique minimalist aesthetic
