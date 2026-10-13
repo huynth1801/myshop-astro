@@ -30,3 +30,5 @@ Commits pending review. Auto-managed:
 - 533231d (2026-10-13) feat(web): redesign storefront with boutique minimalist aesthetic
 - d8bfbb2 (2026-10-13) chore: review queue
 - 7b0467b (2026-10-13) feat: add interactive hero lookbook slider component and assets
+- cfd6013 (2026-10-13) feat(admin): Shopee-style product edit page /admin/products/[id]
+- b05a18d (2026-10-13) chore: update review queue
