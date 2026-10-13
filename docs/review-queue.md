@@ -61,3 +61,5 @@ Commits pending review. Auto-managed:
 - de683e2 (2026-10-13) chore(docs): update review queue for auth and blog save fixes
 - b71b695 (2026-10-13) chore(docs): sync review queue
 - ddd4332 (2026-10-13) chore(docs): sync review queue
+- f051157 (2026-10-13) feat(blog): lock header buttons to right on long titles and add global toast notifications
+- 654361c (2026-10-13) fix(api): allow PUT and HEAD methods in CORS configuration
