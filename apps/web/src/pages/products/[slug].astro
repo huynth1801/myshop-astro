@@ -5,6 +5,7 @@ import JsonLd from '../../components/astro/JsonLd.astro';
 import ProductCard from '../../components/astro/ProductCard.astro';
 import AddToCartButton from '../../components/react/AddToCartButton';
 import { getProducts, getProduct, getRecommendations } from '../../lib/api/products';
+import { resolveImageUrl } from '../../lib/api/urls';
 import { formatCents, centsToDecimalString } from '../../lib/money';
 
 export const prerender = true;
@@ -44,7 +45,7 @@ const crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
   title={product.name}
   description={(product.shortDescription ?? product.description).slice(0, 160)}
   canonical={`/products/${product.slug}/`}
-  ogImage={primaryImage?.url}
+  ogImage={resolveImageUrl(primaryImage?.url) ?? undefined}
 >
   <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:grid lg:grid-cols-2 lg:gap-12 lg:px-8">
     <div class="lg:sticky lg:top-24 lg:self-start">
@@ -52,7 +53,7 @@ const crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
         {product.images.map((image, index) => (
           <div class="aspect-[4/5] overflow-hidden rounded-md border border-border bg-muted">
             <Image
-              src={image.url}
+              src={resolveImageUrl(image.url)}
               alt={image.alt}
               width={900}
               height={1125}
@@ -149,7 +150,7 @@ const crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
       '@type': 'Product',
       name: product.name,
       description: product.shortDescription ?? product.description,
-      image: product.images.map((image) => image.url),
+      image: product.images.map((image) => resolveImageUrl(image.url)),
       sku: product.variants[0]?.sku,
       offers: {
         '@type': 'Offer',

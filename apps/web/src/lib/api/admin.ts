@@ -74,7 +74,9 @@ const adminDetailSchema = z.object({
   status: productStatusSchema,
   category: categoryRefSchema,
   variants: z.array(variantSchema),
-  images: z.array(imageSchema),
+  images: z.array(
+    z.object({ id: z.string().uuid(), url: z.string(), alt: z.string(), position: z.number().int() }),
+  ),
   createdAt: z.string(),
 });
 
@@ -108,6 +110,7 @@ async function adminFetch<T>(path: string, init: RequestInit, schema: z.ZodType<
     }
     throw new AdminError(message, code, res.status);
   }
+  if (res.status === 204) return schema.parse(undefined); // deletes have no body
   return schema.parse(await res.json());
 }
 
@@ -152,11 +155,85 @@ export async function updateVariant(variantId: string, patch: VariantPatch): Pro
   return adminFetch(`/api/v1/admin/variants/${variantId}`, { method: 'PATCH', body: JSON.stringify(patch) }, variantSchema);
 }
 
+export async function deleteVariant(variantId: string): Promise<void> {
+  await adminFetch(`/api/v1/admin/variants/${variantId}`, { method: 'DELETE' }, z.void());
+}
+
+export async function addImageByUrl(
+  productId: string,
+  url: string,
+  alt?: string,
+): Promise<AdminProductDetail> {
+  return adminFetch(
+    `/api/v1/admin/products/${productId}/images`,
+    { method: 'POST', body: JSON.stringify({ url, alt }) },
+    adminDetailSchema,
+  );
+}
+
+/** Multipart upload — the browser sets the boundary, so no content-type header. */
+export async function uploadImage(
+  productId: string,
+  file: File,
+  alt?: string,
+): Promise<AdminProductDetail> {
+  const form = new FormData();
+  form.append('file', file);
+  if (alt) form.append('alt', alt);
+  const res = await fetch(`${BASE_URL}/api/v1/admin/products/${productId}/images/upload`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { accept: 'application/json', ...authHeaders() },
+    body: form,
+  });
+  if (!res.ok) {
+    let code: string | undefined;
+    let message = `Request failed (${res.status})`;
+    try {
+      const problem: { code?: string; detail?: string } = await res.json();
+      code = problem.code;
+      message = problem.detail ?? message;
+    } catch {
+      // keep generic message
+    }
+    throw new AdminError(message, code, res.status);
+  }
+  return adminDetailSchema.parse(await res.json());
+}
+
+export async function updateImageAlt(
+  productId: string,
+  imageId: string,
+  alt: string,
+): Promise<AdminProductDetail> {
+  return adminFetch(
+    `/api/v1/admin/products/${productId}/images/${imageId}`,
+    { method: 'PATCH', body: JSON.stringify({ alt }) },
+    adminDetailSchema,
+  );
+}
+
+export async function reorderImages(
+  productId: string,
+  imageIds: string[],
+): Promise<AdminProductDetail> {
+  return adminFetch(
+    `/api/v1/admin/products/${productId}/images/order`,
+    { method: 'PUT', body: JSON.stringify({ imageIds }) },
+    adminDetailSchema,
+  );
+}
+
+export async function deleteImage(productId: string, imageId: string): Promise<void> {
+  await adminFetch(`/api/v1/admin/products/${productId}/images/${imageId}`, { method: 'DELETE' }, z.void());
+}
+
 export interface NewVariant {
   sku: string;
   priceCents: number;
   compareAtPriceCents?: number;
   stock: number;
+  attributes?: Record<string, unknown>;
 }
 
 export async function addVariant(productId: string, body: NewVariant): Promise<AdminProductDetail> {
