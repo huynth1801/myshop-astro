@@ -154,11 +154,18 @@ public class CatalogAdminService {
     public VariantResponse updateVariant(UUID variantId, UpdateVariantRequest request) {
         ProductVariant variant = variants.findById(variantId)
                 .orElseThrow(() -> new VariantNotFoundException(variantId));
-        variant.updatePriceStock(
+        if (request.sku() != null && !request.sku().equals(variant.getSku())) {
+            if (variants.existsBySku(request.sku())) {
+                throw new SkuTakenException(request.sku());
+            }
+        }
+        variant.update(
+                request.sku() != null ? request.sku() : variant.getSku(),
                 request.priceCents() != null ? request.priceCents() : variant.getPriceCents(),
                 request.compareAtPriceCents() != null ? request.compareAtPriceCents()
                         : variant.getCompareAtPriceCents(),
-                request.stock() != null ? request.stock() : variant.getStock());
+                request.stock() != null ? request.stock() : variant.getStock(),
+                request.attributes() != null ? request.attributes() : variant.getAttributes());
         return toVariantDto(variant);
     }
 
@@ -206,11 +213,39 @@ public class CatalogAdminService {
     }
 
     @Transactional
-    public AdminProductDetailResponse updateImageAlt(UUID productId, UUID imageId, String alt) {
+    public AdminProductDetailResponse updateImage(UUID productId, UUID imageId, String url, String alt) {
         products.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         ProductImage image = images.findByIdAndProductId(imageId, productId)
                 .orElseThrow(() -> new ImageNotFoundException(imageId));
-        image.update(alt);
+        image.update(url, alt);
+        return toDetailWithId(productId);
+    }
+
+    @Transactional
+    public AdminProductDetailResponse updateImageAlt(UUID productId, UUID imageId, String alt) {
+        return updateImage(productId, imageId, null, alt);
+    }
+
+    /** Replace an existing image with a newly uploaded file, preserving id and position. */
+    @Transactional
+    public AdminProductDetailResponse replaceImageUpload(UUID productId, UUID imageId, MultipartFile file, String alt) {
+        byte[] content;
+        try {
+            content = file.getBytes();
+        } catch (IOException e) {
+            throw new InvalidUploadException("Cannot read the uploaded file");
+        }
+        if (content.length == 0) {
+            throw new InvalidUploadException("The uploaded file is empty");
+        }
+        if (content.length > MAX_UPLOAD_BYTES) {
+            throw new InvalidUploadException("Images must be at most 5 MB");
+        }
+        products.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
+        ProductImage image = images.findByIdAndProductId(imageId, productId)
+                .orElseThrow(() -> new ImageNotFoundException(imageId));
+        String name = storage.store(content, file.getOriginalFilename());
+        image.update("/api/v1/files/" + name, alt);
         return toDetailWithId(productId);
     }
 
@@ -283,12 +318,13 @@ public class CatalogAdminService {
         Long priceTo = variants.size() < 2 ? null
                 : variants.stream().mapToLong(ProductVariant::getPriceCents).max().orElseThrow();
         ProductImage primary = productImages.isEmpty() ? null : productImages.get(0);
+        List<VariantResponse> variantDtos = variants.stream().map(CatalogAdminService::toVariantDto).toList();
         return new AdminProductSummaryResponse(product.getId(), product.getSlug(), product.getName(),
                 product.getStatus(), toCategoryRef(product), priceFrom, priceTo, variants.size(),
                 variants.stream().mapToInt(ProductVariant::getStock).sum(),
                 variants.stream().anyMatch(v -> v.getStock() > 0),
                 primary == null ? null : new ImageResponse(primary.getUrl(), primary.getAlt(), primary.getPosition()),
-                product.getCreatedAt());
+                product.getCreatedAt(), variantDtos);
     }
 
     private static AdminProductDetailResponse toDetail(Product product, List<ProductImage> productImages) {
@@ -297,7 +333,8 @@ public class CatalogAdminService {
                 toCategoryRef(product),
                 product.getVariants().stream().map(CatalogAdminService::toVariantDto).toList(),
                 productImages.stream()
-                        .map(i -> new ImageResponse(i.getUrl(), i.getAlt(), i.getPosition())).toList(),
+                        .map(i -> new com.shop.admin.dto.AdminImageResponse(
+                                i.getId(), i.getUrl(), i.getAlt(), i.getPosition())).toList(),
                 product.getCreatedAt());
     }
 

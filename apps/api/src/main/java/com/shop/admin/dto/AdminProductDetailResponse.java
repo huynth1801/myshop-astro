@@ -2,7 +2,6 @@ package com.shop.admin.dto;
 
 import com.shop.catalog.ProductStatus;
 import com.shop.catalog.dto.CategoryRefResponse;
-import com.shop.catalog.dto.ImageResponse;
 import com.shop.catalog.dto.VariantResponse;
 import java.time.Instant;
 import java.util.List;
@@ -11,5 +10,5 @@ import java.util.UUID;
 /** Admin detail: editable fields plus the full variant and image lists. */
 public record AdminProductDetailResponse(UUID id, String slug, String name, String description,
         String shortDescription, ProductStatus status, CategoryRefResponse category,
-        List<VariantResponse> variants, List<ImageResponse> images, Instant createdAt) {
+        List<VariantResponse> variants, List<AdminImageResponse> images, Instant createdAt) {
 }

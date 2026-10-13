@@ -27,3 +27,20 @@ Commits pending review. Auto-managed:
 - eed1f17 (2026-10-09) chore: review queue
 - f44de27 (2026-10-09) feat(seed): standalone demo-catalog seed with real Shopee images (./scripts/seed.sh)
 - 653b415 (2026-10-09) fix(web): accept site-relative image paths in Zod schema; docs: seed runbook
+- 533231d (2026-10-13) feat(web): redesign storefront with boutique minimalist aesthetic
+- d8bfbb2 (2026-10-13) chore: review queue
+- 7b0467b (2026-10-13) feat: add interactive hero lookbook slider component and assets
+- cfd6013 (2026-10-13) feat(admin): Shopee-style product edit page /admin/products/[id]
+- b05a18d (2026-10-13) chore: update review queue
+- 57c3cec (2026-10-13) feat(admin): support editing all product parameters, multi-attribute variants, images, and descriptions
+- 8b8986f (2026-10-13) feat(admin): overhaul image manager UX with drag-drop reordering, primary badge, SEO alt modal, and multi-file dropzone
+- 1c8f0f6 (2026-10-13) feat(admin): enable editing existing images with Canvas rotate, flip, file replacement, and URL update
+- 00c1b4b (2026-10-13) fix(admin): fit image editor modal within viewport bounds with fixed header/footer and scrollable body
+- d9e923d (2026-10-13) feat(web): standardize on Lucide icons across admin and storefront UI
+- 1856121 (2026-10-13) chore(docs): update review queue for icon standardization
+- 99af925 (2026-10-13) feat(catalog): import 162 variants with real prices and stock from Shopee sales info export
+- d3c63d8 (2026-10-13) chore: update review queue
+- 9e3101f (2026-10-13) feat(admin): make variant table always-editable inline with zero horizontal overflow
+- 77576ec (2026-10-13) chore(docs): update review queue for variant table redesign
+- b932883 (2026-10-13) feat(admin): add sticky live storefront preview widget to product edit sidebar
+- b36f97d (2026-10-13) feat(web): redesign variant picker with grouped multi-attribute selectors, color swatches, and live price

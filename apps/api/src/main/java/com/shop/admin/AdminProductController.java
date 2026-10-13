@@ -14,7 +14,6 @@ import com.shop.common.web.PagedResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Pattern;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -40,8 +39,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Validated
 public class AdminProductController {
 
-    private static final String STATUS_PATTERN = "DRAFT|ACTIVE|ARCHIVED";
-
     private final CatalogAdminService admin;
 
     public AdminProductController(CatalogAdminService admin) {
@@ -53,7 +50,7 @@ public class AdminProductController {
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) @Pattern(regexp = STATUS_PATTERN) ProductStatus status,
+            @RequestParam(required = false) ProductStatus status,
             @RequestParam(required = false) UUID categoryId) {
         return admin.listProducts(q, status, categoryId, page, size);
     }
@@ -106,7 +103,14 @@ public class AdminProductController {
     @PatchMapping("/{id}/images/{imageId}")
     public AdminProductDetailResponse updateImage(@PathVariable UUID id, @PathVariable UUID imageId,
             @Valid @RequestBody UpdateImageRequest body) {
-        return admin.updateImageAlt(id, imageId, body.alt());
+        return admin.updateImage(id, imageId, body.url(), body.alt());
+    }
+
+    @PostMapping("/{id}/images/{imageId}/upload")
+    public AdminProductDetailResponse replaceImageUpload(@PathVariable UUID id, @PathVariable UUID imageId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false) String alt) {
+        return admin.replaceImageUpload(id, imageId, file, alt);
     }
 
     @DeleteMapping("/{id}/images/{imageId}")

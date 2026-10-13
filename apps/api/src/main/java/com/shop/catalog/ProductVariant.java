@@ -59,11 +59,22 @@ public class ProductVariant {
         return variant;
     }
 
-    /** Admin price/stock update — the service merges the request over current values. */
-    void updatePriceStock(long priceCents, Long compareAtPriceCents, int stock) {
+    /** Admin variant update — merges fields over current values. */
+    void update(String sku, long priceCents, Long compareAtPriceCents, int stock, Map<String, Object> attributes) {
+        if (sku != null) {
+            this.sku = sku;
+        }
         this.priceCents = priceCents;
         this.compareAtPriceCents = compareAtPriceCents;
         this.stock = stock;
+        if (attributes != null) {
+            this.attributes = attributes;
+        }
+    }
+
+    /** Admin price/stock update — legacy shorthand. */
+    void updatePriceStock(long priceCents, Long compareAtPriceCents, int stock) {
+        update(null, priceCents, compareAtPriceCents, stock, null);
     }
 
     public UUID getId() {

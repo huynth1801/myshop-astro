@@ -83,6 +83,7 @@ class CatalogAdminServiceTest {
         assertThat(row.priceFromCents()).isEqualTo(100_000L);
         assertThat(row.priceToCents()).isEqualTo(250_000L);
         assertThat(row.image().url()).isEqualTo("/images/ao-1.jpg"); // primary = position 0
+        assertThat(row.variants()).hasSize(2);
     }
 
     @Test
@@ -219,6 +220,49 @@ class CatalogAdminServiceTest {
     }
 
     @Test
+    void updateImageReplacesUrlAndAlt() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID imageId = UUID.randomUUID();
+        Product p = Product.newProduct("Áo", "ao", "mô tả", "ngắn", ProductStatus.ACTIVE, apparel);
+        giveId(p, productId);
+        ProductImage image = ProductImage.newImage(p, "/old.jpg", "old", 0);
+        giveImageIds(Map.of(image, imageId));
+
+        when(products.findById(productId)).thenReturn(Optional.of(p));
+        when(products.findDetailById(productId)).thenReturn(Optional.of(p));
+        when(images.findByIdAndProductId(imageId, productId)).thenReturn(Optional.of(image));
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of(image));
+
+        service.updateImage(productId, imageId, "/new.jpg", "new alt");
+
+        assertThat(image.getUrl()).isEqualTo("/new.jpg");
+        assertThat(image.getAlt()).isEqualTo("new alt");
+    }
+
+    @Test
+    void replaceImageUploadUpdatesExistingImageFile() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UUID imageId = UUID.randomUUID();
+        Product p = Product.newProduct("Áo", "ao", "mô tả", "ngắn", ProductStatus.ACTIVE, apparel);
+        giveId(p, productId);
+        ProductImage image = ProductImage.newImage(p, "/old.jpg", "old", 0);
+        giveImageIds(Map.of(image, imageId));
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "new-photo.webp", "image/webp", new byte[] {1, 2, 3});
+        when(products.findById(productId)).thenReturn(Optional.of(p));
+        when(products.findDetailById(productId)).thenReturn(Optional.of(p));
+        when(images.findByIdAndProductId(imageId, productId)).thenReturn(Optional.of(image));
+        when(storage.store(any(), anyString())).thenReturn("new-uuid.webp");
+        when(images.findByProductIdOrderByPositionAsc(productId)).thenReturn(List.of(image));
+
+        service.replaceImageUpload(productId, imageId, file, "replaced alt");
+
+        assertThat(image.getUrl()).isEqualTo("/api/v1/files/new-uuid.webp");
+        assertThat(image.getAlt()).isEqualTo("replaced alt");
+    }
+
+    @Test
     void createProductRejectsTakenSlug() {
         when(products.existsBySlug("ao")).thenReturn(true);
 
@@ -323,11 +367,45 @@ class CatalogAdminServiceTest {
         when(variants.findById(variantId)).thenReturn(Optional.of(stored));
 
         VariantResponse updated = service.updateVariant(variantId,
-                new UpdateVariantRequest(120_000L, null, null));
+                new UpdateVariantRequest(null, 120_000L, null, null, null));
 
         assertThat(updated.priceCents()).isEqualTo(120_000L);
         assertThat(updated.compareAtPriceCents()).isEqualTo(150_000L); // unchanged
         assertThat(updated.stock()).isEqualTo(5); // unchanged
+        assertThat(updated.sku()).isEqualTo("SKU-1"); // unchanged
+        assertThat(updated.attributes()).containsEntry("size", "M"); // unchanged
+    }
+
+    @Test
+    void updateVariantUpdatesSkuAndAttributes() {
+        ProductVariant stored = ProductVariant.newVariant(
+                Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel),
+                "SKU-OLD", 100_000L, 150_000L, 5, Map.of("size", "M"));
+        UUID variantId = UUID.randomUUID();
+        when(variants.findById(variantId)).thenReturn(Optional.of(stored));
+        when(variants.existsBySku("SKU-NEW")).thenReturn(false);
+
+        VariantResponse updated = service.updateVariant(variantId,
+                new UpdateVariantRequest("SKU-NEW", 120_000L, null, 10, Map.of("size", "L", "color", "Đen")));
+
+        assertThat(updated.sku()).isEqualTo("SKU-NEW");
+        assertThat(updated.priceCents()).isEqualTo(120_000L);
+        assertThat(updated.stock()).isEqualTo(10);
+        assertThat(updated.attributes()).containsEntry("size", "L").containsEntry("color", "Đen");
+    }
+
+    @Test
+    void updateVariantRejectsTakenSku() {
+        ProductVariant stored = ProductVariant.newVariant(
+                Product.newProduct("Áo", "ao", null, null, ProductStatus.ACTIVE, apparel),
+                "SKU-OLD", 100_000L, null, 5, Map.of());
+        UUID variantId = UUID.randomUUID();
+        when(variants.findById(variantId)).thenReturn(Optional.of(stored));
+        when(variants.existsBySku("SKU-TAKEN")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateVariant(variantId,
+                new UpdateVariantRequest("SKU-TAKEN", null, null, null, null)))
+                .isInstanceOf(SkuTakenException.class);
     }
 
     @Test
@@ -336,7 +414,7 @@ class CatalogAdminServiceTest {
         when(variants.findById(variantId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateVariant(variantId,
-                new UpdateVariantRequest(1L, null, null)))
+                new UpdateVariantRequest(null, 1L, null, null, null)))
                 .isInstanceOf(VariantNotFoundException.class);
     }
 
