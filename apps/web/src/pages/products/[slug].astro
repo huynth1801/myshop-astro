@@ -108,9 +108,9 @@ const crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
       )}
 
       <div class="mt-8 divide-y border-t border-border">
-        <details class="py-4">
+        <details open class="py-4">
           <summary class="cursor-pointer text-xs font-semibold uppercase tracking-[0.08em] text-foreground">Mô tả sản phẩm</summary>
-          <p class="mt-3 text-sm leading-relaxed text-foreground-secondary">{product.description}</p>
+          <p class="mt-3 text-sm leading-relaxed text-foreground-secondary whitespace-pre-line">{product.description}</p>
         </details>
         <details class="py-4">
           <summary class="cursor-pointer text-xs font-semibold uppercase tracking-[0.08em] text-foreground">Chất liệu & cách giặt</summary>
