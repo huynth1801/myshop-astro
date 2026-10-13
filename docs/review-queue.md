@@ -49,3 +49,4 @@ Commits pending review. Auto-managed:
 - a92c46a (2026-10-13) chore: update review queue
 - 13660b8 (2026-10-13) fix(web): fallback client API_BASE_URL and align admin auth fallback states
 - 5667664 (2026-10-13) feat(blog): implement automated RSS crawler and product-keyword matching engine
+- 66db6d3 (2026-10-13) feat(blog): add quick paste crawler bar and curate dedicated fashion RSS feeds

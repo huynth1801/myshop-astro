@@ -1,5 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  ExternalLink,
+  FileText,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Rss,
+  Search,
+  Sparkles,
+  Trash2,
+} from 'lucide-react';
+import {
   adminCreatePost,
   adminDeletePost,
   adminListPosts,
@@ -17,6 +29,7 @@ import {
 import { resolveImageUrl } from '../../lib/api/urls';
 import { authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
+import ConfirmDialog from './ConfirmDialog';
 
 export default function AdminBlogDashboard() {
   const user = useStore(authUser);
@@ -38,8 +51,14 @@ export default function AdminBlogDashboard() {
   const [crawlError, setCrawlError] = useState<string | null>(null);
   const [crawlSuccess, setCrawlSuccess] = useState<string | null>(null);
 
-  // Delete state
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  // Delete modal state
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: 'post' | 'rss';
+    id: string;
+    title: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // RSS State
   const [rssSources, setRssSources] = useState<RssSource[] | null>(null);
@@ -106,16 +125,30 @@ export default function AdminBlogDashboard() {
     }
   }, [user, status, loadPosts, loadRssSources]);
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa bài viết "${title}"?`)) return;
-    setDeletingId(id);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setDeleteError(null);
     try {
-      await adminDeletePost(id);
-      await loadPosts();
+      if (deleteTarget.type === 'post') {
+        await adminDeletePost(deleteTarget.id);
+        setDeleteTarget(null);
+        await loadPosts();
+      } else {
+        await adminDeleteRssSource(deleteTarget.id);
+        setDeleteTarget(null);
+        await loadRssSources();
+      }
     } catch (err) {
-      alert(err instanceof BlogApiError ? err.message : 'Lỗi khi xóa bài viết.');
+      setDeleteError(
+        err instanceof BlogApiError
+          ? err.message
+          : deleteTarget.type === 'post'
+            ? 'Lỗi khi xóa bài viết. Vui lòng thử lại.'
+            : 'Lỗi khi xóa nguồn RSS. Vui lòng thử lại.',
+      );
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   };
 
