@@ -39,3 +39,4 @@ Commits pending review. Auto-managed:
 - d9e923d (2026-10-13) feat(web): standardize on Lucide icons across admin and storefront UI
 - 1856121 (2026-10-13) chore(docs): update review queue for icon standardization
 - 99af925 (2026-10-13) feat(catalog): import 162 variants with real prices and stock from Shopee sales info export
+- d3c63d8 (2026-10-13) chore: update review queue
