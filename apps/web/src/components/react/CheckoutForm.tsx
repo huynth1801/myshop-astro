@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Loader2,
+  Package,
   QrCode,
   ShieldCheck,
   ShoppingBag,
@@ -16,6 +17,7 @@ import { authUser } from '../../lib/stores/auth';
 import { cart, clearCart, refreshCart } from '../../lib/stores/cart';
 import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
+import { resolveImageUrl } from '../../lib/api/urls';
 import { submitCheckout, type CustomerAddress, type PaymentMethod } from '../../lib/api/orders';
 
 const SAVED_ADDRESS_STORAGE_KEY = 'myshop_saved_shipping_address';
@@ -536,20 +538,48 @@ export default function CheckoutForm() {
           </div>
 
           {/* Item List */}
-          <div className="mt-4 max-h-72 divide-y divide-border/60 overflow-y-auto pr-1">
-            {cartData.items.map((item) => (
-              <div key={item.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{item.productName}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    SKU: {item.sku} · SL: {item.qty}
-                  </p>
+          <div className="mt-4 max-h-80 divide-y divide-border/60 overflow-y-auto pr-1">
+            {cartData.items.map((item) => {
+              const imageSrc = resolveImageUrl(item.imageUrl);
+              return (
+                <div key={item.id} className="flex items-center gap-3.5 py-3 first:pt-0 last:pb-0">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted/40">
+                    {imageSrc ? (
+                      <img
+                        src={imageSrc}
+                        alt={item.productName}
+                        className="h-full w-full object-cover object-center"
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className={`absolute inset-0 flex items-center justify-center text-muted-foreground/50 ${
+                        imageSrc ? '-z-10' : ''
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <Package className="h-6 w-6" />
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium leading-snug">{item.productName}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                      <span>SKU: {item.sku}</span>
+                      <span>·</span>
+                      <span className="font-medium text-foreground/80">SL: {item.qty}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-right text-sm font-semibold text-foreground">
+                    {formatCents(item.lineTotalCents)}
+                  </div>
                 </div>
-                <div className="text-right text-sm font-medium">
-                  {formatCents(item.lineTotalCents)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Pricing Breakdown */}

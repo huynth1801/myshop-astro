@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ShoppingBag, Sparkles, X } from 'lucide-react';
+import { Package, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { ApiError } from '../../lib/api/cart';
+import { resolveImageUrl } from '../../lib/api/urls';
 import { formatCents } from '../../lib/money';
 import {
   applyCouponCode,
@@ -123,16 +124,39 @@ export default function CartWidget() {
               {data && data.items.length === 0 && (
                 <p className="py-8 text-center text-sm text-muted-foreground">Giỏ hàng của bạn đang trống.</p>
               )}
-              {data?.items.map((item) => (
-                <div key={item.id} className="flex gap-3 border-b border-border/60 py-4 last:border-0">
-                  <div className="min-w-0 flex-1">
-                    <a
-                      href={`/products/${item.productSlug}/`}
-                      onClick={() => cartOpen.set(false)}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {item.productName}
-                    </a>
+              {data?.items.map((item) => {
+                const imageSrc = resolveImageUrl(item.imageUrl);
+                return (
+                  <div key={item.id} className="flex gap-3 border-b border-border/60 py-4 last:border-0">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted/40">
+                      {imageSrc ? (
+                        <img
+                          src={imageSrc}
+                          alt={item.productName}
+                          className="h-full w-full object-cover object-center"
+                          loading="lazy"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`absolute inset-0 flex items-center justify-center text-muted-foreground/50 ${
+                          imageSrc ? '-z-10' : ''
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <Package className="h-6 w-6" />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <a
+                        href={`/products/${item.productSlug}/`}
+                        onClick={() => cartOpen.set(false)}
+                        className="line-clamp-2 text-sm font-medium leading-snug underline-offset-4 hover:underline"
+                      >
+                        {item.productName}
+                      </a>
                     <p className="mt-0.5 text-xs uppercase tracking-wide text-muted-foreground">{item.sku}</p>
                     <div className="mt-2 flex items-center gap-3">
                       <button
@@ -165,7 +189,8 @@ export default function CartWidget() {
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
 
             {data && data.items.length > 0 && (

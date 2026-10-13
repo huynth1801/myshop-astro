@@ -294,4 +294,70 @@ class CheckoutServiceTest {
         assertThat(response.orderCode()).isEqualTo("MS-261013-EXIST");
         verify(cartRepository, never()).findByCartToken(any());
     }
+
+    @Test
+    void checkout_resolves_cart_when_request_cart_token_is_cart_uuid() {
+        Cart cart = Cart.newCart("cart-token-xyz", Instant.now().plusSeconds(3600));
+        UUID cartId = UUID.randomUUID();
+        try {
+            Field idField = Cart.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(cart, cartId);
+        } catch (Exception ignored) {}
+
+        Product product = createProduct("Áo thun", "ao-thun");
+        ProductVariant variant = createVariant(product, "AT-BLACK-M", 200_000_00L, 10);
+        CartItem item = CartItem.newItem(cart, variant, 1);
+
+        when(cartRepository.findByCartToken(cartId.toString())).thenReturn(Optional.empty());
+        when(cartRepository.findById(cartId)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findAllByCartWithDetails(cartId)).thenReturn(List.of(item));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CheckoutRequest request = new CheckoutRequest(
+                cartId.toString(),
+                "user@example.com",
+                "0912345678",
+                sampleAddress(),
+                PaymentMethod.COD,
+                null
+        );
+
+        CheckoutResponse response = checkoutService.checkout(request, null, null, null);
+        assertThat(response).isNotNull();
+        assertThat(response.subtotalCents()).isEqualTo(200_000_00L);
+    }
+
+    @Test
+    void checkout_resolves_cart_from_cookie_when_request_token_missing() {
+        String cartToken = "cookie-cart-token";
+        Cart cart = Cart.newCart(cartToken, Instant.now().plusSeconds(3600));
+        UUID cartId = UUID.randomUUID();
+        try {
+            Field idField = Cart.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(cart, cartId);
+        } catch (Exception ignored) {}
+
+        Product product = createProduct("Áo thun", "ao-thun");
+        ProductVariant variant = createVariant(product, "AT-BLACK-M", 200_000_00L, 10);
+        CartItem item = CartItem.newItem(cart, variant, 1);
+
+        when(cartRepository.findByCartToken(cartToken)).thenReturn(Optional.of(cart));
+        when(cartItemRepository.findAllByCartWithDetails(cartId)).thenReturn(List.of(item));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CheckoutRequest request = new CheckoutRequest(
+                null,
+                "user@example.com",
+                "0912345678",
+                sampleAddress(),
+                PaymentMethod.COD,
+                null
+        );
+
+        CheckoutResponse response = checkoutService.checkout(request, null, cartToken, null);
+        assertThat(response).isNotNull();
+        assertThat(response.subtotalCents()).isEqualTo(200_000_00L);
+    }
 }

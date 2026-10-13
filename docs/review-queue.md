@@ -71,3 +71,4 @@ Commits pending review. Auto-managed:
 - 71ab662 (2026-10-13) feat: implement checkout with COD, VietQR and admin order management
 - efe36a2 (2026-10-13) feat(checkout): auto-fill saved shipping address and phone for returning customers
 - 56d58f2 (2026-10-13) fix(auth): hydrate AuthButton with client:load and make login triggers accessible
+- aaae41d (2026-10-13) fix(auth): remove createPortal in AuthButton and use store.listen in useStore

@@ -67,17 +67,8 @@ public class CheckoutService {
             }
         }
 
-        // 2. Resolve cart by token from request or cookie
-        String token = request.cartToken() != null && !request.cartToken().isBlank()
-                ? request.cartToken()
-                : cartTokenCookie;
-
-        if (token == null || token.isBlank()) {
-            throw new EmptyCartException();
-        }
-
-        Cart cart = cartRepository.findByCartToken(token)
-                .orElseThrow(EmptyCartException::new);
+        // 2. Resolve cart resiliently (cookie, request token / cart ID, or authenticated user)
+        Cart cart = resolveCart(request, cartTokenCookie, authenticatedUserId);
 
         List<CartItem> cartItems = cartItemRepository.findAllByCartWithDetails(cart.getId());
         if (cartItems.isEmpty()) {
@@ -199,5 +190,55 @@ public class CheckoutService {
                 bankInfo,
                 null // stripeUrl for future card integration
         );
+    }
+
+    private Cart resolveCart(CheckoutRequest request, String cartTokenCookie, UUID authenticatedUserId) {
+        // 1. Try finding by cartTokenCookie first if provided
+        if (cartTokenCookie != null && !cartTokenCookie.isBlank()) {
+            Optional<Cart> byCookie = cartRepository.findByCartToken(cartTokenCookie.trim());
+            if (byCookie.isPresent()) {
+                Cart c = byCookie.get();
+                if (authenticatedUserId == null || c.getUserId() == null || c.getUserId().equals(authenticatedUserId)) {
+                    return c;
+                }
+            }
+        }
+
+        // 2. Try request.cartToken() if provided
+        if (request.cartToken() != null && !request.cartToken().isBlank()) {
+            String token = request.cartToken().trim();
+            // Try by cartToken column first
+            Optional<Cart> byToken = cartRepository.findByCartToken(token);
+            if (byToken.isPresent()) {
+                Cart c = byToken.get();
+                if (authenticatedUserId == null || c.getUserId() == null || c.getUserId().equals(authenticatedUserId)) {
+                    return c;
+                }
+            }
+            // If it is a valid UUID, try by cart primary key id
+            try {
+                UUID cartId = UUID.fromString(token);
+                Optional<Cart> byId = cartRepository.findById(cartId);
+                if (byId.isPresent()) {
+                    Cart c = byId.get();
+                    if (authenticatedUserId == null || c.getUserId() == null || c.getUserId().equals(authenticatedUserId)) {
+                        return c;
+                    }
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Not a UUID, skip
+            }
+        }
+
+        // 3. Fallback to authenticated user's active cart
+        if (authenticatedUserId != null) {
+            Optional<Cart> byUser = cartRepository.findFirstByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(
+                    authenticatedUserId, Instant.now());
+            if (byUser.isPresent()) {
+                return byUser.get();
+            }
+        }
+
+        throw new EmptyCartException();
     }
 }

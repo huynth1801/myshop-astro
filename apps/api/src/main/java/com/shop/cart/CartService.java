@@ -1,10 +1,16 @@
 package com.shop.cart;
 
 import com.shop.cart.dto.CartResponse;
+import com.shop.catalog.ProductImage;
+import com.shop.catalog.ProductImageRepository;
 import com.shop.catalog.ProductVariant;
 import com.shop.catalog.ProductVariantRepository;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -19,13 +25,16 @@ public class CartService {
     private final CartItemRepository items;
     private final ProductVariantRepository variants;
     private final CouponRepository coupons;
+    private final ProductImageRepository images;
 
     public CartService(CartRepository carts, CartItemRepository items,
-            ProductVariantRepository variants, CouponRepository coupons) {
+            ProductVariantRepository variants, CouponRepository coupons,
+            ProductImageRepository images) {
         this.carts = carts;
         this.items = items;
         this.variants = variants;
         this.coupons = coupons;
+        this.images = images;
     }
 
     /**
@@ -160,7 +169,7 @@ public class CartService {
                     subtotalCents);
         }
         cart.applyCoupon(coupon.getId());
-        return CartMapper.toResponse(cart, items.findAllByCartWithDetails(cart.getId()), coupon);
+        return toResponseWithItems(cart, items.findAllByCartWithDetails(cart.getId()), coupon);
     }
 
     @Transactional
@@ -178,7 +187,37 @@ public class CartService {
     @Transactional(readOnly = true)
     public CartResponse toResponse(Cart cart) {
         Coupon coupon = resolveCoupon(cart);
-        return CartMapper.toResponse(cart, items.findAllByCartWithDetails(cart.getId()), coupon);
+        return toResponseWithItems(cart, items.findAllByCartWithDetails(cart.getId()), coupon);
+    }
+
+    private CartResponse toResponseWithItems(Cart cart, List<CartItem> cartItems, Coupon coupon) {
+        Map<UUID, String> primaryImages = resolvePrimaryImages(cartItems);
+        return CartMapper.toResponse(cart, cartItems, coupon, primaryImages);
+    }
+
+    private Map<UUID, String> resolvePrimaryImages(List<CartItem> cartItems) {
+        if (images == null || cartItems.isEmpty()) {
+            return Map.of();
+        }
+        List<UUID> productIds = cartItems.stream()
+                .map(ci -> ci.getVariant() != null && ci.getVariant().getProduct() != null ? ci.getVariant().getProduct().getId() : null)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (productIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, String> primaryByProduct = new HashMap<>();
+        try {
+            for (ProductImage img : images.findByProductIdInOrderByPositionAsc(productIds)) {
+                if (img.getProduct() != null && img.getProduct().getId() != null) {
+                    primaryByProduct.putIfAbsent(img.getProduct().getId(), img.getUrl());
+                }
+            }
+        } catch (Exception ignored) {
+            // Safe fallback if images repository is not available or mocked without stub
+        }
+        return primaryByProduct;
     }
 
     /** Applied coupon that vanished or expired server-side → discount silently drops. */
