@@ -1,13 +1,11 @@
 ---
-import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/astro/ProductCard.astro';
 import FilterBar from '../components/astro/FilterBar.astro';
 import JsonLd from '../components/astro/JsonLd.astro';
+import HeroLookbookSlider from '../components/react/HeroLookbookSlider';
 import { getProducts } from '../lib/api/products';
 import { getCategories } from '../lib/api/categories';
-import heroModelImg from '../assets/hero/lookbook-model.jpg';
-import heroDetailImg from '../assets/hero/lookbook-detail.jpg';
 
 export const prerender = true;
 
@@ -78,64 +76,45 @@ if (content.length === 0) {
           </div>
         </div>
 
-        <!-- Right: Boutique Fashion Lookbook Split -->
+        <!-- Right: Animated Fashion Lookbook Slider (FitFlux Style) -->
         <div class="lg:col-span-6 xl:col-span-7">
-          <div class="grid grid-cols-12 gap-3.5 sm:gap-4 items-end">
-            
-            <!-- Primary Editorial Model Image (LCP) -->
-            <div class="col-span-8 sm:col-span-7 relative overflow-hidden rounded-md border border-border bg-muted">
-              <Image
-                src={heroModelImg}
-                alt="Bộ sưu tập trang phục đời sống thường nhật tối giản 2026"
-                width={800}
-                height={1000}
-                loading="eager"
-                fetchpriority="high"
-                class="h-full w-full object-cover object-center aspect-[4/5] transition-transform duration-700 ease-out hover:scale-[1.02]"
-              />
-              <div class="pointer-events-none absolute left-3 top-3">
-                <span class="rounded-full bg-foreground px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-background">
-                  Lookbook No. 01
-                </span>
-              </div>
-            </div>
-
-            <!-- Secondary Detail & Fabric Tile -->
-            <div class="col-span-4 sm:col-span-5 flex flex-col gap-3.5 sm:gap-4">
-              <div class="overflow-hidden rounded-md border border-border bg-muted">
-                <Image
-                  src={heroDetailImg}
-                  alt="Chi tiết chất liệu vải tự nhiên và sợi dệt tinh tế"
-                  width={500}
-                  height={500}
-                  loading="lazy"
-                  class="h-full w-full object-cover aspect-square transition-transform duration-700 ease-out hover:scale-[1.03]"
-                />
-              </div>
-
-              <!-- Editorial Story Caption -->
-              <div class="rounded-md border border-border bg-surface p-4 text-left">
-                <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground-muted">
-                  Chất liệu thủ công
-                </p>
-                <p class="mt-1 text-xs font-medium text-foreground leading-snug">
-                  Đường dệt thoáng khí, cảm giác chạm mềm mại tự nhiên.
-                </p>
-                <a
-                  href="#philosophy"
-                  class="mt-2.5 inline-block text-[11px] font-semibold uppercase tracking-[0.08em] text-accent underline-offset-4 hover:underline"
-                >
-                  Triết lý vải →
-                </a>
-              </div>
-            </div>
-
-          </div>
+          <HeroLookbookSlider client:load />
         </div>
 
       </div>
     </div>
   </section>
+
+  <!-- Infinite Running Brand Marquee (FitFlux Style) -->
+  <aside aria-label="Cam kết thương hiệu" class="border-b border-border bg-canvas overflow-hidden py-3 text-xs uppercase font-medium tracking-[0.16em]">
+    <div class="animate-marquee items-center gap-10 text-foreground-secondary select-none">
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> BỘ SƯU TẬP MỚI 2026</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> 100% SỢI DỆT TỰ NHIÊN</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> PHOM DÁNG TỐI GIẢN & THƯ GIÃN</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> MIỄN PHÍ VẬN CHUYỂN TỪ 500K</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> ĐỔI TRẢ TRONG 30 NGÀY</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> GIA CÔNG BỀN BỈ 3+ NĂM</span>
+      <span class="text-foreground-muted">/</span>
+      <!-- Loop repeat -->
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> BỘ SƯU TẬP MỚI 2026</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> 100% SỢI DỆT TỰ NHIÊN</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> PHOM DÁNG TỐI GIẢN & THƯ GIÃN</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> MIỄN PHÍ VẬN CHUYỂN TỪ 500K</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> ĐỔI TRẢ TRONG 30 NGÀY</span>
+      <span class="text-foreground-muted">/</span>
+      <span class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-accent"></span> GIA CÔNG BỀN BỈ 3+ NĂM</span>
+      <span class="text-foreground-muted">/</span>
+    </div>
+  </aside>
 
   <FilterBar categories={categories} activeSlug="all" totalCount={totalElements} />
 
