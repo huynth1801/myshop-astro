@@ -48,3 +48,4 @@ Commits pending review. Auto-managed:
 - 5e3961f (2026-10-13) feat(blog): implement blog engine, SEO crawler, storefront routes and admin management
 - a92c46a (2026-10-13) chore: update review queue
 - 13660b8 (2026-10-13) fix(web): fallback client API_BASE_URL and align admin auth fallback states
+- 5667664 (2026-10-13) feat(blog): implement automated RSS crawler and product-keyword matching engine

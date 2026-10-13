@@ -260,7 +260,8 @@ public class RssService {
                 "mát lạnh", "nâng mông", "nịt bụng", "đai nịt bụng", "gen nịt bụng", "giảm eo",
                 "chống nắng", "khẩu trang", "silicone", "dán ti", "dán ngực", "thạch tan",
                 "thun lạnh", "thun lụa", "không gọng", "kháng khuẩn", "latex", "tàng hình",
-                "tất", "vớ", "croptop", "áo khoác", "thể thao"
+                "tất", "vớ", "croptop", "áo khoác", "thể thao", "váy", "đầm", "áo", "quần",
+                "bikini", "đồ bơi", "nâng ngực"
         };
 
         for (String kw : keywords) {
@@ -282,7 +283,11 @@ public class RssService {
     }
 
     private boolean containsBroadKeywords(String text) {
-        String[] broad = {"thời trang", "làm đẹp", "mặc đẹp", "phối đồ", "outfit", "vóc dáng", "sức khỏe", "body"};
+        String[] broad = {
+                "thời trang", "làm đẹp", "mặc đẹp", "phối đồ", "outfit", "vóc dáng",
+                "nội y", "phụ kiện", "trang phục", "xu hướng", "bikini", "đồ bơi",
+                "váy", "đầm", "phong cách"
+        };
         for (String b : broad) {
             if (text.contains(b)) return true;
         }

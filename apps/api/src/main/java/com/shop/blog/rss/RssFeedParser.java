@@ -84,7 +84,8 @@ public class RssFeedParser {
 
     private String extractText(Element parent, String tag) {
         Element child = parent.selectFirst(tag);
-        return child == null ? "" : child.text().trim();
+        if (child == null) return "";
+        return cleanHtml(child.text());
     }
 
     private String extractLink(Element parent) {

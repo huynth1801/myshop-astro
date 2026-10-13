@@ -32,11 +32,11 @@ export default function AdminBlogDashboard() {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalElements, setTotalElements] = useState<number>(0);
 
-  // Crawler modal state
-  const [crawlModalOpen, setCrawlModalOpen] = useState(false);
+  // Direct Quick Crawler Bar state
   const [crawlUrl, setCrawlUrl] = useState('');
   const [crawling, setCrawling] = useState(false);
   const [crawlError, setCrawlError] = useState<string | null>(null);
+  const [crawlSuccess, setCrawlSuccess] = useState<string | null>(null);
 
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -48,6 +48,7 @@ export default function AdminBlogDashboard() {
   const [rssSuccess, setRssSuccess] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [scanningId, setScanningId] = useState<string | null>(null);
+  const [recentScannedPosts, setRecentScannedPosts] = useState<PostSummary[]>([]);
 
   // New RSS Form State
   const [newRssName, setNewRssName] = useState('');
@@ -118,15 +119,17 @@ export default function AdminBlogDashboard() {
     }
   };
 
-  const handleCrawl = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!crawlUrl.trim()) return;
+  const handleDirectCrawl = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const url = crawlUrl.trim();
+    if (!url) return;
+
     setCrawling(true);
     setCrawlError(null);
+    setCrawlSuccess(null);
 
     try {
-      const crawled = await adminCrawlPost(crawlUrl.trim());
-      // Auto-save as draft and navigate to edit
+      const crawled = await adminCrawlPost(url);
       const created = await adminCreatePost({
         title: crawled.title,
         slug: crawled.suggestedSlug,
@@ -139,13 +142,16 @@ export default function AdminBlogDashboard() {
         seoDescription: crawled.summary || '',
         relatedProductIds: [],
       });
-      setCrawlModalOpen(false);
-      window.location.href = `/admin/blog/${created.id}`;
+      setCrawlUrl('');
+      setCrawlSuccess(`Đã crawl thành công bài viết "${created.title}". Đang chuyển đến trang chỉnh sửa...`);
+      setTimeout(() => {
+        window.location.href = `/admin/blog/${created.id}`;
+      }, 700);
     } catch (err) {
       setCrawlError(
         err instanceof BlogApiError
           ? err.message
-          : 'Không thể bóc tách nội dung từ link này. Vui lòng thử lại với URL khác.',
+          : 'Không thể bóc tách nội dung từ link này. Vui lòng kiểm tra lại URL.',
       );
     } finally {
       setCrawling(false);
@@ -177,25 +183,17 @@ export default function AdminBlogDashboard() {
     }
   };
 
-  const handleDeleteRssSource = async (id: string, name: string) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa nguồn RSS "${name}"?`)) return;
-    try {
-      await adminDeleteRssSource(id);
-      await loadRssSources();
-    } catch (err) {
-      alert(err instanceof BlogApiError ? err.message : 'Lỗi khi xóa nguồn RSS.');
-    }
-  };
-
   const handleScanAll = async () => {
     setScanning(true);
     setRssError(null);
     setRssSuccess(null);
+    setRecentScannedPosts([]);
     try {
       const res = await adminScanAllRss();
       setRssSuccess(
-        `Quét hoàn tất: Đã duyệt ${res.sourcesScanned} nguồn, phân tích ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp (DRAFT) có liên kết sản phẩm tương tự! (Bỏ qua ${res.skippedExisting} bài đã có).`,
+        `Quét hoàn tất: Đã duyệt ${res.sourcesScanned} nguồn, quét ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp (DRAFT) có liên kết sản phẩm thời trang tương ứng! (Bỏ qua ${res.skippedExisting} bài đã tồn tại).`,
       );
+      setRecentScannedPosts(res.createdPosts);
       await loadRssSources();
       void loadPosts(0);
     } catch (err) {
@@ -209,11 +207,13 @@ export default function AdminBlogDashboard() {
     setScanningId(id);
     setRssError(null);
     setRssSuccess(null);
+    setRecentScannedPosts([]);
     try {
       const res = await adminScanRssSource(id);
       setRssSuccess(
-        `Quét "${name}" hoàn tất: Phân tích ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp (DRAFT) có liên kết sản phẩm! (Bỏ qua ${res.skippedExisting} bài đã có).`,
+        `Quét "${name}" hoàn tất: Phân tích ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp (DRAFT) liên kết sản phẩm! (Bỏ qua ${res.skippedExisting} bài đã có).`,
       );
+      setRecentScannedPosts(res.createdPosts);
       await loadRssSources();
       void loadPosts(0);
     } catch (err) {
@@ -241,6 +241,62 @@ export default function AdminBlogDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* DIRECT QUICK PASTE LINK CRAWLER BAR */}
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <form onSubmit={handleDirectCrawl} className="space-y-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>Dán link bài viết bất kỳ để tự động Crawl bài nháp</span>
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Dán URL bài viết từ báo hoặc blog (vd: Eva, Thanh Niên, Kenh14...). Hệ thống sẽ bóc tách tiêu đề, tóm tắt, ảnh cover và nội dung chuẩn SEO, lưu thành <strong>Bản nháp (DRAFT)</strong> cho bạn.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2.5 sm:flex-row">
+            <input
+              type="url"
+              required
+              placeholder="Dán link bài viết vào đây (vd: https://thanhnien.vn/thoi-trang-tre/5-mau-vay-dai...)"
+              value={crawlUrl}
+              onChange={(e) => setCrawlUrl(e.target.value)}
+              disabled={crawling}
+              className="h-10 flex-1 rounded-lg border border-input bg-background px-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+            <button
+              type="submit"
+              disabled={crawling || !crawlUrl.trim()}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-foreground px-5 text-xs font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50 whitespace-nowrap"
+            >
+              {crawling ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Đang bóc tách bài...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Tự động Crawl & Tạo bài nháp</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {crawlSuccess && (
+            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300">
+              {crawlSuccess}
+            </div>
+          )}
+
+          {crawlError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+              {crawlError}
+            </div>
+          )}
+        </form>
+      </div>
+
       {/* Tab Switcher */}
       <div className="flex border-b border-border">
         <button
@@ -252,7 +308,8 @@ export default function AdminBlogDashboard() {
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          <span>Bài viết Blog</span>
+          <FileText className="h-3.5 w-3.5" />
+          <span>Danh sách bài viết</span>
           {totalElements > 0 && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
               {totalElements}
@@ -268,7 +325,8 @@ export default function AdminBlogDashboard() {
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          <span>⚡ Tự động Crawl theo RSS</span>
+          <Rss className="h-3.5 w-3.5 text-accent" />
+          <span>Tự động Crawl theo RSS Feeds Thời Trang</span>
           {rssSources && rssSources.length > 0 && (
             <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[10px] text-accent">
               {rssSources.length} nguồn
@@ -279,17 +337,20 @@ export default function AdminBlogDashboard() {
 
       {activeTab === 'posts' && (
         <>
-          {/* Top Action Bar */}
+          {/* Top Filter Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-4">
             <div className="flex flex-1 flex-wrap items-center gap-3">
-              <input
-                type="text"
-                placeholder="Tìm theo tiêu đề, tóm tắt..."
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && void loadPosts(0)}
-                className="h-9 w-64 rounded-md border border-input bg-background px-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-              />
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Tìm theo tiêu đề, tóm tắt..."
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && void loadPosts(0)}
+                  className="h-9 w-64 rounded-md border border-input bg-background pl-8.5 pr-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
 
               <select
                 value={status}
@@ -311,31 +372,12 @@ export default function AdminBlogDashboard() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setCrawlUrl('');
-                  setCrawlError(null);
-                  setCrawlModalOpen(true);
-                }}
-                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-accent/40 bg-accent/10 px-3.5 text-xs font-medium text-foreground transition hover:bg-accent/20"
-              >
-                <span>🕷️ Crawl lẻ 1 URL</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('rss')}
-                className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-muted/50 px-3.5 text-xs font-medium text-foreground transition hover:bg-muted"
-              >
-                <span>⚡ Quét tự động từ RSS</span>
-              </button>
-
               <a
                 href="/admin/blog/new"
                 className="inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-4 text-xs font-medium text-background transition hover:bg-foreground/90"
               >
-                <span>+ Viết bài mới</span>
+                <Plus className="h-3.5 w-3.5" />
+                <span>Viết bài mới</span>
               </a>
             </div>
           </div>
@@ -360,7 +402,7 @@ export default function AdminBlogDashboard() {
                     <th className="px-4 py-3 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y border-border">
                   {loading ? (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-muted-foreground">
@@ -370,7 +412,7 @@ export default function AdminBlogDashboard() {
                   ) : !posts || posts.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                        Chưa có bài viết nào phù hợp. Hãy nhấn <strong>+ Viết bài mới</strong> hoặc <strong>⚡ Quét tự động từ RSS</strong>.
+                        Chưa có bài viết nào phù hợp. Hãy dán link vào ô ở trên hoặc bấm <strong>+ Viết bài mới</strong>.
                       </td>
                     </tr>
                   ) : (
@@ -412,30 +454,35 @@ export default function AdminBlogDashboard() {
                               : new Date(post.createdAt).toLocaleDateString('vi-VN')}
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <div className="inline-flex items-center gap-2">
+                            <div className="inline-flex items-center gap-1.5">
                               {isPublished && (
                                 <a
                                   href={`/blog/${post.slug}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="rounded border border-border px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted"
+                                  className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted"
                                 >
-                                  Xem
+                                  <ExternalLink className="h-3 w-3" />
+                                  <span>Xem</span>
                                 </a>
                               )}
                               <a
                                 href={`/admin/blog/${post.id}`}
-                                className="rounded border border-border px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted"
+                                className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted"
                               >
-                                Sửa
+                                <Pencil className="h-3 w-3" />
+                                <span>Sửa</span>
                               </a>
                               <button
                                 type="button"
-                                disabled={deletingId === post.id}
-                                onClick={() => void handleDelete(post.id, post.title)}
-                                className="rounded border border-destructive/30 px-2.5 py-1 text-[11px] font-medium text-destructive transition hover:bg-destructive/10 disabled:opacity-40"
+                                onClick={() => {
+                                  setDeleteError(null);
+                                  setDeleteTarget({ type: 'post', id: post.id, title: post.title });
+                                }}
+                                className="inline-flex items-center gap-1 rounded border border-destructive/30 px-2.5 py-1 text-[11px] font-medium text-destructive transition hover:bg-destructive/10"
                               >
-                                {deletingId === post.id ? 'Đang xóa...' : 'Xóa'}
+                                <Trash2 className="h-3 w-3" />
+                                <span>Xóa</span>
                               </button>
                             </div>
                           </td>
@@ -486,11 +533,11 @@ export default function AdminBlogDashboard() {
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-5">
             <div>
               <h3 className="text-sm font-semibold text-foreground">
-                Tự động Crawl theo RSS Feeds & Gắn sản phẩm tương tự
+                Tự động Crawl theo RSS Feeds Thời Trang & Gắn sản phẩm tương tự
               </h3>
               <p className="mt-1 text-xs text-muted-foreground max-w-2xl leading-relaxed">
-                Hệ thống tự động quét các bài viết mới từ nguồn RSS, phân tích từ khóa đối chiếu với kho sản phẩm của shop
-                (đồ lót, đai nịt bụng, phụ kiện...), tự động bóc tách thành <strong>Bản nháp (DRAFT)</strong> và liên kết với các sản phẩm tương ứng.
+                Hệ thống tự động quét các bài viết mới từ nguồn RSS chuyên trang Thời Trang & Làm Đẹp, đối soát từ khóa với kho sản phẩm
+                (đồ lót, đai nịt bụng, phụ kiện...), tự động bóc tách thành <strong>Bản nháp (DRAFT)</strong> và gài sản phẩm tương tự.
               </p>
             </div>
 
@@ -500,16 +547,8 @@ export default function AdminBlogDashboard() {
               onClick={() => void handleScanAll()}
               className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground shadow-sm transition hover:bg-accent/90 disabled:opacity-50"
             >
-              {scanning ? (
-                <>
-                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent-foreground border-t-transparent"></span>
-                  <span>Đang quét tất cả nguồn...</span>
-                </>
-              ) : (
-                <>
-                  <span>⚡ Quét tất cả nguồn ngay</span>
-                </>
-              )}
+              <RefreshCw className={`h-3.5 w-3.5 ${scanning ? 'animate-spin' : ''}`} />
+              <span>{scanning ? 'Đang quét tất cả nguồn...' : 'Quét tất cả nguồn ngay'}</span>
             </button>
           </div>
 
@@ -525,10 +564,43 @@ export default function AdminBlogDashboard() {
             </div>
           )}
 
+          {/* Recently Scanned Posts Box */}
+          {recentScannedPosts.length > 0 && (
+            <div className="rounded-xl border border-border bg-muted/30 p-5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground mb-3 flex items-center justify-between">
+                <span>🎉 Các bài nháp vừa được tạo tự động ({recentScannedPosts.length} bài)</span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('posts')}
+                  className="text-xs font-medium text-accent hover:underline lowercase"
+                >
+                  Xem toàn bộ danh sách →
+                </button>
+              </h4>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {recentScannedPosts.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs font-medium text-foreground">{p.title}</div>
+                      <div className="mt-0.5 text-[11px] text-muted-foreground truncate">{p.summary || 'Bản nháp DRAFT'}</div>
+                    </div>
+                    <a
+                      href={`/admin/blog/${p.id}`}
+                      className="rounded border border-border px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted whitespace-nowrap"
+                    >
+                      Biên tập
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Add RSS Form */}
           <div className="rounded-xl border border-border bg-card p-5">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              + Thêm nguồn RSS Feed mới
+            <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              <Plus className="h-3.5 w-3.5" />
+              <span>Thêm nguồn RSS Feed mới</span>
             </h4>
             <form onSubmit={handleAddRssSource} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
               <input
@@ -543,7 +615,7 @@ export default function AdminBlogDashboard() {
               <input
                 type="url"
                 required
-                placeholder="URL RSS (vd: https://vnexpress.net/rss/thoi-trang.rss)"
+                placeholder="URL RSS (vd: https://thanhnien.vn/rss/thoi-trang-tre.rss)"
                 value={newRssUrl}
                 onChange={(e) => setNewRssUrl(e.target.value)}
                 disabled={addingRss}
@@ -624,21 +696,26 @@ export default function AdminBlogDashboard() {
                             : 'Chưa quét'}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <div className="inline-flex items-center gap-2">
+                          <div className="inline-flex items-center gap-1.5">
                             <button
                               type="button"
                               disabled={scanningId === source.id || scanning}
                               onClick={() => void handleScanSingleSource(source.id, source.name)}
-                              className="rounded border border-border px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted disabled:opacity-40"
+                              className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted disabled:opacity-40"
                             >
-                              {scanningId === source.id ? 'Đang quét...' : 'Quét nguồn này'}
+                              <RefreshCw className={`h-3 w-3 ${scanningId === source.id ? 'animate-spin' : ''}`} />
+                              <span>{scanningId === source.id ? 'Đang quét...' : 'Quét nguồn này'}</span>
                             </button>
                             <button
                               type="button"
-                              onClick={() => void handleDeleteRssSource(source.id, source.name)}
-                              className="rounded border border-destructive/30 px-2.5 py-1 text-[11px] font-medium text-destructive transition hover:bg-destructive/10"
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeleteTarget({ type: 'rss', id: source.id, title: source.name });
+                              }}
+                              className="inline-flex items-center gap-1 rounded border border-destructive/30 px-2.5 py-1 text-[11px] font-medium text-destructive transition hover:bg-destructive/10"
                             >
-                              Xóa
+                              <Trash2 className="h-3 w-3" />
+                              <span>Xóa</span>
                             </button>
                           </div>
                         </td>
@@ -652,74 +729,29 @@ export default function AdminBlogDashboard() {
         </div>
       )}
 
-      {/* Crawl Modal */}
-      {crawlModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <h3 className="text-base font-semibold text-foreground">Crawl bài viết từ liên kết ngoài</h3>
-              <button
-                type="button"
-                onClick={() => setCrawlModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCrawl} className="mt-4 space-y-4">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Dán URL bài viết (báo chí, blog thời trang, tin tức). Hệ thống sẽ bóc tách tiêu đề, tóm tắt, ảnh cover và
-                nội dung sạch, sau đó tự động lưu vào <strong>Bản nháp (DRAFT)</strong> để bạn tinh chỉnh và chèn sản phẩm trước khi xuất bản.
-              </p>
-
-              <div>
-                <label className="block text-xs font-medium text-foreground">URL bài viết nguồn</label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://example.com/bai-viet-thoi-trang..."
-                  value={crawlUrl}
-                  onChange={(e) => setCrawlUrl(e.target.value)}
-                  disabled={crawling}
-                  className="mt-1.5 h-10 w-full rounded-md border border-input bg-background px-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
-
-              {crawlError && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-                  {crawlError}
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  disabled={crawling}
-                  onClick={() => setCrawlModalOpen(false)}
-                  className="rounded-md border border-border px-4 py-2 text-xs font-medium text-muted-foreground transition hover:bg-muted"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={crawling || !crawlUrl.trim()}
-                  className="inline-flex items-center gap-2 rounded-md bg-foreground px-4 py-2 text-xs font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50"
-                >
-                  {crawling ? (
-                    <>
-                      <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-background border-t-transparent"></span>
-                      <span>Đang bóc tách...</span>
-                    </>
-                  ) : (
-                    <span>Bắt đầu Crawl</span>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Custom Confirm Dialog (replaces native window.confirm & alert) */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        title={deleteTarget?.type === 'post' ? 'Xác nhận xóa bài viết' : 'Xác nhận xóa nguồn RSS'}
+        description={
+          deleteTarget?.type === 'post'
+            ? 'Bạn có chắc chắn muốn xóa bài viết này khỏi hệ thống blog của cửa hàng?'
+            : 'Bạn có chắc chắn muốn xóa nguồn feed RSS này?'
+        }
+        itemName={deleteTarget?.title}
+        confirmLabel={deleteTarget?.type === 'post' ? 'Xóa bài viết' : 'Xóa nguồn RSS'}
+        cancelLabel="Hủy"
+        variant="danger"
+        isLoading={isDeleting}
+        errorMessage={deleteError}
+        onConfirm={handleConfirmDelete}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteTarget(null);
+            setDeleteError(null);
+          }
+        }}
+      />
     </div>
   );
 }
