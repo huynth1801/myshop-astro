@@ -43,3 +43,4 @@ Commits pending review. Auto-managed:
 - 9e3101f (2026-10-13) feat(admin): make variant table always-editable inline with zero horizontal overflow
 - 77576ec (2026-10-13) chore(docs): update review queue for variant table redesign
 - b932883 (2026-10-13) feat(admin): add sticky live storefront preview widget to product edit sidebar
+- b36f97d (2026-10-13) feat(web): redesign variant picker with grouped multi-attribute selectors, color swatches, and live price
