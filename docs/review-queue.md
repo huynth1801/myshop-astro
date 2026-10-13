@@ -46,3 +46,4 @@ Commits pending review. Auto-managed:
 - b36f97d (2026-10-13) feat(web): redesign variant picker with grouped multi-attribute selectors, color swatches, and live price
 - b8f4ee3 (2026-10-13) chore: update review queue
 - 5e3961f (2026-10-13) feat(blog): implement blog engine, SEO crawler, storefront routes and admin management
+- a92c46a (2026-10-13) chore: update review queue

@@ -116,17 +116,17 @@ export default function AdminBlogDashboard() {
 
   if (!user) {
     return (
-      <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-        Đang xác thực thông tin tài khoản...
-      </div>
+      <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+        Cần đăng nhập tài khoản ADMIN — bấm <strong>Đăng nhập</strong> trên thanh menu.
+      </p>
     );
   }
 
   if (user.role !== 'ADMIN') {
     return (
-      <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-8 text-center text-sm text-destructive">
-        Tài khoản <strong>{user.email}</strong> không có quyền quản trị (ADMIN).
-      </div>
+      <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+        Tài khoản <strong>{user.email}</strong> không có quyền quản trị.
+      </p>
     );
   }
 
