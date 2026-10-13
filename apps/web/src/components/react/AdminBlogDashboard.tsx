@@ -33,6 +33,7 @@ import {
 import { resolveImageUrl } from '../../lib/api/urls';
 import { authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
+import { toast } from '../../lib/stores/toast';
 import ConfirmDialog from './ConfirmDialog';
 
 export default function AdminBlogDashboard() {
@@ -178,17 +179,21 @@ export default function AdminBlogDashboard() {
     try {
       const res = await adminBulkUpdatePostStatus(selectedIds, newStatus);
       const statusLabel = newStatus === 'PUBLISHED' ? 'Đã xuất bản (PUBLISHED)' : 'Bản nháp (DRAFT)';
+      const msg = `Đã cập nhật trạng thái thành công cho ${res.count} bài viết sang "${statusLabel}".`;
       setBulkFeedback({
         type: 'success',
-        message: `Đã cập nhật trạng thái thành công cho ${res.count} bài viết sang "${statusLabel}".`,
+        message: msg,
       });
+      toast.success(msg);
       setSelectedIds([]);
       await loadPosts();
     } catch (err) {
+      const msg = err instanceof BlogApiError ? err.message : 'Có lỗi khi cập nhật trạng thái hàng loạt.';
       setBulkFeedback({
         type: 'error',
-        message: err instanceof BlogApiError ? err.message : 'Có lỗi khi cập nhật trạng thái hàng loạt.',
+        message: msg,
       });
+      toast.error(msg);
     } finally {
       setIsBulkOperating(false);
     }
@@ -201,33 +206,40 @@ export default function AdminBlogDashboard() {
     try {
       if (deleteTarget.type === 'bulk-post') {
         const res = await adminBulkDeletePosts(selectedIds);
+        const msg = `Đã xóa thành công ${res.count} bài viết khỏi hệ thống.`;
         setBulkFeedback({
           type: 'success',
-          message: `Đã xóa thành công ${res.count} bài viết khỏi hệ thống.`,
+          message: msg,
         });
+        toast.success(msg);
         setSelectedIds([]);
         setDeleteTarget(null);
         await loadPosts();
       } else if (deleteTarget.type === 'post') {
         await adminDeletePost(deleteTarget.id);
+        const msg = `Đã xóa bài viết "${deleteTarget.title}" thành công.`;
+        toast.success(msg);
         setSelectedIds((prev) => prev.filter((id) => id !== deleteTarget.id));
         setDeleteTarget(null);
         await loadPosts();
       } else {
         await adminDeleteRssSource(deleteTarget.id);
+        const msg = `Đã xóa nguồn RSS "${deleteTarget.title}" thành công.`;
+        toast.success(msg);
         setDeleteTarget(null);
         await loadRssSources();
       }
     } catch (err) {
-      setDeleteError(
+      const msg =
         err instanceof BlogApiError
           ? err.message
           : deleteTarget.type === 'bulk-post'
             ? 'Lỗi khi xóa bài viết hàng loạt. Vui lòng thử lại.'
             : deleteTarget.type === 'post'
               ? 'Lỗi khi xóa bài viết. Vui lòng thử lại.'
-              : 'Lỗi khi xóa nguồn RSS. Vui lòng thử lại.',
-      );
+              : 'Lỗi khi xóa nguồn RSS. Vui lòng thử lại.';
+      setDeleteError(msg);
+      toast.error(msg);
     } finally {
       setIsDeleting(false);
     }
@@ -257,16 +269,19 @@ export default function AdminBlogDashboard() {
         relatedProductIds: [],
       });
       setCrawlUrl('');
-      setCrawlSuccess(`Đã crawl thành công bài viết "${created.title}". Đang chuyển đến trang chỉnh sửa...`);
+      const msg = `Đã crawl thành công bài viết "${created.title}". Đang chuyển đến trang chỉnh sửa...`;
+      setCrawlSuccess(msg);
+      toast.success(msg);
       setTimeout(() => {
         window.location.href = `/admin/blog/${created.id}`;
       }, 700);
     } catch (err) {
-      setCrawlError(
+      const msg =
         err instanceof BlogApiError
           ? err.message
-          : 'Không thể bóc tách nội dung từ link này. Vui lòng kiểm tra lại URL.',
-      );
+          : 'Không thể bóc tách nội dung từ link này. Vui lòng kiểm tra lại URL.';
+      setCrawlError(msg);
+      toast.error(msg);
     } finally {
       setCrawling(false);
     }
@@ -289,9 +304,13 @@ export default function AdminBlogDashboard() {
       setNewRssUrl('');
       setNewRssCategory('');
       await loadRssSources();
-      setRssSuccess('Đã thêm nguồn RSS mới thành công.');
+      const msg = 'Đã thêm nguồn RSS mới thành công.';
+      setRssSuccess(msg);
+      toast.success(msg);
     } catch (err) {
-      setRssError(err instanceof BlogApiError ? err.message : 'Lỗi khi thêm nguồn RSS.');
+      const msg = err instanceof BlogApiError ? err.message : 'Lỗi khi thêm nguồn RSS.';
+      setRssError(msg);
+      toast.error(msg);
     } finally {
       setAddingRss(false);
     }
@@ -304,14 +323,16 @@ export default function AdminBlogDashboard() {
     setRecentScannedPosts([]);
     try {
       const res = await adminScanAllRss();
-      setRssSuccess(
-        `Quét hoàn tất: Đã duyệt ${res.sourcesScanned} nguồn, quét ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp (DRAFT) có liên kết sản phẩm thời trang tương ứng! (Bỏ qua ${res.skippedExisting} bài đã tồn tại).`,
-      );
+      const msg = `Quét hoàn tất: Đã duyệt ${res.sourcesScanned} nguồn, quét ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp! (Bỏ qua ${res.skippedExisting} bài đã tồn tại).`;
+      setRssSuccess(msg);
+      toast.success(`Đã quét xong: tạo mới ${res.newDraftsCreated} bài nháp!`);
       setRecentScannedPosts(res.createdPosts);
       await loadRssSources();
       void loadPosts(0);
     } catch (err) {
-      setRssError(err instanceof BlogApiError ? err.message : 'Lỗi khi quét nguồn RSS.');
+      const msg = err instanceof BlogApiError ? err.message : 'Lỗi khi quét nguồn RSS.';
+      setRssError(msg);
+      toast.error(msg);
     } finally {
       setScanning(false);
     }
@@ -324,14 +345,16 @@ export default function AdminBlogDashboard() {
     setRecentScannedPosts([]);
     try {
       const res = await adminScanRssSource(id);
-      setRssSuccess(
-        `Quét "${name}" hoàn tất: Phân tích ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp (DRAFT) liên kết sản phẩm! (Bỏ qua ${res.skippedExisting} bài đã có).`,
-      );
+      const msg = `Quét "${name}" hoàn tất: Phân tích ${res.articlesScanned} bài, tạo mới ${res.newDraftsCreated} bài nháp! (Bỏ qua ${res.skippedExisting} bài đã có).`;
+      setRssSuccess(msg);
+      toast.success(`Quét "${name}" xong: +${res.newDraftsCreated} bài nháp!`);
       setRecentScannedPosts(res.createdPosts);
       await loadRssSources();
       void loadPosts(0);
     } catch (err) {
-      setRssError(err instanceof BlogApiError ? err.message : `Lỗi khi quét nguồn "${name}".`);
+      const msg = err instanceof BlogApiError ? err.message : `Lỗi khi quét nguồn "${name}".`;
+      setRssError(msg);
+      toast.error(msg);
     } finally {
       setScanningId(null);
     }

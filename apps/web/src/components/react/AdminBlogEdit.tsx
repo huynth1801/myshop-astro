@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import {
   adminCreatePost,
+  adminDeletePost,
   adminGetPost,
   adminUpdatePost,
   type AdminPostDetail,
@@ -11,6 +13,8 @@ import { listProducts, type AdminProduct } from '../../lib/api/admin';
 import { resolveImageUrl } from '../../lib/api/urls';
 import { authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
+import { toast } from '../../lib/stores/toast';
+import ConfirmDialog from './ConfirmDialog';
 
 interface Props {
   postId: string;
@@ -25,6 +29,11 @@ export default function AdminBlogEdit({ postId }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Delete state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Form fields
   const [title, setTitle] = useState('');
@@ -90,7 +99,9 @@ export default function AdminBlogEdit({ postId }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
-      setError('Vui lòng nhập đầy đủ tiêu đề và nội dung bài viết.');
+      const msg = 'Vui lòng nhập đầy đủ tiêu đề và nội dung bài viết.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -114,18 +125,43 @@ export default function AdminBlogEdit({ postId }: Props) {
     try {
       if (isNew) {
         const created = await adminCreatePost(payload);
-        setSuccess('Đã tạo bài viết thành công!');
+        const msg = 'Đã tạo bài viết mới thành công!';
+        setSuccess(msg);
+        toast.success(msg);
         setTimeout(() => {
           window.location.href = `/admin/blog/${created.id}`;
         }, 800);
       } else {
         await adminUpdatePost(postId, payload);
-        setSuccess('Đã cập nhật bài viết thành công!');
+        const msg = 'Đã cập nhật bài viết thành công!';
+        setSuccess(msg);
+        toast.success(msg);
       }
     } catch (err) {
-      setError(err instanceof BlogApiError ? err.message : 'Lỗi khi lưu bài viết.');
+      const msg = err instanceof BlogApiError ? err.message : 'Lỗi khi lưu bài viết.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await adminDeletePost(postId);
+      toast.success('Đã xóa bài viết thành công!');
+      setShowDeleteConfirm(false);
+      setTimeout(() => {
+        window.location.href = '/admin/blog';
+      }, 500);
+    } catch (err) {
+      const msg = err instanceof BlogApiError ? err.message : 'Lỗi khi xóa bài viết.';
+      setDeleteError(msg);
+      toast.error(msg);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -163,24 +199,27 @@ export default function AdminBlogEdit({ postId }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
-        <div>
+      <div className="flex items-start sm:items-center justify-between gap-4 border-b border-border pb-4">
+        <div className="min-w-0 flex-1">
           <a
             href="/admin/blog"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-1.5 transition"
           >
             ← Quay lại danh sách
           </a>
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2
+            className="text-xl font-semibold text-foreground break-words line-clamp-2"
+            title={isNew ? 'Viết bài mới' : `Chỉnh sửa: ${title || 'Bài viết'}`}
+          >
             {isNew ? 'Viết bài mới' : `Chỉnh sửa: ${title || 'Bài viết'}`}
           </h2>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as PostStatus)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            className="h-9 shrink-0 rounded-md border border-input bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="DRAFT">Bản nháp (DRAFT)</option>
             <option value="PUBLISHED">Xuất bản (PUBLISHED)</option>
@@ -189,7 +228,7 @@ export default function AdminBlogEdit({ postId }: Props) {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-5 text-xs font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50"
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-foreground px-5 text-xs font-medium text-background transition hover:bg-foreground/90 disabled:opacity-50 whitespace-nowrap"
           >
             {saving ? 'Đang lưu...' : isNew ? 'Tạo bài viết' : 'Lưu thay đổi'}
           </button>
@@ -449,6 +488,53 @@ export default function AdminBlogEdit({ postId }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Danger Zone for Existing Posts */}
+      {!isNew && (
+        <div className="rounded-xl border border-red-200/80 bg-red-50/30 p-5 dark:border-red-900/60 dark:bg-red-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400">
+              Khu vực nguy hiểm
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Xóa vĩnh viễn bài viết này khỏi hệ thống blog của cửa hàng. Thao tác này không thể hoàn tác.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setDeleteError(null);
+              setShowDeleteConfirm(true);
+            }}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-red-300 bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-red-700 dark:border-red-800 dark:bg-red-600 dark:hover:bg-red-500 whitespace-nowrap"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Xóa bài viết</span>
+          </button>
+        </div>
+      )}
+
+      {/* Confirm Dialog */}
+      {!isNew && (
+        <ConfirmDialog
+          isOpen={showDeleteConfirm}
+          title="Xác nhận xóa bài viết"
+          description="Bạn có chắc chắn muốn xóa bài viết này khỏi hệ thống blog của cửa hàng? Hành động này không thể hoàn tác."
+          itemName={title || 'Bài viết'}
+          confirmLabel="Xóa bài viết"
+          cancelLabel="Hủy"
+          variant="danger"
+          isLoading={isDeleting}
+          errorMessage={deleteError}
+          onConfirm={handleConfirmDelete}
+          onClose={() => {
+            if (!isDeleting) {
+              setShowDeleteConfirm(false);
+              setDeleteError(null);
+            }
+          }}
+        />
+      )}
     </form>
   );
 }
