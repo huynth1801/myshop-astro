@@ -38,3 +38,4 @@ Commits pending review. Auto-managed:
 - 00c1b4b (2026-10-13) fix(admin): fit image editor modal within viewport bounds with fixed header/footer and scrollable body
 - d9e923d (2026-10-13) feat(web): standardize on Lucide icons across admin and storefront UI
 - 1856121 (2026-10-13) chore(docs): update review queue for icon standardization
+- 99af925 (2026-10-13) feat(catalog): import 162 variants with real prices and stock from Shopee sales info export
