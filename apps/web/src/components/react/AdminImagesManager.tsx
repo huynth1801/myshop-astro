@@ -770,10 +770,10 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
 
       {/* --- MODAL: COMPLETE IMAGE EDITOR (CHỈNH SỬA & THAY THẾ ẢNH CŨ) --- */}
       {editingImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md animate-in fade-in duration-150 overflow-y-auto">
-          <div className="w-full max-w-2xl rounded-2xl border border-border bg-card shadow-2xl overflow-hidden my-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-border px-5 py-3.5 bg-muted/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-5 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="relative flex flex-col w-full max-w-xl lg:max-w-2xl max-h-[92vh] sm:max-h-[88vh] rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
+            {/* Modal Header (Fixed at top) */}
+            <div className="shrink-0 flex items-center justify-between border-b border-border px-4 sm:px-5 py-3 bg-muted/20">
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -784,8 +784,8 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                   <h3 className="text-sm font-semibold text-foreground">
                     Chỉnh sửa hình ảnh đã có
                   </h3>
-                  <p className="text-[11px] text-muted-foreground">
-                    Tùy chỉnh góc xoay, lật, màu sắc hoặc thay thế bằng tệp ảnh mới mà không làm mất vị trí
+                  <p className="text-[11px] text-muted-foreground line-clamp-1">
+                    Tùy chỉnh góc xoay, lật, màu sắc hoặc thay thế bằng tệp ảnh mới
                   </p>
                 </div>
               </div>
@@ -793,17 +793,18 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 type="button"
                 onClick={() => setEditingImage(null)}
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                title="Đóng (Huỷ)"
               >
                 ✕
               </button>
             </div>
 
-            {/* Modal Tabs */}
-            <div className="flex border-b border-border bg-muted/40 px-5 pt-2 gap-2 text-xs">
+            {/* Modal Tabs (Fixed at top) */}
+            <div className="shrink-0 flex border-b border-border bg-muted/40 px-4 sm:px-5 pt-1.5 gap-2 text-xs overflow-x-auto">
               <button
                 type="button"
                 onClick={() => setEditTab('tools')}
-                className={`border-b-2 px-3 py-2 font-medium transition ${
+                className={`border-b-2 px-3 py-1.5 font-medium transition ${
                   editTab === 'tools'
                     ? 'border-primary text-primary font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -814,7 +815,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
               <button
                 type="button"
                 onClick={() => setEditTab('replace-file')}
-                className={`border-b-2 px-3 py-2 font-medium transition ${
+                className={`border-b-2 px-3 py-1.5 font-medium transition ${
                   editTab === 'replace-file'
                     ? 'border-primary text-primary font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -825,7 +826,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
               <button
                 type="button"
                 onClick={() => setEditTab('replace-url')}
-                className={`border-b-2 px-3 py-2 font-medium transition ${
+                className={`border-b-2 px-3 py-1.5 font-medium transition ${
                   editTab === 'replace-url'
                     ? 'border-primary text-primary font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -835,12 +836,13 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
               </button>
             </div>
 
-            <div className="p-5 space-y-4">
+            {/* Scrollable Modal Body (Never overflows screen) */}
+            <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-5 space-y-4">
               {/* TAB 1: VISUAL CANVAS TOOLS (ROTATE, FLIP, ADJUST) */}
               {editTab === 'tools' && (
-                <div className="grid gap-5 md:grid-cols-2 items-center">
+                <div className="grid gap-4 sm:grid-cols-2 items-start">
                   {/* Visual Preview with CSS Transforms */}
-                  <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-muted/30 p-4 h-64 overflow-hidden relative">
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-muted/30 p-3 h-48 sm:h-52 overflow-hidden relative">
                     <img
                       src={resolveImageUrl(editingImage.url) || ''}
                       alt={editingImage.alt}
@@ -849,36 +851,36 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         filter: `brightness(${editBrightness}%) contrast(${editContrast}%)`,
                         transition: 'transform 0.2s ease',
                       }}
-                      className="max-h-56 max-w-full object-contain rounded-lg shadow-sm"
+                      className="max-h-40 sm:max-h-44 max-w-full object-contain rounded-lg shadow-sm"
                     />
-                    <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-[10px] font-mono text-white backdrop-blur">
+                    <div className="absolute bottom-1.5 left-1.5 rounded bg-black/70 px-2 py-0.5 text-[10px] font-mono text-white backdrop-blur">
                       Xoay {editRotation}° {editFlipH ? '· Lật ngang' : ''} {editFlipV ? '· Lật dọc' : ''}
                     </div>
                   </div>
 
                   {/* Editing Controls */}
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div>
                       <span className="text-xs font-semibold text-foreground">Xoay &amp; Lật góc ảnh:</span>
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                      <div className="mt-1.5 grid grid-cols-2 gap-1.5 text-xs">
                         <button
                           type="button"
                           onClick={() => setEditRotation((prev) => (prev + 90) % 360)}
-                          className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-background py-2 hover:bg-muted font-medium transition"
+                          className="flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-background py-1 hover:bg-muted font-medium transition active:scale-95"
                         >
                           ↻ Xoay 90°
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditRotation((prev) => (prev - 90 + 360) % 360)}
-                          className="flex items-center justify-center gap-1.5 rounded-lg border border-border bg-background py-2 hover:bg-muted font-medium transition"
+                          className="flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-background py-1 hover:bg-muted font-medium transition active:scale-95"
                         >
                           ↺ Xoay -90°
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditFlipH((prev) => !prev)}
-                          className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 font-medium transition ${
+                          className={`flex h-8 items-center justify-center gap-1 rounded-lg border py-1 font-medium transition active:scale-95 ${
                             editFlipH
                               ? 'border-primary bg-primary/10 text-primary'
                               : 'border-border bg-background hover:bg-muted'
@@ -889,7 +891,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         <button
                           type="button"
                           onClick={() => setEditFlipV((prev) => !prev)}
-                          className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 font-medium transition ${
+                          className={`flex h-8 items-center justify-center gap-1 rounded-lg border py-1 font-medium transition active:scale-95 ${
                             editFlipV
                               ? 'border-primary bg-primary/10 text-primary'
                               : 'border-border bg-background hover:bg-muted'
@@ -901,10 +903,10 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                     </div>
 
                     {/* Brightness & Contrast Sliders */}
-                    <div className="space-y-2 text-xs">
+                    <div className="space-y-1.5 text-xs">
                       <div className="flex items-center justify-between">
                         <label htmlFor="edit-brightness" className="font-medium text-foreground">
-                          Độ sáng (Brightness):
+                          Độ sáng:
                         </label>
                         <span className="text-muted-foreground">{editBrightness}%</span>
                       </div>
@@ -915,12 +917,12 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         max="150"
                         value={editBrightness}
                         onChange={(e) => setEditBrightness(Number(e.target.value))}
-                        className="w-full accent-primary"
+                        className="h-1.5 w-full accent-primary"
                       />
 
-                      <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center justify-between pt-0.5">
                         <label htmlFor="edit-contrast" className="font-medium text-foreground">
-                          Độ tương phản (Contrast):
+                          Độ tương phản:
                         </label>
                         <span className="text-muted-foreground">{editContrast}%</span>
                       </div>
@@ -931,7 +933,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         max="150"
                         value={editContrast}
                         onChange={(e) => setEditContrast(Number(e.target.value))}
-                        className="w-full accent-primary"
+                        className="h-1.5 w-full accent-primary"
                       />
                     </div>
 
@@ -944,7 +946,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         setEditBrightness(100);
                         setEditContrast(100);
                       }}
-                      className="text-xs text-muted-foreground hover:text-foreground underline"
+                      className="text-xs text-muted-foreground hover:text-foreground underline block"
                     >
                       ↺ Khôi phục ảnh gốc
                     </button>
@@ -957,7 +959,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 <div className="space-y-3">
                   <div
                     onClick={() => replacementInputRef.current?.click()}
-                    className="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-background p-6 text-center hover:border-primary/60 hover:bg-muted/30 transition"
+                    className="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-background p-5 text-center hover:border-primary/60 hover:bg-muted/30 transition"
                   >
                     <input
                       ref={replacementInputRef}
@@ -975,16 +977,16 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         <img
                           src={replacementFilePreview}
                           alt="Ảnh mới thay thế"
-                          className="h-28 rounded-lg object-contain border border-border shadow-md"
+                          className="h-24 rounded-lg object-contain border border-border shadow-md"
                         />
                         <p className="text-xs font-semibold text-emerald-600">
-                          ✓ Đã chọn tệp: {replacementFile?.name} ({(replacementFile!.size / 1024).toFixed(0)} KB)
+                          ✓ Đã chọn: {replacementFile?.name} ({(replacementFile!.size / 1024).toFixed(0)} KB)
                         </p>
                         <span className="text-[11px] text-primary underline">Nhấp để chọn tệp khác</span>
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                           </svg>
@@ -993,7 +995,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                           Nhấp để chọn tệp ảnh mới thay thế cho ảnh hiện tại
                         </p>
                         <p className="text-[11px] text-muted-foreground">
-                          Hỗ trợ JPG, PNG, WEBP (tối đa 5 MB) · Ảnh sẽ giữ nguyên thứ tự vị trí hiện tại
+                          Hỗ trợ JPG, PNG, WEBP (tối đa 5 MB) · Giữ nguyên vị trí ảnh
                         </p>
                       </div>
                     )}
@@ -1013,7 +1015,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                       value={replacementUrl}
                       onChange={(e) => setReplacementUrl(e.target.value)}
                       placeholder="/images/... hoặc https://..."
-                      className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-foreground"
+                      className="mt-1 h-8 w-full rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-foreground"
                     />
                   </div>
 
@@ -1022,7 +1024,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                       <img
                         src={resolveImageUrl(replacementUrl.trim()) || ''}
                         alt="Xem trước URL mới"
-                        className="h-14 w-14 rounded object-cover border border-border bg-card"
+                        className="h-12 w-12 rounded object-cover border border-border bg-card"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
                         }}
@@ -1034,7 +1036,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
               )}
 
               {/* SEO ALT TEXT (Always editable across tabs) */}
-              <div className="border-t border-border/70 pt-3 space-y-1.5">
+              <div className="border-t border-border/70 pt-3 space-y-1">
                 <label htmlFor="modal-edit-alt" className="text-xs font-semibold text-foreground">
                   Mô tả thay thế SEO (Alt text):
                 </label>
@@ -1044,7 +1046,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                   onChange={(e) => setEditAltValue(e.target.value)}
                   maxLength={255}
                   placeholder="Mô tả chi tiết ảnh giúp tối ưu tìm kiếm Google Images…"
-                  className="h-9 w-full rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-foreground"
+                  className="h-8 w-full rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-foreground"
                 />
                 <div className="flex justify-between text-[11px] text-muted-foreground">
                   <span>Văn bản alt giúp người dùng và công cụ tìm kiếm hiểu nội dung ảnh.</span>
@@ -1053,8 +1055,8 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
               </div>
             </div>
 
-            {/* Modal Footer Actions */}
-            <div className="flex items-center justify-between border-t border-border bg-muted/20 px-5 py-3">
+            {/* Modal Footer Actions (Fixed at bottom) */}
+            <div className="shrink-0 flex items-center justify-between border-t border-border bg-muted/20 px-4 sm:px-5 py-3">
               <button
                 type="button"
                 onClick={() => setEditingImage(null)}
