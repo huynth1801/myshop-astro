@@ -69,3 +69,4 @@ Commits pending review. Auto-managed:
 - f1e9c1d (2026-10-13) fix(blog): constrain related products list height with scroll and add global spacing tokens
 - 3913a74 (2026-10-13) fix(catalog): separate product title and price onto dedicated rows in ProductCard
 - 71ab662 (2026-10-13) feat: implement checkout with COD, VietQR and admin order management
+- efe36a2 (2026-10-13) feat(checkout): auto-fill saved shipping address and phone for returning customers

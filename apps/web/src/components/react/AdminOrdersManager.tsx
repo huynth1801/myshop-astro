@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { formatCents } from '../../lib/money';
-import { authUser, bootstrapAuth } from '../../lib/stores/auth';
+import { authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
 import ConfirmDialog from './ConfirmDialog';
@@ -169,9 +169,17 @@ export default function AdminOrdersManager() {
 
   if (!user) {
     return (
-      <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
-        Cần đăng nhập tài khoản ADMIN — bấm <strong>Đăng nhập</strong> trên thanh menu.
-      </p>
+      <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
+        Cần đăng nhập tài khoản ADMIN — bấm{' '}
+        <button
+          type="button"
+          onClick={() => authOpen.set(true)}
+          className="font-semibold text-primary underline underline-offset-2 hover:opacity-80"
+        >
+          Đăng nhập
+        </button>{' '}
+        trên thanh menu hoặc tại đây.
+      </div>
     );
   }
 

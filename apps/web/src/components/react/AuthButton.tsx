@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import { AuthError } from '../../lib/api/auth';
 import { login, register } from '../../lib/api/auth';
 import { authOpen, authUser, bootstrapAuth, setUser, signOut } from '../../lib/stores/auth';
@@ -86,7 +87,7 @@ export default function AuthButton() {
         <button
           type="button"
           onClick={() => authOpen.set(true)}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="rounded-full px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
         >
           Đăng nhập
         </button>
@@ -94,20 +95,28 @@ export default function AuthButton() {
 
       {open &&
         createPortal(
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             aria-hidden="true"
             onClick={() => authOpen.set(false)}
           />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label={mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
-              className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+            className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+          >
+            <button
+              type="button"
+              onClick={() => authOpen.set(false)}
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Đóng"
             >
-              <div className="mb-4 flex gap-4 border-b border-border text-sm">
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="mb-4 flex gap-4 border-b border-border text-sm">
                 {(['login', 'register'] as const).map((tab) => (
                   <button
                     key={tab}
@@ -185,8 +194,7 @@ export default function AuthButton() {
                 </button>
               </form>
             </div>
-          </div>
-        </div>,
+          </div>,
         document.body,
       )}
     </>
