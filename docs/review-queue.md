@@ -54,3 +54,4 @@ Commits pending review. Auto-managed:
 - 2de0322 (2026-10-13) chore(docs): update review queue for blog confirm dialog
 - eb5c2eb (2026-10-13) chore(docs): update review queue for blog confirm dialog
 - 8b5e52e (2026-10-13) feat(blog): improve delete UI/UX with prominent red styling on dialog and action buttons
+- 7223b17 (2026-10-13) fix(blog): ensure createdAt non-null serialization and resilient client parsing
