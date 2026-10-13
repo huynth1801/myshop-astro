@@ -32,3 +32,4 @@ Commits pending review. Auto-managed:
 - 7b0467b (2026-10-13) feat: add interactive hero lookbook slider component and assets
 - cfd6013 (2026-10-13) feat(admin): Shopee-style product edit page /admin/products/[id]
 - b05a18d (2026-10-13) chore: update review queue
+- 57c3cec (2026-10-13) feat(admin): support editing all product parameters, multi-attribute variants, images, and descriptions

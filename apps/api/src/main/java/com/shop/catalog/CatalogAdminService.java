@@ -154,11 +154,18 @@ public class CatalogAdminService {
     public VariantResponse updateVariant(UUID variantId, UpdateVariantRequest request) {
         ProductVariant variant = variants.findById(variantId)
                 .orElseThrow(() -> new VariantNotFoundException(variantId));
-        variant.updatePriceStock(
+        if (request.sku() != null && !request.sku().equals(variant.getSku())) {
+            if (variants.existsBySku(request.sku())) {
+                throw new SkuTakenException(request.sku());
+            }
+        }
+        variant.update(
+                request.sku() != null ? request.sku() : variant.getSku(),
                 request.priceCents() != null ? request.priceCents() : variant.getPriceCents(),
                 request.compareAtPriceCents() != null ? request.compareAtPriceCents()
                         : variant.getCompareAtPriceCents(),
-                request.stock() != null ? request.stock() : variant.getStock());
+                request.stock() != null ? request.stock() : variant.getStock(),
+                request.attributes() != null ? request.attributes() : variant.getAttributes());
         return toVariantDto(variant);
     }
 
@@ -283,12 +290,13 @@ public class CatalogAdminService {
         Long priceTo = variants.size() < 2 ? null
                 : variants.stream().mapToLong(ProductVariant::getPriceCents).max().orElseThrow();
         ProductImage primary = productImages.isEmpty() ? null : productImages.get(0);
+        List<VariantResponse> variantDtos = variants.stream().map(CatalogAdminService::toVariantDto).toList();
         return new AdminProductSummaryResponse(product.getId(), product.getSlug(), product.getName(),
                 product.getStatus(), toCategoryRef(product), priceFrom, priceTo, variants.size(),
                 variants.stream().mapToInt(ProductVariant::getStock).sum(),
                 variants.stream().anyMatch(v -> v.getStock() > 0),
                 primary == null ? null : new ImageResponse(primary.getUrl(), primary.getAlt(), primary.getPosition()),
-                product.getCreatedAt());
+                product.getCreatedAt(), variantDtos);
     }
 
     private static AdminProductDetailResponse toDetail(Product product, List<ProductImage> productImages) {

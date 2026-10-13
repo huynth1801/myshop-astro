@@ -554,7 +554,7 @@ paths:
   /api/v1/admin/variants/{variantId}:
     patch:
       tags: [Admin]
-      summary: Update price / stock of a variant ✅
+      summary: Update variant (sku, price, compareAt, stock, attributes) ✅
       description: Partial — absent fields stay unchanged.
       security: [{ bearerAuth: [] }]
       parameters:
@@ -566,9 +566,11 @@ paths:
             schema:
               type: object
               properties:
+                sku: { type: string, pattern: '^[A-Za-z0-9-]+$' }
                 priceCents: { type: integer, format: int64, minimum: 0 }
                 compareAtPriceCents: { type: integer, format: int64, minimum: 0, nullable: true }
                 stock: { type: integer, minimum: 0 }
+                attributes: { type: object, additionalProperties: true }
       responses:
         '200':
           description: Updated variant
@@ -975,6 +977,9 @@ components:
         inStock: { type: boolean }
         image: { $ref: '#/components/schemas/Image', description: Primary image (position 0), null when none }
         createdAt: { type: string, format: date-time }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/Variant' }
 
     AdminProductDetail:
       type: object

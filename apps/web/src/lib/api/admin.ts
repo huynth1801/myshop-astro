@@ -55,6 +55,7 @@ export const adminProductSummarySchema = z.object({
   inStock: z.boolean(),
   image: imageSchema.nullish(),
   createdAt: z.string(),
+  variants: z.array(variantSchema).default([]),
 });
 
 const adminPagedSchema = z.object({
@@ -146,9 +147,11 @@ export async function updateProduct(id: string, patch: ProductPatch): Promise<Ad
 }
 
 export interface VariantPatch {
+  sku?: string;
   priceCents?: number;
   compareAtPriceCents?: number | null;
   stock?: number;
+  attributes?: Record<string, unknown>;
 }
 
 export async function updateVariant(variantId: string, patch: VariantPatch): Promise<AdminVariant> {

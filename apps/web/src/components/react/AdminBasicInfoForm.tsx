@@ -84,12 +84,22 @@ export default function AdminBasicInfoForm({ detail, onChanged }: Props) {
       )}
       <div className="mt-4 grid gap-4">
         <label className="block text-sm">
-          Tên sản phẩm
-          <input value={name} onChange={(e) => setName(e.target.value)} required maxLength={255} className={FIELD} />
+          <div className="flex items-center justify-between">
+            <span className="font-medium">Tên sản phẩm</span>
+            <span className="text-xs text-muted-foreground">{name.length}/255</span>
+          </div>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            maxLength={255}
+            placeholder="Nhập tên sản phẩm..."
+            className={FIELD}
+          />
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm">
-            Danh mục
+            <span className="font-medium">Danh mục sản phẩm</span>
             <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={FIELD}>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -99,36 +109,59 @@ export default function AdminBasicInfoForm({ detail, onChanged }: Props) {
             </select>
           </label>
           <label className="block text-sm">
-            Slug (URL cố định sau khi tạo)
-            <input value={detail.slug} readOnly className={`${FIELD} bg-muted font-mono text-muted-foreground`} />
+            <span className="font-medium">Đường dẫn tĩnh (Slug)</span>
+            <input
+              value={detail.slug}
+              readOnly
+              title="Đường dẫn cố định nhằm bảo vệ thứ hạng SEO và các liên kết đã chia sẻ"
+              className={`${FIELD} cursor-not-allowed bg-muted font-mono text-xs text-muted-foreground`}
+            />
           </label>
         </div>
         <label className="block text-sm">
-          Mô tả ngắn (hiện ở card + meta description, tối đa 200 ký tự)
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="font-medium">Mô tả ngắn</span>
+              <span className="ml-2 text-xs text-muted-foreground">(Hiển thị trên thẻ sản phẩm &amp; thẻ SEO meta)</span>
+            </div>
+            <span className={`text-xs ${shortDescription.length > 180 ? 'text-amber-600 font-semibold' : 'text-muted-foreground'}`}>
+              {shortDescription.length}/200
+            </span>
+          </div>
           <input
             value={shortDescription}
             onChange={(e) => setShortDescription(e.target.value)}
             maxLength={200}
+            placeholder="Tóm tắt ngắn gọn đặc điểm nổi bật nhất của sản phẩm..."
             className={FIELD}
           />
         </label>
         <label className="block text-sm">
-          Mô tả đầy đủ
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="font-medium">Mô tả chi tiết</span>
+              <span className="ml-2 text-xs text-muted-foreground">(Hiển thị đầy đủ ở trang chi tiết sản phẩm)</span>
+            </div>
+            <span className="text-xs text-muted-foreground">{description.length} ký tự</span>
+          </div>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={6}
-            className={FIELD}
+            rows={8}
+            placeholder="Chi tiết chất liệu, xuất xứ, tính năng, hướng dẫn chọn size..."
+            className={`${FIELD} leading-relaxed`}
           />
         </label>
       </div>
-      <button
-        type="submit"
-        disabled={busy}
-        className="mt-4 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
-      >
-        {busy ? 'Đang lưu…' : 'Lưu thông tin'}
-      </button>
+      <div className="mt-4 flex items-center justify-between">
+        <button
+          type="submit"
+          disabled={busy}
+          className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+        >
+          {busy ? 'Đang lưu…' : 'Lưu thông tin cơ bản'}
+        </button>
+      </div>
     </form>
   );
 }
