@@ -40,3 +40,4 @@ Commits pending review. Auto-managed:
 - 1856121 (2026-10-13) chore(docs): update review queue for icon standardization
 - 99af925 (2026-10-13) feat(catalog): import 162 variants with real prices and stock from Shopee sales info export
 - d3c63d8 (2026-10-13) chore: update review queue
+- 9e3101f (2026-10-13) feat(admin): make variant table always-editable inline with zero horizontal overflow
