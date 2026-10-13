@@ -5,6 +5,7 @@ import { authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 import AdminBasicInfoForm from './AdminBasicInfoForm';
 import AdminImagesManager from './AdminImagesManager';
+import AdminProductPreview from './AdminProductPreview';
 import AdminVariantsEditor from './AdminVariantsEditor';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -122,16 +123,22 @@ export default function AdminProductEdit({ id }: { id: string }) {
           <AdminVariantsEditor detail={detail} onChanged={reload} />
         </div>
 
-        <aside className="space-y-4">
-          <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Trạng thái</h2>
+        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          {/* Live Storefront Preview */}
+          <AdminProductPreview detail={detail} />
+
+          {/* Product Status Controls */}
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5 shadow-xs">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Trạng thái sản phẩm
+            </h2>
             <div className="mt-3 space-y-2">
               {detail.status !== 'ACTIVE' && (
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => void setStatus('ACTIVE')}
-                  className="w-full rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                  className="w-full rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-xs transition hover:opacity-90 disabled:opacity-50"
                 >
                   Xuất bản (Đang bán)
                 </button>
@@ -141,7 +148,7 @@ export default function AdminProductEdit({ id }: { id: string }) {
                   type="button"
                   disabled={busy}
                   onClick={() => void setStatus('DRAFT')}
-                  className="w-full rounded-full border border-border px-4 py-2 text-sm transition hover:bg-muted disabled:opacity-50"
+                  className="w-full rounded-full border border-border px-4 py-2 text-xs font-medium transition hover:bg-muted disabled:opacity-50"
                 >
                   Chuyển về Nháp
                 </button>
@@ -151,13 +158,13 @@ export default function AdminProductEdit({ id }: { id: string }) {
                   type="button"
                   disabled={busy}
                   onClick={() => void setStatus('ARCHIVED')}
-                  className="w-full rounded-full border border-border px-4 py-2 text-sm transition hover:bg-muted disabled:opacity-50"
+                  className="w-full rounded-full border border-border px-4 py-2 text-xs font-medium transition hover:bg-muted disabled:opacity-50"
                 >
                   Lưu trữ
                 </button>
               )}
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
               Nháp / Lưu trữ sẽ ẩn sản phẩm khỏi cửa hàng; trang cũ vẫn sống cho SEO.
             </p>
           </div>
