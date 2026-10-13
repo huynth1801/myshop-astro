@@ -33,7 +33,14 @@ export default function AdminProductEdit({ id }: { id: string }) {
       setDetail(await getProduct(id));
       setError(null);
     } catch (e) {
-      setError(e instanceof AdminError ? e.message : 'Không tải được sản phẩm.');
+      console.error('Failed to load product detail:', e);
+      if (e instanceof AdminError) {
+        setError(e.message);
+      } else if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError('Không tải được sản phẩm.');
+      }
     }
   }, [id]);
 

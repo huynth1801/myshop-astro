@@ -37,7 +37,7 @@ const variantSchema = z.object({
   priceCents: z.number().int().nonnegative(),
   compareAtPriceCents: z.number().int().nonnegative().nullish(),
   stock: z.number().int(),
-  attributes: z.record(z.unknown()),
+  attributes: z.record(z.unknown()).nullish().transform((a) => a ?? {}),
 });
 
 const productStatusSchema = z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']);
@@ -66,19 +66,24 @@ const adminPagedSchema = z.object({
   totalPages: z.number().int(),
 });
 
+const adminImageSchema = z.object({
+  id: z.string().uuid().nullish().transform((id) => id ?? '00000000-0000-0000-0000-000000000000'),
+  url: z.string(),
+  alt: z.string().nullish().transform((a) => a ?? ''),
+  position: z.number().int().nullish().transform((p) => p ?? 0),
+});
+
 const adminDetailSchema = z.object({
   id: z.string().uuid(),
   slug: z.string(),
   name: z.string(),
-  description: z.string(),
+  description: z.string().nullish().transform((d) => d ?? ''),
   shortDescription: z.string().nullish(),
   status: productStatusSchema,
   category: categoryRefSchema,
-  variants: z.array(variantSchema),
-  images: z.array(
-    z.object({ id: z.string().uuid(), url: z.string(), alt: z.string(), position: z.number().int() }),
-  ),
-  createdAt: z.string(),
+  variants: z.array(variantSchema).default([]),
+  images: z.array(adminImageSchema).default([]),
+  createdAt: z.string().nullish().transform((c) => c ?? new Date().toISOString()),
 });
 
 const categorySchema = z.object({ id: z.string().uuid(), slug: z.string(), name: z.string(), hasParent: z.boolean() });
@@ -112,7 +117,17 @@ async function adminFetch<T>(path: string, init: RequestInit, schema: z.ZodType<
     throw new AdminError(message, code, res.status);
   }
   if (res.status === 204) return schema.parse(undefined); // deletes have no body
-  return schema.parse(await res.json());
+  const data = await res.json();
+  try {
+    return schema.parse(data);
+  } catch (zodErr) {
+    if (zodErr instanceof z.ZodError) {
+      console.error(`Zod validation error on ${path}:`, zodErr.issues, data);
+      const detail = zodErr.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ');
+      throw new AdminError(`Dữ liệu không khớp định dạng: ${detail}`, 'INVALID_RESPONSE', res.status);
+    }
+    throw zodErr;
+  }
 }
 
 /** Category options for the product form (admin endpoint — has ids). */
