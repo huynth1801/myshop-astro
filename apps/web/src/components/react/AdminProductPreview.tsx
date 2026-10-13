@@ -209,38 +209,36 @@ export default function AdminProductPreview({ detail }: Props) {
               </div>
 
               {/* Product Metadata Block */}
-              <div className="mt-2.5 flex flex-col gap-0.5 px-0.5">
+              <div className="mt-2.5 flex flex-col gap-1 px-0.5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {detail.category.name}
                 </p>
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="line-clamp-2 text-xs font-medium leading-snug text-foreground">
-                    {detail.name}
-                  </h3>
-                  <div className="shrink-0 text-right">
-                    {minPrice != null ? (
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs font-semibold tabular-nums text-foreground">
-                          {formatCents(minPrice)}
-                          {minPrice !== maxPrice && (
-                            <span className="font-normal text-muted-foreground">
-                              {' '}
-                              +
-                            </span>
-                          )}
-                        </span>
-                        {hasDiscount && minCompareAt != null && (
-                          <span className="text-[10px] tabular-nums text-muted-foreground line-through">
-                            {formatCents(minCompareAt)}
+                <h3 className="line-clamp-2 text-xs font-medium leading-snug text-foreground">
+                  {detail.name}
+                </h3>
+                <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                  {minPrice != null ? (
+                    <>
+                      <span className="text-xs font-semibold tabular-nums text-foreground">
+                        {formatCents(minPrice)}
+                        {minPrice !== maxPrice && (
+                          <span className="font-normal text-muted-foreground">
+                            {' '}
+                            +
                           </span>
                         )}
-                      </div>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground">
-                        Ngừng bán
                       </span>
-                    )}
-                  </div>
+                      {hasDiscount && minCompareAt != null && (
+                        <span className="text-[10px] tabular-nums text-muted-foreground line-through">
+                          {formatCents(minCompareAt)}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">
+                      Ngừng bán
+                    </span>
+                  )}
                 </div>
               </div>
             </article>

@@ -66,3 +66,4 @@ Commits pending review. Auto-managed:
 - 59fe4dd (2026-10-13) chore(docs): update review queue for CORS fix
 - a452886 (2026-10-13) chore(docs): sync review queue
 - 438c4d5 (2026-10-13) feat(blog): fetch all catalog products and add live search with filter tabs in post editor
+- f1e9c1d (2026-10-13) fix(blog): constrain related products list height with scroll and add global spacing tokens
