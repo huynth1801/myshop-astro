@@ -97,7 +97,7 @@ export default function AddToCartButton({ variants }: { variants: VariantOption[
             )}
       </button>
 
-      {error && <p className="mt-2 text-sm text-accent" role="alert">{error}</p>}
+      {error && <p className="mt-2 text-xs font-medium text-accent-terracotta" role="alert">{error}</p>}
     </div>
   );
 }
