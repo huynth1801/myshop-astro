@@ -12,10 +12,13 @@ import {
   Truck,
 } from 'lucide-react';
 import { formatCents } from '../../lib/money';
+import { authUser } from '../../lib/stores/auth';
 import { cart, clearCart, refreshCart } from '../../lib/stores/cart';
 import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
 import { submitCheckout, type CustomerAddress, type PaymentMethod } from '../../lib/api/orders';
+
+const SAVED_ADDRESS_STORAGE_KEY = 'myshop_saved_shipping_address';
 
 const POPULAR_CITIES = [
   'TP. Hồ Chí Minh',
@@ -45,6 +48,7 @@ const POPULAR_CITIES = [
 ];
 
 export default function CheckoutForm() {
+  const user = useStore(authUser);
   const cartData = useStore(cart);
   const [loadingCart, setLoadingCart] = useState(true);
 
@@ -59,13 +63,42 @@ export default function CheckoutForm() {
   const [line1, setLine1] = useState('');
   const [customerNote, setCustomerNote] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('VIETQR');
+  const [isAutoFilled, setIsAutoFilled] = useState(false);
 
   // Submit State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // If cart is not yet loaded in store, fetch it
+    // 1. Try reading saved address from localStorage
+    try {
+      const saved = localStorage.getItem(SAVED_ADDRESS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.fullName) setFullName(parsed.fullName);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.line1) setLine1(parsed.line1);
+        if (parsed.district) setDistrict(parsed.district);
+        if (parsed.ward) setWard(parsed.ward);
+        if (parsed.city) {
+          if (POPULAR_CITIES.includes(parsed.city)) {
+            setCity(parsed.city);
+          } else {
+            setCity('Tỉnh / Thành khác');
+            setCustomCity(parsed.city);
+          }
+        }
+        setIsAutoFilled(true);
+      } else if (user) {
+        if (user.name) setFullName(user.name);
+        if (user.email) setEmail(user.email);
+      }
+    } catch {
+      // Ignore localStorage parse errors
+    }
+
+    // 2. If cart is not yet loaded in store, fetch it
     if (cart.get() === null) {
       refreshCart()
         .catch(() => {})
@@ -73,7 +106,7 @@ export default function CheckoutForm() {
     } else {
       setLoadingCart(false);
     }
-  }, []);
+  }, [user]);
 
   if (loadingCart) {
     return (
@@ -164,6 +197,24 @@ export default function CheckoutForm() {
         idempotencyKey
       );
 
+      // Save address to localStorage for future orders
+      try {
+        localStorage.setItem(
+          SAVED_ADDRESS_STORAGE_KEY,
+          JSON.stringify({
+            fullName: fullName.trim(),
+            phone: cleanPhone,
+            email: email.trim(),
+            city: effectiveCity,
+            district: district.trim(),
+            ward: ward.trim(),
+            line1: line1.trim(),
+          })
+        );
+      } catch {
+        // Ignore localStorage errors
+      }
+
       clearCart();
       toast.success('Đặt hàng thành công! Đang chuyển hướng…');
 
@@ -194,12 +245,41 @@ export default function CheckoutForm() {
 
           {/* 1. Thông tin giao hàng */}
           <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
-            <h2 className="flex items-center gap-2 text-base font-semibold">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                1
-              </span>
-              Thông tin nhận hàng
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-base font-semibold">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  1
+                </span>
+                Thông tin nhận hàng
+              </h2>
+
+              {isAutoFilled && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFullName('');
+                    setPhone('');
+                    setEmail('');
+                    setLine1('');
+                    setDistrict('');
+                    setWard('');
+                    setCity('TP. Hồ Chí Minh');
+                    setCustomCity('');
+                    setIsAutoFilled(false);
+                  }}
+                  className="text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                >
+                  Nhập địa chỉ mới
+                </button>
+              )}
+            </div>
+
+            {isAutoFilled && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3.5 py-2.5 text-xs text-emerald-800 dark:text-emerald-300">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <span>Đã tự động điền địa chỉ & số điện thoại từ đơn hàng trước của bạn.</span>
+              </div>
+            )}
 
             <div className="mt-5 space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
