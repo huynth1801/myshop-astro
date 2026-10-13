@@ -52,3 +52,4 @@ Commits pending review. Auto-managed:
 - 66db6d3 (2026-10-13) feat(blog): add quick paste crawler bar and curate dedicated fashion RSS feeds
 - c2b0302 (2026-10-13) feat(blog): replace native alert and confirm with custom boutique ConfirmDialog
 - 2de0322 (2026-10-13) chore(docs): update review queue for blog confirm dialog
+- eb5c2eb (2026-10-13) chore(docs): update review queue for blog confirm dialog

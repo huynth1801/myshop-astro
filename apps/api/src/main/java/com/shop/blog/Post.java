@@ -79,6 +79,12 @@ public class Post {
         if (id == null) {
             id = Ids.newId();
         }
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = Instant.now();
+        }
         if (status == PostStatus.PUBLISHED && publishedAt == null) {
             publishedAt = Instant.now();
         }
@@ -192,11 +198,11 @@ public class Post {
     }
 
     public Instant getCreatedAt() {
-        return createdAt;
+        return createdAt != null ? createdAt : Instant.now();
     }
 
     public Instant getUpdatedAt() {
-        return updatedAt;
+        return updatedAt != null ? updatedAt : Instant.now();
     }
 
     public List<PostRelatedProduct> getRelatedProducts() {

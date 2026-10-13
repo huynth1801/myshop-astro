@@ -55,6 +55,12 @@ public class RssSource {
         if (id == null) {
             id = Ids.newId();
         }
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = Instant.now();
+        }
     }
 
     public UUID getId() {
@@ -106,10 +112,10 @@ public class RssSource {
     }
 
     public Instant getCreatedAt() {
-        return createdAt;
+        return createdAt != null ? createdAt : Instant.now();
     }
 
     public Instant getUpdatedAt() {
-        return updatedAt;
+        return updatedAt != null ? updatedAt : Instant.now();
     }
 }

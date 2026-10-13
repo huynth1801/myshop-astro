@@ -512,7 +512,7 @@ export default function AdminBlogDashboard() {
                                   setDeleteError(null);
                                   setDeleteTarget({ type: 'post', id: post.id, title: post.title });
                                 }}
-                                className="inline-flex items-center gap-1 rounded border border-destructive/30 px-2.5 py-1 text-[11px] font-medium text-destructive transition hover:bg-destructive/10"
+                                className="inline-flex items-center gap-1 rounded border border-red-200/80 bg-red-50/50 px-2.5 py-1 text-[11px] font-semibold text-red-600 transition hover:bg-red-600 hover:text-white dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-700 dark:hover:text-white"
                               >
                                 <Trash2 className="h-3 w-3" />
                                 <span>Xóa</span>
@@ -745,7 +745,7 @@ export default function AdminBlogDashboard() {
                                 setDeleteError(null);
                                 setDeleteTarget({ type: 'rss', id: source.id, title: source.name });
                               }}
-                              className="inline-flex items-center gap-1 rounded border border-destructive/30 px-2.5 py-1 text-[11px] font-medium text-destructive transition hover:bg-destructive/10"
+                              className="inline-flex items-center gap-1 rounded border border-red-200/80 bg-red-50/50 px-2.5 py-1 text-[11px] font-semibold text-red-600 transition hover:bg-red-600 hover:text-white dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-700 dark:hover:text-white"
                             >
                               <Trash2 className="h-3 w-3" />
                               <span>Xóa</span>

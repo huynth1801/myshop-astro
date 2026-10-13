@@ -17,7 +17,7 @@ export const postSummarySchema = z.object({
   author: z.string().nullish(),
   status: postStatusSchema,
   publishedAt: z.string().nullish(),
-  createdAt: z.string(),
+  createdAt: z.string().nullish().transform((v) => v || new Date().toISOString()),
 });
 
 export type PostSummary = z.infer<typeof postSummarySchema>;
@@ -45,7 +45,7 @@ export const postDetailSchema = z.object({
   seoDescription: z.string().nullish(),
   viewCount: z.number().int(),
   publishedAt: z.string().nullish(),
-  createdAt: z.string(),
+  createdAt: z.string().nullish().transform((v) => v || new Date().toISOString()),
   relatedProducts: z.array(productSummarySchema).default([]),
 });
 
@@ -64,8 +64,8 @@ export const adminPostDetailSchema = z.object({
   seoDescription: z.string().nullish(),
   viewCount: z.number().int(),
   publishedAt: z.string().nullish(),
-  createdAt: z.string(),
-  updatedAt: z.string().nullish(),
+  createdAt: z.string().nullish().transform((v) => v || new Date().toISOString()),
+  updatedAt: z.string().nullish().transform((v) => v || new Date().toISOString()),
   relatedProductIds: z.array(z.string().uuid()).default([]),
 });
 
@@ -90,7 +90,7 @@ export const rssSourceSchema = z.object({
   category: z.string().nullish(),
   isActive: z.boolean(),
   lastFetchedAt: z.string().nullish(),
-  createdAt: z.string(),
+  createdAt: z.string().nullish().transform((v) => v || new Date().toISOString()),
 });
 
 export type RssSource = z.infer<typeof rssSourceSchema>;
@@ -200,7 +200,13 @@ async function adminBlogFetch<T>(
     return undefined as unknown as T;
   }
 
-  return schema.parse(await res.json());
+  const json = await res.json();
+  const parsed = schema.safeParse(json);
+  if (!parsed.success) {
+    console.warn(`[adminBlogFetch] Schema parse warning for ${path}:`, parsed.error);
+    return json as unknown as T;
+  }
+  return parsed.data;
 }
 
 export async function adminListPosts(params: {

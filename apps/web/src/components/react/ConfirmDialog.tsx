@@ -74,10 +74,10 @@ export default function ConfirmDialog({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
                 isDanger
-                  ? 'bg-destructive/10 text-destructive'
-                  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                  ? 'border border-red-200/80 bg-red-50 text-red-600 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-400'
+                  : 'border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400'
               }`}
             >
               {isDanger ? (
@@ -113,37 +113,37 @@ export default function ConfirmDialog({
           )}
 
           {itemName && (
-            <div className="rounded-lg border border-border/70 bg-muted/40 px-3.5 py-2.5">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-0.5">
+            <div className="rounded-xl border border-red-200/70 bg-red-50/40 px-3.5 py-2.5 dark:border-red-950/60 dark:bg-red-950/20">
+              <span className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wider text-red-600 dark:text-red-400">
                 Mục đã chọn:
               </span>
-              <p className="text-xs font-medium text-foreground line-clamp-2 break-words">
+              <p className="line-clamp-2 text-xs font-semibold text-foreground break-words">
                 "{itemName}"
               </p>
             </div>
           )}
 
-          <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
+          <p className="text-[11px] font-medium leading-relaxed text-red-600/90 dark:text-red-400/90">
             {isDanger
               ? 'Hành động này sẽ xóa dữ liệu vĩnh viễn và không thể hoàn tác.'
               : 'Vui lòng kiểm tra kỹ trước khi xác nhận thực hiện.'}
           </p>
 
           {errorMessage && (
-            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
               <div className="flex-1 leading-relaxed">{errorMessage}</div>
             </div>
           )}
         </div>
 
         {/* Action buttons */}
-        <div className="mt-5 flex items-center justify-end gap-2.5 pt-2 border-t border-border/60">
+        <div className="mt-5 flex items-center justify-end gap-2.5 border-t border-border/60 pt-3">
           <button
             type="button"
             disabled={isLoading}
             onClick={onClose}
-            className="rounded-lg border border-border bg-background px-3.5 py-2 text-xs font-medium text-foreground transition hover:bg-muted disabled:opacity-40"
+            className="rounded-xl border border-border bg-card px-4 py-2 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-40"
           >
             {cancelLabel}
           </button>
@@ -153,20 +153,20 @@ export default function ConfirmDialog({
             type="button"
             disabled={isLoading}
             onClick={() => void onConfirm()}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold shadow-xs transition disabled:opacity-50 ${
+            className={`inline-flex items-center gap-1.5 rounded-xl px-4.5 py-2 text-xs font-semibold shadow-xs transition disabled:opacity-50 ${
               isDanger
-                ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                ? 'bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800'
                 : 'bg-primary text-primary-foreground hover:bg-primary/90'
             }`}
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
                 <span>Đang xử lý...</span>
               </>
             ) : (
               <>
-                {isDanger && <Trash2 className="h-3.5 w-3.5" />}
+                {isDanger && <Trash2 className="h-3.5 w-3.5 text-white" />}
                 <span>{confirmLabel}</span>
               </>
             )}
