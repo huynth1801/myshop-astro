@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Search, Trash2, X } from 'lucide-react';
 import {
   adminCreatePost,
   adminDeletePost,
@@ -47,8 +47,10 @@ export default function AdminBlogEdit({ postId }: Props) {
   const [seoDescription, setSeoDescription] = useState('');
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
-  // Products available to link
+  // Products available to link & Search state
   const [availableProducts, setAvailableProducts] = useState<AdminProduct[]>([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [productFilterTab, setProductFilterTab] = useState<'all' | 'selected'>('all');
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
 
   useEffect(() => {
@@ -60,9 +62,25 @@ export default function AdminBlogEdit({ postId }: Props) {
   useEffect(() => {
     if (!user || user.role !== 'ADMIN') return;
 
-    listProducts()
-      .then((res) => setAvailableProducts(res.content))
-      .catch(() => {});
+    // Fetch all products across pages (up to 1000 items)
+    const loadAllProducts = async () => {
+      try {
+        let all: AdminProduct[] = [];
+        let p = 0;
+        let totalPages = 1;
+        while (p < totalPages && p < 10) {
+          const res = await listProducts({ page: p, size: 100 });
+          all = [...all, ...res.content];
+          totalPages = res.totalPages;
+          p++;
+        }
+        setAvailableProducts(all);
+      } catch (err) {
+        console.error('Failed to load products for blog', err);
+      }
+    };
+
+    void loadAllProducts();
 
     if (isNew) {
       setLoading(false);
@@ -95,6 +113,31 @@ export default function AdminBlogEdit({ postId }: Props) {
       prev.includes(prodId) ? prev.filter((id) => id !== prodId) : [...prev, prodId],
     );
   };
+
+  const handleClearSelectedProducts = () => {
+    setSelectedProductIds([]);
+  };
+
+  const normalizeVi = (str: string) =>
+    str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd');
+
+  const filteredProducts = availableProducts.filter((prod) => {
+    if (productFilterTab === 'selected' && !selectedProductIds.includes(prod.id)) {
+      return false;
+    }
+
+    if (!productSearch.trim()) return true;
+
+    const queryNorm = normalizeVi(productSearch.trim());
+    const nameNorm = normalizeVi(prod.name);
+    const categoryNorm = normalizeVi(prod.category.name);
+
+    return nameNorm.includes(queryNorm) || categoryNorm.includes(queryNorm);
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -436,55 +479,165 @@ export default function AdminBlogEdit({ postId }: Props) {
           </div>
 
           {/* Linked Products for Conversion */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3.5">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Sản phẩm nhắc đến trong bài
               </h3>
-              <span className="text-[11px] font-medium text-accent">
+              <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold text-accent">
                 {selectedProductIds.length} đã chọn
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
               Chọn các sản phẩm trong cửa hàng để tự động gắn thẻ sản phẩm vào cuối bài viết, giúp chuyển đổi người đọc thành khách mua.
             </p>
 
-            <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-              {availableProducts.map((prod) => {
-                const isSelected = selectedProductIds.includes(prod.id);
-                const thumb = resolveImageUrl(prod.image?.url);
-                return (
-                  <label
-                    key={prod.id}
-                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-2 text-xs transition ${
-                      isSelected
-                        ? 'border-foreground bg-muted/60'
-                        : 'border-border/60 hover:border-border'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleProduct(prod.id)}
-                      className="rounded border-border"
-                    />
-                    <div className="h-9 w-9 shrink-0 overflow-hidden rounded border border-border bg-muted">
-                      {thumb ? (
-                        <img src={thumb} alt={prod.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
-                          —
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="truncate font-medium text-foreground">{prod.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{prod.category.name}</div>
-                    </div>
-                  </label>
-                );
-              })}
+            {/* Product Search Box */}
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Tìm sản phẩm theo tên, danh mục..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="h-9 w-full rounded-md border border-input bg-background pl-8.5 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              {productSearch && (
+                <button
+                  type="button"
+                  onClick={() => setProductSearch('')}
+                  aria-label="Xóa tìm kiếm"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
+
+            {/* Quick Filter Tabs & Selection Actions */}
+            <div className="flex items-center justify-between gap-2 border-b border-border pb-2 text-[11px]">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setProductFilterTab('all')}
+                  className={`rounded-md px-2.5 py-1 font-medium transition ${
+                    productFilterTab === 'all'
+                      ? 'bg-foreground text-background font-semibold'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  Tất cả ({availableProducts.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductFilterTab('selected')}
+                  className={`rounded-md px-2.5 py-1 font-medium transition ${
+                    productFilterTab === 'selected'
+                      ? 'bg-foreground text-background font-semibold'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  Đã chọn ({selectedProductIds.length})
+                </button>
+              </div>
+
+              {selectedProductIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearSelectedProducts}
+                  className="text-muted-foreground hover:text-destructive text-[11px] underline decoration-dotted transition"
+                >
+                  Bỏ chọn tất cả
+                </button>
+              )}
+            </div>
+
+            {/* Scrollable Products List */}
+            <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+              {filteredProducts.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                  {productFilterTab === 'selected' ? (
+                    <>
+                      <p>Chưa có sản phẩm nào được chọn.</p>
+                      <button
+                        type="button"
+                        onClick={() => setProductFilterTab('all')}
+                        className="mt-2 text-xs font-medium text-accent hover:underline"
+                      >
+                        Xem tất cả sản phẩm để chọn
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p>Không tìm thấy sản phẩm nào khớp với &quot;{productSearch}&quot;.</p>
+                      <button
+                        type="button"
+                        onClick={() => setProductSearch('')}
+                        className="mt-2 text-xs font-medium text-accent hover:underline"
+                      >
+                        Xóa bộ lọc tìm kiếm
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                filteredProducts.map((prod) => {
+                  const isSelected = selectedProductIds.includes(prod.id);
+                  const thumb = resolveImageUrl(prod.image?.url);
+                  return (
+                    <label
+                      key={prod.id}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg border p-2 text-xs transition select-none ${
+                        isSelected
+                          ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/20 dark:bg-primary/10'
+                          : 'border-border/60 hover:border-border hover:bg-muted/30'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleProduct(prod.id)}
+                        className="h-4 w-4 cursor-pointer rounded border-input text-primary accent-primary focus:ring-primary shrink-0"
+                      />
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                        {thumb ? (
+                          <img src={thumb} alt={prod.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[9px] text-muted-foreground">
+                            —
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate font-medium text-foreground">{prod.name}</div>
+                        <div className="text-[11px] text-muted-foreground flex items-center justify-between mt-0.5">
+                          <span>{prod.category.name}</span>
+                          {prod.priceFromCents != null && (
+                            <span className="font-medium text-foreground">
+                              {(prod.priceFromCents / 100).toLocaleString('vi-VN')}₫
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Results Counter Footer */}
+            {availableProducts.length > 0 && (
+              <div className="pt-1 text-[11px] text-muted-foreground flex items-center justify-between">
+                <span>
+                  Đang hiển thị {filteredProducts.length}/{availableProducts.length} sản phẩm
+                </span>
+                {productSearch && (
+                  <span className="text-accent">
+                    Đang lọc: &quot;{productSearch}&quot;
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

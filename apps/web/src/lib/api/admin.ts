@@ -153,9 +153,9 @@ export async function listCategories(): Promise<AdminCategory[]> {
 }
 
 export async function listProducts(
-  params: { q?: string; status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'; categoryId?: string; page?: number } = {},
+  params: { q?: string; status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'; categoryId?: string; page?: number; size?: number } = {},
 ): Promise<z.infer<typeof adminPagedSchema>> {
-  const query = new URLSearchParams({ page: String(params.page ?? 0), size: '20' });
+  const query = new URLSearchParams({ page: String(params.page ?? 0), size: String(params.size ?? 20) });
   if (params.q && params.q.trim() !== '') query.set('q', params.q.trim());
   if (params.status) query.set('status', params.status);
   if (params.categoryId) query.set('categoryId', params.categoryId);

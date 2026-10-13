@@ -64,3 +64,4 @@ Commits pending review. Auto-managed:
 - f051157 (2026-10-13) feat(blog): lock header buttons to right on long titles and add global toast notifications
 - 654361c (2026-10-13) fix(api): allow PUT and HEAD methods in CORS configuration
 - 59fe4dd (2026-10-13) chore(docs): update review queue for CORS fix
+- a452886 (2026-10-13) chore(docs): sync review queue
