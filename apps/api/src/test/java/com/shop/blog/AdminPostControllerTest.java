@@ -102,4 +102,23 @@ class AdminPostControllerTest {
         CrawledPostResponse actual = controller.crawlPost(req);
         assertThat(actual).isSameAs(expected);
     }
+
+    @Test
+    void bulkDeleteDelegatesToService() {
+        UUID id1 = UUID.randomUUID();
+        UUID id2 = UUID.randomUUID();
+        when(postService.adminBulkDelete(List.of(id1, id2))).thenReturn(2);
+
+        var result = controller.bulkDeletePosts(new com.shop.blog.dto.BulkDeletePostsRequest(List.of(id1, id2)));
+        assertThat(result.count()).isEqualTo(2);
+    }
+
+    @Test
+    void bulkStatusDelegatesToService() {
+        UUID id1 = UUID.randomUUID();
+        when(postService.adminBulkUpdateStatus(List.of(id1), PostStatus.PUBLISHED)).thenReturn(1);
+
+        var result = controller.bulkUpdatePostStatus(new com.shop.blog.dto.BulkUpdatePostStatusRequest(List.of(id1), PostStatus.PUBLISHED));
+        assertThat(result.count()).isEqualTo(1);
+    }
 }

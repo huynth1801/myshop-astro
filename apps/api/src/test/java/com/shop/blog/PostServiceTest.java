@@ -196,4 +196,46 @@ class PostServiceTest {
 
         verify(posts).delete(post);
     }
+
+    @Test
+    void adminBulkDeleteDeletesRelatedAndPosts() {
+        UUID id1 = UUID.randomUUID();
+        UUID id2 = UUID.randomUUID();
+        Post post1 = new Post();
+        post1.setId(id1);
+        Post post2 = new Post();
+        post2.setId(id2);
+
+        when(posts.findAllById(List.of(id1, id2))).thenReturn(List.of(post1, post2));
+
+        int count = postService.adminBulkDelete(List.of(id1, id2));
+
+        assertThat(count).isEqualTo(2);
+        verify(postRelatedProducts).deleteByPostId(id1);
+        verify(postRelatedProducts).deleteByPostId(id2);
+        verify(posts).deleteAll(List.of(post1, post2));
+    }
+
+    @Test
+    void adminBulkUpdateStatusUpdatesAllTargets() {
+        UUID id1 = UUID.randomUUID();
+        UUID id2 = UUID.randomUUID();
+        Post post1 = new Post();
+        post1.setId(id1);
+        post1.setStatus(PostStatus.DRAFT);
+        Post post2 = new Post();
+        post2.setId(id2);
+        post2.setStatus(PostStatus.DRAFT);
+
+        when(posts.findAllById(List.of(id1, id2))).thenReturn(List.of(post1, post2));
+
+        int count = postService.adminBulkUpdateStatus(List.of(id1, id2), PostStatus.PUBLISHED);
+
+        assertThat(count).isEqualTo(2);
+        assertThat(post1.getStatus()).isEqualTo(PostStatus.PUBLISHED);
+        assertThat(post1.getPublishedAt()).isNotNull();
+        assertThat(post2.getStatus()).isEqualTo(PostStatus.PUBLISHED);
+        assertThat(post2.getPublishedAt()).isNotNull();
+        verify(posts).saveAll(List.of(post1, post2));
+    }
 }

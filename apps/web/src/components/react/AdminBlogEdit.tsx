@@ -20,6 +20,7 @@ export default function AdminBlogEdit({ postId }: Props) {
   const isNew = postId === 'new';
   const user = useStore(authUser);
 
+  const [authChecking, setAuthChecking] = useState(true);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,15 +43,25 @@ export default function AdminBlogEdit({ postId }: Props) {
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
 
   useEffect(() => {
-    void bootstrapAuth();
-    listProducts()
-      .then((res) => setAvailableProducts(res.content))
-      .catch(() => {});
+    bootstrapAuth().finally(() => {
+      setAuthChecking(false);
+    });
   }, []);
 
   useEffect(() => {
-    if (isNew) return;
+    if (!user || user.role !== 'ADMIN') return;
+
+    listProducts()
+      .then((res) => setAvailableProducts(res.content))
+      .catch(() => {});
+
+    if (isNew) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setError(null);
     adminGetPost(postId)
       .then((post: AdminPostDetail) => {
         setTitle(post.title);
@@ -68,7 +79,7 @@ export default function AdminBlogEdit({ postId }: Props) {
         setError(err instanceof BlogApiError ? err.message : 'Không tìm thấy bài viết.');
       })
       .finally(() => setLoading(false));
-  }, [postId, isNew]);
+  }, [postId, isNew, user]);
 
   const toggleProduct = (prodId: string) => {
     setSelectedProductIds((prev) =>
@@ -88,15 +99,15 @@ export default function AdminBlogEdit({ postId }: Props) {
     setSuccess(null);
 
     const payload = {
-      title: title.trim(),
-      slug: slug.trim() || undefined,
-      summary: summary.trim() || undefined,
+      title: title.trim().slice(0, 255),
+      slug: slug.trim().slice(0, 255) || undefined,
+      summary: summary.trim().slice(0, 500) || undefined,
       content,
-      featuredImage: featuredImage.trim() || null,
-      author: author.trim() || null,
+      featuredImage: featuredImage.trim().slice(0, 2048) || null,
+      author: author.trim().slice(0, 100) || null,
       status,
-      seoTitle: seoTitle.trim() || null,
-      seoDescription: seoDescription.trim() || null,
+      seoTitle: seoTitle.trim().slice(0, 255) || null,
+      seoDescription: seoDescription.trim().slice(0, 500) || null,
       relatedProductIds: selectedProductIds,
     };
 
@@ -106,7 +117,7 @@ export default function AdminBlogEdit({ postId }: Props) {
         setSuccess('Đã tạo bài viết thành công!');
         setTimeout(() => {
           window.location.href = `/admin/blog/${created.id}`;
-        }, 1000);
+        }, 800);
       } else {
         await adminUpdatePost(postId, payload);
         setSuccess('Đã cập nhật bài viết thành công!');
@@ -117,6 +128,14 @@ export default function AdminBlogEdit({ postId }: Props) {
       setSaving(false);
     }
   };
+
+  if (authChecking) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-12 text-center text-sm text-muted-foreground">
+        Đang kiểm tra phiên đăng nhập...
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -194,12 +213,16 @@ export default function AdminBlogEdit({ postId }: Props) {
           {/* Title & Slug */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Tiêu đề bài viết *
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Tiêu đề bài viết *
+                </label>
+                <span className="text-[10px] text-muted-foreground">{title.length}/255</span>
+              </div>
               <input
                 type="text"
                 required
+                maxLength={255}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="VD: 5 Xu Hướng Thời Trang Mùa Đông 2026..."
@@ -208,11 +231,15 @@ export default function AdminBlogEdit({ postId }: Props) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Đường dẫn tĩnh (Slug)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Đường dẫn tĩnh (Slug)
+                </label>
+                <span className="text-[10px] text-muted-foreground">{slug.length}/255</span>
+              </div>
               <input
                 type="text"
+                maxLength={255}
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="Để trống hệ thống sẽ tự sinh từ tiêu đề (VD: 5-xu-huong-thoi-trang...)"
@@ -221,11 +248,17 @@ export default function AdminBlogEdit({ postId }: Props) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Tóm tắt ngắn (Summary)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Tóm tắt ngắn (Summary)
+                </label>
+                <span className={`text-[10px] ${summary.length > 480 ? 'text-amber-500 font-semibold' : 'text-muted-foreground'}`}>
+                  {summary.length}/500 ký tự
+                </span>
+              </div>
               <textarea
                 rows={3}
+                maxLength={500}
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 placeholder="Mô tả súc tích nội dung bài viết, hiển thị ở thẻ danh sách và mở đầu bài..."
@@ -289,9 +322,13 @@ export default function AdminBlogEdit({ postId }: Props) {
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <h3 className="text-sm font-semibold text-foreground">Tối ưu hóa tìm kiếm (SEO)</h3>
             <div>
-              <label className="block text-xs text-muted-foreground">SEO Title</label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs text-muted-foreground">SEO Title</label>
+                <span className="text-[10px] text-muted-foreground">{seoTitle.length}/255</span>
+              </div>
               <input
                 type="text"
+                maxLength={255}
                 value={seoTitle}
                 onChange={(e) => setSeoTitle(e.target.value)}
                 placeholder="Tiêu đề hiển thị trên Google (mặc định lấy tiêu đề bài viết)"
@@ -299,9 +336,15 @@ export default function AdminBlogEdit({ postId }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground">SEO Description</label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs text-muted-foreground">SEO Description</label>
+                <span className={`text-[10px] ${seoDescription.length > 480 ? 'text-amber-500 font-semibold' : 'text-muted-foreground'}`}>
+                  {seoDescription.length}/500 ký tự
+                </span>
+              </div>
               <textarea
                 rows={2}
+                maxLength={500}
                 value={seoDescription}
                 onChange={(e) => setSeoDescription(e.target.value)}
                 placeholder="Mô tả meta snippet hiển thị trên Google (150-160 ký tự)"
@@ -320,6 +363,7 @@ export default function AdminBlogEdit({ postId }: Props) {
             </h3>
             <input
               type="text"
+              maxLength={2048}
               value={featuredImage}
               onChange={(e) => setFeaturedImage(e.target.value)}
               placeholder="https://... hoặc /images/..."
@@ -338,9 +382,13 @@ export default function AdminBlogEdit({ postId }: Props) {
 
           {/* Author */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tác giả</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tác giả</h3>
+              <span className="text-[10px] text-muted-foreground">{author.length}/100</span>
+            </div>
             <input
               type="text"
+              maxLength={100}
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               placeholder="VD: Biên tập viên, Stylist..."

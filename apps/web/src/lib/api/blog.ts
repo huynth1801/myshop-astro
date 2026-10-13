@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { productSummarySchema } from './products';
-import { authHeaders } from './auth';
+import { authHeaders, getValidAccessToken, refreshAccessToken } from './auth';
 
 const SERVER_BASE_URL = import.meta.env.API_BASE_URL || import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
 const CLIENT_BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
@@ -172,16 +172,33 @@ async function adminBlogFetch<T>(
   init: RequestInit,
   schema: z.ZodType<T, any, any>,
 ): Promise<T> {
-  const res = await fetch(`${CLIENT_BASE_URL}${path}`, {
-    ...init,
-    credentials: 'include',
-    headers: {
+  let token = await getValidAccessToken();
+
+  const executeRequest = async (activeToken: string | null) => {
+    const headers: Record<string, string> = {
       'content-type': 'application/json',
       accept: 'application/json',
-      ...authHeaders(),
-      ...init.headers,
-    },
-  });
+      ...(activeToken ? { authorization: `Bearer ${activeToken}` } : {}),
+      ...(init.headers as Record<string, string> | undefined),
+    };
+
+    return fetch(`${CLIENT_BASE_URL}${path}`, {
+      ...init,
+      credentials: 'include',
+      headers,
+    });
+  };
+
+  let res = await executeRequest(token);
+
+  // If unauthenticated (token missing or expired), silently refresh and retry once
+  if (res.status === 401) {
+    const refreshedToken = await refreshAccessToken();
+    if (refreshedToken) {
+      token = refreshedToken;
+      res = await executeRequest(refreshedToken);
+    }
+  }
 
   if (!res.ok) {
     let code: string | undefined;
@@ -261,6 +278,28 @@ export async function adminUpdatePost(
 
 export async function adminDeletePost(id: string): Promise<void> {
   await adminBlogFetch(`/api/v1/admin/posts/${id}`, { method: 'DELETE' }, z.void());
+}
+
+export const bulkOperationResultSchema = z.object({
+  count: z.number().int(),
+});
+export type BulkOperationResult = z.infer<typeof bulkOperationResultSchema>;
+
+export async function adminBulkDeletePosts(ids: string[]): Promise<BulkOperationResult> {
+  return adminBlogFetch('/api/v1/admin/posts/bulk-delete', {
+    method: 'POST',
+    body: JSON.stringify({ ids }),
+  }, bulkOperationResultSchema);
+}
+
+export async function adminBulkUpdatePostStatus(
+  ids: string[],
+  status: PostStatus,
+): Promise<BulkOperationResult> {
+  return adminBlogFetch('/api/v1/admin/posts/bulk-status', {
+    method: 'POST',
+    body: JSON.stringify({ ids, status }),
+  }, bulkOperationResultSchema);
 }
 
 export async function adminCrawlPost(sourceUrl: string): Promise<CrawledPost> {

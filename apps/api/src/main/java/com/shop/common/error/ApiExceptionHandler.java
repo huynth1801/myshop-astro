@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -122,13 +123,21 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "NOT_FOUND", "No such endpoint");
     }
 
-    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class})
+    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class,
+            MethodArgumentNotValidException.class})
     public ProblemDetail handleValidation(Exception ex) {
-        String detail = ex instanceof ConstraintViolationException cve
-                ? cve.getConstraintViolations().stream()
-                        .map(v -> v.getPropertyPath() + " " + v.getMessage())
-                        .collect(Collectors.joining("; "))
-                : ex.getMessage();
+        String detail;
+        if (ex instanceof ConstraintViolationException cve) {
+            detail = cve.getConstraintViolations().stream()
+                    .map(v -> v.getPropertyPath() + " " + v.getMessage())
+                    .collect(Collectors.joining("; "));
+        } else if (ex instanceof MethodArgumentNotValidException manve) {
+            detail = manve.getBindingResult().getFieldErrors().stream()
+                    .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                    .collect(Collectors.joining("; "));
+        } else {
+            detail = ex.getMessage();
+        }
         return problem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", detail);
     }
 

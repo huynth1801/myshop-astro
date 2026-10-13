@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  CheckCircle2,
   ExternalLink,
+  FileEdit,
   FileText,
   Loader2,
   Pencil,
@@ -15,6 +17,8 @@ import {
   adminCreatePost,
   adminDeletePost,
   adminListPosts,
+  adminBulkDeletePosts,
+  adminBulkUpdatePostStatus,
   adminCrawlPost,
   adminListRssSources,
   adminCreateRssSource,
@@ -51,12 +55,22 @@ export default function AdminBlogDashboard() {
   const [crawlError, setCrawlError] = useState<string | null>(null);
   const [crawlSuccess, setCrawlSuccess] = useState<string | null>(null);
 
-  // Delete modal state
-  const [deleteTarget, setDeleteTarget] = useState<{
-    type: 'post' | 'rss';
-    id: string;
-    title: string;
+  // Bulk Selection State
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkOperating, setIsBulkOperating] = useState(false);
+  const [bulkFeedback, setBulkFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
   } | null>(null);
+  const selectAllCheckboxRef = useRef<HTMLInputElement>(null);
+
+  // Delete modal state
+  const [deleteTarget, setDeleteTarget] = useState<
+    | { type: 'post'; id: string; title: string }
+    | { type: 'rss'; id: string; title: string }
+    | { type: 'bulk-post'; count: number }
+    | null
+  >(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -125,13 +139,78 @@ export default function AdminBlogDashboard() {
     }
   }, [user, status, loadPosts, loadRssSources]);
 
+  const currentPageIds = posts ? posts.map((p) => p.id) : [];
+  const isAllOnPageSelected =
+    currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
+  const isSomeOnPageSelected =
+    currentPageIds.some((id) => selectedIds.includes(id)) && !isAllOnPageSelected;
+
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      selectAllCheckboxRef.current.indeterminate = isSomeOnPageSelected;
+    }
+  }, [isSomeOnPageSelected]);
+
+  const handleToggleSelectAllPage = () => {
+    if (isAllOnPageSelected) {
+      // Unselect all on current page
+      setSelectedIds((prev) => prev.filter((id) => !currentPageIds.includes(id)));
+    } else {
+      // Select all on current page
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...currentPageIds])));
+    }
+  };
+
+  const handleToggleSelectRow = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleUnselectAll = () => {
+    setSelectedIds([]);
+  };
+
+  const handleBulkStatusChange = async (newStatus: PostStatus) => {
+    if (selectedIds.length === 0) return;
+    setIsBulkOperating(true);
+    setBulkFeedback(null);
+    try {
+      const res = await adminBulkUpdatePostStatus(selectedIds, newStatus);
+      const statusLabel = newStatus === 'PUBLISHED' ? 'Đã xuất bản (PUBLISHED)' : 'Bản nháp (DRAFT)';
+      setBulkFeedback({
+        type: 'success',
+        message: `Đã cập nhật trạng thái thành công cho ${res.count} bài viết sang "${statusLabel}".`,
+      });
+      setSelectedIds([]);
+      await loadPosts();
+    } catch (err) {
+      setBulkFeedback({
+        type: 'error',
+        message: err instanceof BlogApiError ? err.message : 'Có lỗi khi cập nhật trạng thái hàng loạt.',
+      });
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
     setDeleteError(null);
     try {
-      if (deleteTarget.type === 'post') {
+      if (deleteTarget.type === 'bulk-post') {
+        const res = await adminBulkDeletePosts(selectedIds);
+        setBulkFeedback({
+          type: 'success',
+          message: `Đã xóa thành công ${res.count} bài viết khỏi hệ thống.`,
+        });
+        setSelectedIds([]);
+        setDeleteTarget(null);
+        await loadPosts();
+      } else if (deleteTarget.type === 'post') {
         await adminDeletePost(deleteTarget.id);
+        setSelectedIds((prev) => prev.filter((id) => id !== deleteTarget.id));
         setDeleteTarget(null);
         await loadPosts();
       } else {
@@ -143,9 +222,11 @@ export default function AdminBlogDashboard() {
       setDeleteError(
         err instanceof BlogApiError
           ? err.message
-          : deleteTarget.type === 'post'
-            ? 'Lỗi khi xóa bài viết. Vui lòng thử lại.'
-            : 'Lỗi khi xóa nguồn RSS. Vui lòng thử lại.',
+          : deleteTarget.type === 'bulk-post'
+            ? 'Lỗi khi xóa bài viết hàng loạt. Vui lòng thử lại.'
+            : deleteTarget.type === 'post'
+              ? 'Lỗi khi xóa bài viết. Vui lòng thử lại.'
+              : 'Lỗi khi xóa nguồn RSS. Vui lòng thử lại.',
       );
     } finally {
       setIsDeleting(false);
@@ -421,12 +502,106 @@ export default function AdminBlogDashboard() {
             </div>
           )}
 
+          {bulkFeedback && (
+            <div
+              className={`flex items-center justify-between rounded-lg border p-3 text-xs ${
+                bulkFeedback.type === 'success'
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                  : 'border-destructive/30 bg-destructive/10 text-destructive'
+              }`}
+            >
+              <span>{bulkFeedback.message}</span>
+              <button
+                type="button"
+                onClick={() => setBulkFeedback(null)}
+                className="ml-3 font-semibold text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Bulk Action Toolbar */}
+          {selectedIds.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 shadow-xs animate-in fade-in slide-in-from-top-1">
+              <div className="flex items-center gap-3">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
+                  {selectedIds.length}
+                </span>
+                <span className="text-xs font-semibold text-foreground">
+                  Đã chọn <strong className="text-primary">{selectedIds.length}</strong> bài viết
+                </span>
+                <button
+                  type="button"
+                  onClick={handleUnselectAll}
+                  className="text-[11px] font-medium text-muted-foreground underline decoration-dotted hover:text-foreground"
+                >
+                  Bỏ chọn tất cả
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isBulkOperating}
+                  onClick={() => void handleBulkStatusChange('PUBLISHED')}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-500/25 disabled:opacity-50 dark:text-emerald-300"
+                >
+                  {isBulkOperating ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  )}
+                  <span>Đăng hàng loạt ({selectedIds.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isBulkOperating}
+                  onClick={() => void handleBulkStatusChange('DRAFT')}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/15 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-500/25 disabled:opacity-50 dark:text-amber-300"
+                >
+                  {isBulkOperating ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <FileEdit className="h-3.5 w-3.5" />
+                  )}
+                  <span>Chuyển về nháp ({selectedIds.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isBulkOperating}
+                  onClick={() => {
+                    setDeleteError(null);
+                    setDeleteTarget({ type: 'bulk-post', count: selectedIds.length });
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-red-700 disabled:opacity-50 dark:border-red-800 dark:bg-red-600 dark:hover:bg-red-500"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Xóa hàng loạt ({selectedIds.length})</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Post Table */}
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-border bg-muted/40 font-medium uppercase tracking-wider text-muted-foreground">
                   <tr>
+                    <th className="w-10 px-3 py-3 text-center">
+                      <input
+                        ref={selectAllCheckboxRef}
+                        type="checkbox"
+                        aria-label="Chọn tất cả bài viết trên trang"
+                        title={isAllOnPageSelected ? 'Bỏ chọn tất cả trên trang' : 'Chọn tất cả trên trang'}
+                        checked={isAllOnPageSelected}
+                        onChange={handleToggleSelectAllPage}
+                        className="h-4 w-4 cursor-pointer rounded border-input text-primary accent-primary focus:ring-primary"
+                      />
+                    </th>
                     <th className="px-4 py-3">Ảnh</th>
                     <th className="px-4 py-3">Tiêu đề bài viết</th>
                     <th className="px-4 py-3">Trạng thái</th>
@@ -438,13 +613,13 @@ export default function AdminBlogDashboard() {
                 <tbody className="divide-y border-border">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      <td colSpan={7} className="py-12 text-center text-muted-foreground">
                         Đang tải danh sách bài viết...
                       </td>
                     </tr>
                   ) : !posts || posts.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                      <td colSpan={7} className="py-12 text-center text-muted-foreground">
                         Chưa có bài viết nào phù hợp. Hãy dán link vào ô ở trên hoặc bấm <strong>+ Viết bài mới</strong>.
                       </td>
                     </tr>
@@ -452,8 +627,23 @@ export default function AdminBlogDashboard() {
                     posts.map((post) => {
                       const coverUrl = resolveImageUrl(post.featuredImage);
                       const isPublished = post.status === 'PUBLISHED';
+                      const isSelected = selectedIds.includes(post.id);
                       return (
-                        <tr key={post.id} className="transition hover:bg-muted/30">
+                        <tr
+                          key={post.id}
+                          className={`transition ${
+                            isSelected ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/30'
+                          }`}
+                        >
+                          <td className="w-10 px-3 py-3 text-center">
+                            <input
+                              type="checkbox"
+                              aria-label={`Chọn bài viết ${post.title}`}
+                              checked={isSelected}
+                              onChange={() => handleToggleSelectRow(post.id)}
+                              className="h-4 w-4 cursor-pointer rounded border-input text-primary accent-primary focus:ring-primary"
+                            />
+                          </td>
                           <td className="px-4 py-3">
                             <div className="h-12 w-16 overflow-hidden rounded border border-border bg-muted">
                               {coverUrl ? (
@@ -765,14 +955,32 @@ export default function AdminBlogDashboard() {
       {/* Custom Confirm Dialog (replaces native window.confirm & alert) */}
       <ConfirmDialog
         isOpen={!!deleteTarget}
-        title={deleteTarget?.type === 'post' ? 'Xác nhận xóa bài viết' : 'Xác nhận xóa nguồn RSS'}
-        description={
-          deleteTarget?.type === 'post'
-            ? 'Bạn có chắc chắn muốn xóa bài viết này khỏi hệ thống blog của cửa hàng?'
-            : 'Bạn có chắc chắn muốn xóa nguồn feed RSS này?'
+        title={
+          deleteTarget?.type === 'bulk-post'
+            ? `Xác nhận xóa hàng loạt ${deleteTarget.count} bài viết`
+            : deleteTarget?.type === 'post'
+              ? 'Xác nhận xóa bài viết'
+              : 'Xác nhận xóa nguồn RSS'
         }
-        itemName={deleteTarget?.title}
-        confirmLabel={deleteTarget?.type === 'post' ? 'Xóa bài viết' : 'Xóa nguồn RSS'}
+        description={
+          deleteTarget?.type === 'bulk-post'
+            ? `Hành động này sẽ xóa vĩnh viễn ${deleteTarget.count} bài viết đã chọn khỏi hệ thống blog của cửa hàng. Thao tác này không thể hoàn tác!`
+            : deleteTarget?.type === 'post'
+              ? 'Bạn có chắc chắn muốn xóa bài viết này khỏi hệ thống blog của cửa hàng?'
+              : 'Bạn có chắc chắn muốn xóa nguồn feed RSS này?'
+        }
+        itemName={
+          deleteTarget?.type === 'bulk-post'
+            ? `${deleteTarget.count} bài viết đã chọn`
+            : deleteTarget?.title
+        }
+        confirmLabel={
+          deleteTarget?.type === 'bulk-post'
+            ? `Xác nhận xóa ${deleteTarget.count} bài viết`
+            : deleteTarget?.type === 'post'
+              ? 'Xóa bài viết'
+              : 'Xóa nguồn RSS'
+        }
         cancelLabel="Hủy"
         variant="danger"
         isLoading={isDeleting}

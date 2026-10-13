@@ -935,6 +935,42 @@ paths:
         '204': { description: Deleted }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /api/v1/admin/posts/bulk-delete:
+    post:
+      tags: [Blog, Admin]
+      summary: Bulk delete blog posts
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BulkDeletePostsRequest' }
+      responses:
+        '200':
+          description: Bulk delete result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkOperationResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/admin/posts/bulk-status:
+    post:
+      tags: [Blog, Admin]
+      summary: Bulk update blog post status
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BulkUpdatePostStatusRequest' }
+      responses:
+        '200':
+          description: Bulk status update result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkOperationResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
   /api/v1/admin/posts/crawl:
     post:
       tags: [Blog, Admin]
@@ -1499,4 +1535,31 @@ components:
         createdPosts:
           type: array
           items: { $ref: '#/components/schemas/AdminPostSummary' }
+
+    BulkDeletePostsRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items: { type: string, format: uuid }
+          minItems: 1
+
+    BulkUpdatePostStatusRequest:
+      type: object
+      required: [ids, status]
+      properties:
+        ids:
+          type: array
+          items: { type: string, format: uuid }
+          minItems: 1
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED]
+
+    BulkOperationResult:
+      type: object
+      required: [count]
+      properties:
+        count: { type: integer }
 

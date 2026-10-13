@@ -124,15 +124,23 @@ public class PostService {
         }
 
         Post post = new Post();
-        post.setTitle(req.title().trim());
-        post.setSlug(slug);
-        post.setSummary(req.summary() == null ? "" : req.summary().trim());
+        String t = req.title().trim();
+        post.setTitle(t.length() > 255 ? t.substring(0, 255) : t);
+        post.setSlug(slug.length() > 255 ? slug.substring(0, 255) : slug);
+        String s = req.summary() == null ? "" : req.summary().trim();
+        post.setSummary(s.length() > 500 ? s.substring(0, 500) : s);
         post.setContent(req.content());
         post.setFeaturedImage(req.featuredImage());
         post.setAuthor(req.author());
         post.setStatus(req.status() == null ? PostStatus.DRAFT : req.status());
-        post.setSeoTitle(req.seoTitle());
-        post.setSeoDescription(req.seoDescription());
+        if (req.seoTitle() != null) {
+            String st = req.seoTitle().trim();
+            post.setSeoTitle(st.length() > 255 ? st.substring(0, 255) : st);
+        }
+        if (req.seoDescription() != null) {
+            String sd = req.seoDescription().trim();
+            post.setSeoDescription(sd.length() > 500 ? sd.substring(0, 500) : sd);
+        }
 
         if (post.getStatus() == PostStatus.PUBLISHED) {
             post.setPublishedAt(Instant.now());
@@ -160,10 +168,12 @@ public class PostService {
         }
 
         if (req.title() != null) {
-            post.setTitle(req.title().trim());
+            String t = req.title().trim();
+            post.setTitle(t.length() > 255 ? t.substring(0, 255) : t);
         }
         if (req.summary() != null) {
-            post.setSummary(req.summary().trim());
+            String s = req.summary().trim();
+            post.setSummary(s.length() > 500 ? s.substring(0, 500) : s);
         }
         if (req.content() != null) {
             post.setContent(req.content());
@@ -176,12 +186,17 @@ public class PostService {
         }
         if (req.status() != null) {
             post.setStatus(req.status());
+            if (req.status() == PostStatus.PUBLISHED && post.getPublishedAt() == null) {
+                post.setPublishedAt(Instant.now());
+            }
         }
         if (req.seoTitle() != null) {
-            post.setSeoTitle(req.seoTitle());
+            String st = req.seoTitle().trim();
+            post.setSeoTitle(st.length() > 255 ? st.substring(0, 255) : st);
         }
         if (req.seoDescription() != null) {
-            post.setSeoDescription(req.seoDescription());
+            String sd = req.seoDescription().trim();
+            post.setSeoDescription(sd.length() > 500 ? sd.substring(0, 500) : sd);
         }
 
         post = posts.save(post);
@@ -199,7 +214,37 @@ public class PostService {
     @Transactional
     public void adminDelete(UUID id) {
         Post post = posts.findById(id).orElseThrow(() -> new PostNotFoundException(id));
+        postRelatedProducts.deleteByPostId(id);
         posts.delete(post);
+    }
+
+    @Transactional
+    public int adminBulkDelete(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        for (UUID id : ids) {
+            postRelatedProducts.deleteByPostId(id);
+        }
+        List<Post> targets = posts.findAllById(ids);
+        posts.deleteAll(targets);
+        return targets.size();
+    }
+
+    @Transactional
+    public int adminBulkUpdateStatus(List<UUID> ids, PostStatus status) {
+        if (ids == null || ids.isEmpty() || status == null) {
+            return 0;
+        }
+        List<Post> targets = posts.findAllById(ids);
+        for (Post post : targets) {
+            post.setStatus(status);
+            if (status == PostStatus.PUBLISHED && post.getPublishedAt() == null) {
+                post.setPublishedAt(Instant.now());
+            }
+        }
+        posts.saveAll(targets);
+        return targets.size();
     }
 
     private List<UUID> updateRelatedProducts(Post post, List<UUID> productIds) {

@@ -6,11 +6,28 @@ export const authUser = atom<AuthUser | null>(null);
 export const authOpen = atom(false);
 
 let bootstrapped = false;
+let bootstrapPromise: Promise<AuthUser | null> | null = null;
 
-export async function bootstrapAuth(): Promise<void> {
-  if (bootstrapped) return;
-  bootstrapped = true;
-  authUser.set(await bootstrapSession());
+export async function bootstrapAuth(): Promise<AuthUser | null> {
+  if (bootstrapped) return authUser.get();
+  if (bootstrapPromise) return bootstrapPromise;
+
+  bootstrapPromise = (async () => {
+    try {
+      const user = await bootstrapSession();
+      bootstrapped = true;
+      authUser.set(user);
+      return user;
+    } catch {
+      bootstrapped = true;
+      authUser.set(null);
+      return null;
+    } finally {
+      bootstrapPromise = null;
+    }
+  })();
+
+  return bootstrapPromise;
 }
 
 export function setUser(user: AuthUser | null): void {

@@ -3,6 +3,9 @@ package com.shop.blog;
 import com.shop.blog.dto.AdminCreatePostRequest;
 import com.shop.blog.dto.AdminPostDetailResponse;
 import com.shop.blog.dto.AdminUpdatePostRequest;
+import com.shop.blog.dto.BulkDeletePostsRequest;
+import com.shop.blog.dto.BulkOperationResult;
+import com.shop.blog.dto.BulkUpdatePostStatusRequest;
 import com.shop.blog.dto.CrawlPostRequest;
 import com.shop.blog.dto.CrawledPostResponse;
 import com.shop.blog.dto.PostSummaryResponse;
@@ -71,6 +74,18 @@ public class AdminPostController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePost(@PathVariable UUID id) {
         postService.adminDelete(id);
+    }
+
+    @PostMapping("/bulk-delete")
+    public BulkOperationResult bulkDeletePosts(@Valid @RequestBody BulkDeletePostsRequest req) {
+        int count = postService.adminBulkDelete(req.ids());
+        return new BulkOperationResult(count);
+    }
+
+    @PostMapping("/bulk-status")
+    public BulkOperationResult bulkUpdatePostStatus(@Valid @RequestBody BulkUpdatePostStatusRequest req) {
+        int count = postService.adminBulkUpdateStatus(req.ids(), req.status());
+        return new BulkOperationResult(count);
     }
 
     @PostMapping("/crawl")
