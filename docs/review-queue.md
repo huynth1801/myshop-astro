@@ -58,3 +58,4 @@ Commits pending review. Auto-managed:
 - 55e5e77 (2026-10-13) chore(docs): update review queue for blog fixes
 - c923058 (2026-10-13) chore(docs): sync review queue
 - 059e0a6 (2026-10-13) fix(blog): resolve auth 401 race condition, auto-refresh tokens, and add bulk post actions
+- de683e2 (2026-10-13) chore(docs): update review queue for auth and blog save fixes
