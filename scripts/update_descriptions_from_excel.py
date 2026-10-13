@@ -173,8 +173,8 @@ for line in sql_lines:
             # Escape single quotes for SQL
             escaped_desc = up['desc'].replace("'", "''")
             escaped_short = up['short_desc'].replace("'", "''")
-            # Reconstruct the line preserving rest of fields
-            rest = line[match.end(5):]
+            # Reconstruct the line preserving rest of fields starting from status
+            rest = line[match.start(6) - 2:]
             new_line = f"  ('{p_id}', '{p_name}', '{p_slug}', '{escaped_desc}', '{escaped_short}'{rest}"
             new_sql_lines.append(new_line)
             updated_count += 1

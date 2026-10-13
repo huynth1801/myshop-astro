@@ -31,7 +31,7 @@ Nếu bạn phiền, xin vui lòng không đặt hàng, cảm ơn bạn đã h�
 Nếu bạn có bất kỳ câu hỏi nào, xin vui lòng liên hệ bộ phận chăm sóc khách hàng!
 Chúng tôi sẽ giao hàng trong thời gian sớm nhất.
 *Các cậu nhận được hàng đừng quên quay video unbox sản phẩm để được hỗ trợ tốt nhất nhé ạ .
-Hi vọng sẽ làm hài lòng các nàng, chúc các nàng mua sắm vui vẻ !', 'Áo khoác chống nắng tia UV tay dài bằng vải lụa lạnh thoáng khí họ nu ôm body'', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '28 days'),
+Hi vọng sẽ làm hài lòng các nàng, chúc các nàng mua sắm vui vẻ !', 'Áo khoác chống nắng tia UV tay dài bằng vải lụa lạnh thoáng khí họ nu ôm body', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '28 days'),
   ('66666666-6666-6666-6666-000000000002', 'Áo thể thao Hanabi', 'ao-the-thao-hanabi', 'Thiết kế liền mạch, hấp dẫn và quyến rũ.
 Chất liệu mềm mại, vải thoáng khí, tạo cảm giác thoải mái khi mặc.
 Thiết kế gợi cảm và thời trang giúp bạn trở nên quyến rũ hơn.
@@ -41,7 +41,7 @@ THÔNG TIN SẢN PHẨM
 Chất liệu: BÔNG + Nylon
 Phong cách: Gợi cảm, Thời trang, Đẩy lên.
 Màu Sắc: Đen, Da, Hồng, Xanh
-Size: M ( 40-50Kg) - L (50-60Kg) - XL (60-70Kg)', 'Thiết kế liền mạch, hấp dẫn và quyến rũ.'', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '27 days'),
+Size: M ( 40-50Kg) - L (50-60Kg) - XL (60-70Kg)', 'Thiết kế liền mạch, hấp dẫn và quyến rũ.', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '27 days'),
   ('66666666-6666-6666-6666-000000000003', 'Áo croptop chống nắng cánh dơi', 'ao-croptop-chong-nang', 'PHÂN BIỆT ÁO LOẠI 1
 
 -   MẶC CẢ NGÀY KO ĐỔ MỒ HÔI
@@ -70,7 +70,7 @@ Nếu bạn phiền, xin vui lòng không đặt hàng, cảm ơn bạn đã h�
 Nếu bạn có bất kỳ câu hỏi nào, xin vui lòng liên hệ bộ phận chăm sóc khách hàng!
 Chúng tôi sẽ giao hàng trong thời gian sớm nhất.
 *Các cậu nhận được hàng đừng quên quay video unbox sản phẩm để được hỗ trợ tốt nhất nhé ạ .
-Hi vọng sẽ làm hài lòng các nàng, chúc các nàng mua sắm vui vẻ !', 'PHÂN BIỆT ÁO LOẠI 1'', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '26 days'),
+Hi vọng sẽ làm hài lòng các nàng, chúc các nàng mua sắm vui vẻ !', 'PHÂN BIỆT ÁO LOẠI 1', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '26 days'),
   ('66666666-6666-6666-6666-000000000004', 'Quần độn mỏng cạp cao chất su mịn', 'quan-don-mong-cap-cao', 'Quần độn mông gen bụng nữ, quần nịt bụng nâng mông độn mông lên dáng tự nhiên không bị lộ 2in1
 MÔ TẢ SẢN PHẨM:
 -  Thiết kế quyến rũ: Với vòng 3 khiêm tốn, các bạn nữ e ngại khi diện đồ bó sát và không được sexy như mong muốn !! Hiểu được nhu cầu đó nên nhà HANABI đã có sản phẩm quần chip độn mông và hông, giúp các nàng giảm bớt lo lắng về vòng 3 không như mong muốn của mình.
@@ -98,7 +98,7 @@ Nhà HANABI về 2 màu với 3 sz cho các nàng thoải mái lựa chọn:
 HANABI Cam kết:
 – Sản phẩm cam kết chất lượng cao, an toàn cho người tiêu dùng.
 – Hàng thật giống hình 100%.
-– Tư vấn nhiệt tình và vui vẻ.', 'Quần độn mông gen bụng nữ, quần nịt bụng nâng mông độn mông lên dáng tự nhiên không bị lộ 2in1'', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '25 days'),
+– Tư vấn nhiệt tình và vui vẻ.', 'Quần độn mông gen bụng nữ, quần nịt bụng nâng mông độn mông lên dáng tự nhiên không bị lộ 2in1', 'ACTIVE', '11111111-1111-1111-1111-111111111101', now() - interval '25 days'),
   ('66666666-6666-6666-6666-000000000005', 'Set 5 đôi tất Hanabi', 'set-tat-hanabi-5-doi', 'Sét 5 Đôi Tất / Vớ Nữ  HANABI Gấu Trắng Cổ Cao Phong Cách Hàn Quốc.
 
 THÔNG TIN SẢN PHẨM:
@@ -115,7 +115,7 @@ THÔNG TIN SẢN PHẨM:
 - Tất vớ được làm từ chất liệu 100% cotton giúp khử mùi kháng khuẩn rất tốt
 - Chất liệu vải mềm, nhẹ, co giãn 4 chiều, thấm hút mồ hơi cực tốt
 - Tất - vớ mềm mại, thấm hút mồ hôi mang lại cảm giác mát mẻ khô thoáng suốt 4 mùa
-- Chất vải mịn màng, không bị xù lông khi sử dụng', 'Sét 5 Đôi Tất / Vớ Nữ  HANABI Gấu Trắng Cổ Cao Phong Cách Hàn Quốc.'', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '24 days'),
+- Chất vải mịn màng, không bị xù lông khi sử dụng', 'Sét 5 Đôi Tất / Vớ Nữ  HANABI Gấu Trắng Cổ Cao Phong Cách Hàn Quốc.', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '24 days'),
   ('66666666-6666-6666-6666-000000000006', 'Khẩu trang chống nắng UV UPF50', 'khau-trang-chong-nang-uv', 'Sản Phẩm: Khẩu trang chống nắng chống tia UV UPF50+, mặt nạ chống nắng vải lụa băng thoáng khí bảo vệ da mặt
 
 - Màu sắc: Đen, Hồng, Xám, Ghi
@@ -141,7 +141,7 @@ Thiết kế ôm sát: Kiểu dáng ôm sát khuôn mặt giúp khẩu trang lu�
 -Điều kiện đổi/trả: Sản phẩm được đổi/trả trong vòng 7 ngày kể từ ngày nhận hàng nếu phát hiện lỗi từ nhà sản xuất hoặc không đúng với mô tả sản phẩm.
 - Đổi trả hoàn toàn miễn phí khi sản phẩm thực tế khác với ảnh, chấp nhận đổi trả khi còn đầy đủ bao bì, vỏ hộp, không bị trầy xước, móp méo, hỏng hóc bên ngoài, đổ vỡ...
 
-- Tạo cảm giác thoải mái và tự tin khi di chuyển ngoài trời.', 'Sản Phẩm: Khẩu trang chống nắng chống tia UV UPF50+, mặt nạ chống nắng vải lụa băng thoáng khí bảo vệ da mặt'', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '23 days'),
+- Tạo cảm giác thoải mái và tự tin khi di chuyển ngoài trời.', 'Sản Phẩm: Khẩu trang chống nắng chống tia UV UPF50+, mặt nạ chống nắng vải lụa băng thoáng khí bảo vệ da mặt', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '23 days'),
   ('66666666-6666-6666-6666-000000000007', 'Khẩu trang vành che nắng 3D kháng khuẩn', 'khau-trang-vanh-che-3d', 'Chất liệu: Nylon 88% +spandex 12%
 Upf50 +, Che chắn hiệu quả hơn 99% tia cực tím
 Chức năng: Khô nhanh, Thoáng khí, Bảo vệ Uv, Chống gió, Che nắng
@@ -163,7 +163,7 @@ Khẩu trang chống tia UV là loại khẩu trang được làm từ các lo�
 ✔ Che cả những vùng như khoé mắt, trán, thái dương( những khu vực dễ bị nắng gây nám)
 ✔ Sản phẩm có công dụng chống nắng dựa trên chất liệu ( không dựa trên độ dày của vải).
 ✔ Sản phẩm không chỉ chống nắng & ngăn tia cực tím, tia UVA-UVB, mà còn chống bụi mịn.
-✔ Lý tưởng để đi xe đạp, đạp xe và các hoạt động ngoài trời khác', 'Chất liệu: Nylon 88% +spandex 12%'', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '22 days'),
+✔ Lý tưởng để đi xe đạp, đạp xe và các hoạt động ngoài trời khác', 'Chất liệu: Nylon 88% +spandex 12%', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '22 days'),
   ('66666666-6666-6666-6666-000000000008', 'Dép da xỏ ngón', 'dep-da-xo-ngon', 'Combo 10 Đôi Vớ Da Xỏ Ngón Chống Nắng Mềm Mịn HANABI, Chất Liệu Vải Cotton Êm Chân Thoáng Mát
 
 Mô Tả Sản Phẩm
@@ -209,7 +209,7 @@ HƯỚNG DẪN GIẶT VÀ BẢO QUẢN TẤT
 
 - Hạn chế phơi tất ở ngoài trời nắng quá lâu, và sử dụng máy sấy & bàn ủi (Nên dùng là, ủi ở nhiệt độ dưới 150 độ C)
 
-Combo 10 Đôi Vớ Da Xỏ Ngón Chống Nắng Mềm Mịn HANABI, Chất Liệu Vải Cotton Êm Chân Thoáng Mát', 'Combo 10 Đôi Vớ Da Xỏ Ngón Chống Nắng Mềm Mịn HANABI, Chất Liệu Vải Cotton Êm Chân Thoáng Mát'', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '21 days'),
+Combo 10 Đôi Vớ Da Xỏ Ngón Chống Nắng Mềm Mịn HANABI, Chất Liệu Vải Cotton Êm Chân Thoáng Mát', 'Combo 10 Đôi Vớ Da Xỏ Ngón Chống Nắng Mềm Mịn HANABI, Chất Liệu Vải Cotton Êm Chân Thoáng Mát', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '21 days'),
   ('66666666-6666-6666-6666-000000000009', 'Tất gấu cổ ngắn kèm túi rút', 'tat-gau-co-ngan-tui-rut', '🐻Gấu có thể chưa có, nhưng tất gấu thì phải có thật nhiều đôi các chị nhé 🍀
 🍀Mẫu tất ngắn, hoạ tiết đáng yêu mà các bạn vẫn thường í ới
 🍀Chất co giãn 4 chiều đi cực thích, bạn nào hay đi giày thể thao thì loại này hợp quá nhé.
@@ -242,7 +242,7 @@ Combo 10 Đôi Vớ Da Xỏ Ngón Chống Nắng Mềm Mịn HANABI, Chất Li�
 
 – Sản phẩm rất tốt và tiện lợi cho các bạn.
 
-Set 10 Đôi Vớ Tất Gấu Cổ Ngắn Kèm Túi Rút Đựng Mềm Mịn, Chất Liệu Vải Cotton Êm Chân Thoáng Mát', 'Gấu có thể chưa có, nhưng tất gấu thì phải có thật nhiều đôi các chị nhé 🍀'', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '20 days'),
+Set 10 Đôi Vớ Tất Gấu Cổ Ngắn Kèm Túi Rút Đựng Mềm Mịn, Chất Liệu Vải Cotton Êm Chân Thoáng Mát', 'Gấu có thể chưa có, nhưng tất gấu thì phải có thật nhiều đôi các chị nhé 🍀', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '20 days'),
   ('66666666-6666-6666-6666-000000000010', 'Hộp 5 đôi dán ngực silicon hoa', 'dan-nguc-silicon-5-doi', '🍄🍄🍄Hộp 5 Đôi Dán Nhũ Hoa Silicon hình hoa mai HANABI
 
 🍂🍂Nếu bạn muốn có những khoảng thời gian thoát khỏi chiếc áo ngực hằng ngày, miếng dán ngực silicon che đầu ngực sẽ là giải pháp hoàn hảo giúp bạn thoát khỏi áo ngực mà vẫn kín đáo che đầu ngực.
@@ -271,7 +271,7 @@ Set 10 Đôi Vớ Tất Gấu Cổ Ngắn Kèm Túi Rút Đựng Mềm Mịn, Ch
 
 🔘 Kích cỡ: Freesize (đường kính 6,5cm).
 
-🔘 Thời hạn sử dụng: dùng được nhiều lần.', 'Hộp 5 Đôi Dán Nhũ Hoa Silicon hình hoa mai HANABI'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '19 days'),
+🔘 Thời hạn sử dụng: dùng được nhiều lần.', 'Hộp 5 Đôi Dán Nhũ Hoa Silicon hình hoa mai HANABI', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '19 days'),
   ('66666666-6666-6666-6666-000000000011', 'Miếng dán ti silicone tai thỏ Hanabi', 'dan-ti-silicone-hanabi', 'Miếng Dán Ti Silicone Tai Thỏ HANABI Sử Dụng Nhiều Lần, Miếng Dán Nhũ Hoa Nâng Ngực Tạo Khe Bám Chắc Chống Mồ Hôi
 
 MÔ TẢ SẢN PHẨM
@@ -290,7 +290,7 @@ MÔ TẢ SẢN PHẨM
 - Tháo lớp bảo vệ keo miếng dán ngực silicon (nhớ giữ lớp bọc lại nhé) , dán trực tiếp lên đầu ngực trước, kéo miếng dán phía trên nâng lên tới độ cao như bạn mong muốn rồi dán chặt vào da
 Sau khi dùng xong, làm sạch bằng nước khômg chà xát để khô tự nhiên miếng dán. Dán lớp bọc bảo vệ lại như ban đầu để lần sau có thể sử dụng lại
 
-Miếng Dán Ti Silicone Tai Thỏ Sử Dụng Nhiều Lần, Miếng Dán Nhũ Hoa Nâng Ngực Tạo Khe Bám Chắc Chống Mồ Hôi', 'Miếng Dán Ti Silicone Tai Thỏ HANABI Sử Dụng Nhiều Lần, Miếng Dán Nhũ Hoa Nâng Ngực Tạo Khe Bám Chắc Chống Mồ Hôi'', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '18 days'),
+Miếng Dán Ti Silicone Tai Thỏ Sử Dụng Nhiều Lần, Miếng Dán Nhũ Hoa Nâng Ngực Tạo Khe Bám Chắc Chống Mồ Hôi', 'Miếng Dán Ti Silicone Tai Thỏ HANABI Sử Dụng Nhiều Lần, Miếng Dán Nhũ Hoa Nâng Ngực Tạo Khe Bám Chắc Chống Mồ Hôi', 'ACTIVE', '11111111-1111-1111-1111-111111111102', now() - interval '18 days'),
   ('66666666-6666-6666-6666-000000000012', 'Áo lót su đúc không gọng đệm mỏng', 'ao-lot-su-duc-khong-gong', 'Áo Lót Nâng Ngực Trơn Su Đúc Cao Cấp Không Gọng Không Đường May Đệm Mỏng Định Hình Ngực Có Giãn Thoáng Mát
 Size 34: vòng 1: chân ngực 70-75cm, đỉnh ngực 75-85cm
 Size 36: vòng 1: chân ngực 75-82cm, đỉnh ngực 85-92cm
@@ -306,7 +306,7 @@ Quả áo phù hợp với hầu hết dáng ngực, ngực nhỏ hay ngực to 
 
 => Hãy INBOX hoặc gọi điện để shop tư vấn nếu bạn chưa chắc chắn về size hoặc sản phẩm phù hợp chưa
 => Nếu gặp vấn đề khi nhận hàng, đừng vội đánh giá shop, hãy liên hệ shop Không gian eva để được giải quyết sớm nhất
-dolotthai', 'Áo Lót Nâng Ngực Trơn Su Đúc Cao Cấp Không Gọng Không Đường May Đệm Mỏng Định Hình Ngực Có Giãn Thoáng Mát'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '17 days'),
+dolotthai', 'Áo Lót Nâng Ngực Trơn Su Đúc Cao Cấp Không Gọng Không Đường May Đệm Mỏng Định Hình Ngực Có Giãn Thoáng Mát', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '17 days'),
   ('66666666-6666-6666-6666-000000000013', 'Áo ngực su đúc không gọng đệm 3cm', 'ao-nguc-su-duc-nang', 'Áo Lót Nữ Su Cotton Mút 3 phân Nâng Đẩy V1 shop là sự lựa chọn hoàn hảo cho phái đẹp, mang đến sự thoải mái và hỗ trợ tối ưu.
 
 Chất liệu cao cấp: Được làm từ cotton mềm mại, thoáng khí.
@@ -357,7 +357,7 @@ Chị em có thể giặt máy nhưng lên giặt với túi giặt riêng và n
 
 - KHÔNG áp dụng đổi trả sản phẩm trong các chương trình khuyến mại , giảm giá, quà tặng.
 
-️ LƯU Ý: Khi nhận hàng nếu có điều gì chưa hài lòng, mong nàng khoan đánh giá vội, mình hãy liên hệ shop để được hỗ trợ tốt nhất nhé ️', 'Áo Lót Nữ Su Cotton Mút 3 phân Nâng Đẩy V1 shop là sự lựa chọn hoàn hảo cho phái đẹp, mang đến sự thoải mái và hỗ trợ tối ưu.'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '16 days'),
+️ LƯU Ý: Khi nhận hàng nếu có điều gì chưa hài lòng, mong nàng khoan đánh giá vội, mình hãy liên hệ shop để được hỗ trợ tốt nhất nhé ️', 'Áo Lót Nữ Su Cotton Mút 3 phân Nâng Đẩy V1 shop là sự lựa chọn hoàn hảo cho phái đẹp, mang đến sự thoải mái và hỗ trợ tối ưu.', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '16 days'),
   ('66666666-6666-6666-6666-000000000014', 'Đai nịt bụng thông hơi chống cuộn', 'dai-nit-bung-thong-hoi', 'Đai Nịt Bụng Thông Hơi Chống Cuộn - Đai Nịt Bụng sau sinh Latex giảm mỡ bụng định hình siết eo chống cuộn
 
 - Giảm mỡ cho các mẹ sau sinh hoặc chị em mỡ bụng hiệu quả nhanh so với các biện pháp thông thường.
@@ -376,7 +376,7 @@ Size M : 43-53Kg , vòng eo 60- 70cm
 
 Size L :  54-64Kg , vòng eo 71- 80cm
 
-Size XL: 65-74Kg , vòng eo 81- 90cm', 'Đai Nịt Bụng Thông Hơi Chống Cuộn - Đai Nịt Bụng sau sinh Latex giảm mỡ bụng định hình siết eo chống cuộn'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '15 days'),
+Size XL: 65-74Kg , vòng eo 81- 90cm', 'Đai Nịt Bụng Thông Hơi Chống Cuộn - Đai Nịt Bụng sau sinh Latex giảm mỡ bụng định hình siết eo chống cuộn', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '15 days'),
   ('66666666-6666-6666-6666-000000000015', 'Dây áo ngực trong suốt móc sắt', 'day-ao-nguc-trong-suot', 'Dây áo ngực nữ trong suốt móc sắt (một cặp) HANABI
 Chiều rộng dây: 1 cm
 Thiết kế trong suốt tiệp màu da, nhưng không gây cảm giác dính vào da.
@@ -404,7 +404,7 @@ CAM KẾT:
 2. Trường hợp không đủ điều kiện đổi trả:
 - Quá 03 ngày kể từ khi Quý khách nhận hàng
 - Gửi lại hàng không đúng mẫu mã, không phải sản phẩm của shop
-- Không thích, không hợp, đặt nhầm mã, nhầm màu,...', 'Dây áo ngực nữ trong suốt móc sắt (một cặp) HANABI'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '14 days'),
+- Không thích, không hợp, đặt nhầm mã, nhầm màu,...', 'Dây áo ngực nữ trong suốt móc sắt (một cặp) HANABI', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '14 days'),
   ('66666666-6666-6666-6666-000000000016', 'Gen nịt bụng latex định hình eo', 'gen-nit-bung-latex', 'Gen Nịt Bụng Latex Định Hình Eo Tích Nhiệt Giảm Mỡ Bụng, Quần Gen Nịt Bụng Co Giãn Tốt Không Gây Khó Chịu
 
 ✅ Mô tả sản phẩm:
@@ -432,7 +432,7 @@ Size               ||  Vòng eo (trên rốn tầm 5 cm)
 - Phiếu bảo hành ghi rõ thông tin: Tên khách hàng - Sđt - Địa chỉ - Ngày bán sản phẩm.
 - Nếu sản phẩm có vấn đề, khách hàng gửi trực tiếp về nhà sản xuất để được bảo hành theo chính sách ghi trên phiếu bảo hành sản phẩm.
 
-"#quần_lót_đúc_su_nữ #quần_lót_đúc_su_thun_lạnh #quần_lót_đúc_su_không_lộ_viền #quần_lót_đúc_su_thông_hơi #quần_lót_đúc_su_bigsize #quần_lót_đúc_su_không_đường_may #quần_đúc_su #quần_lót_su_đúc_là_gì #quần_lót_nữ_đúc_su #quần_lót_thun_lạnh_nữ #quần_lót_thun_lạnh_bigsize #quần_lót_thun_lạnh_không_viền #quần_lót_thun_lạnh_lưng_cao', 'Gen Nịt Bụng Latex Định Hình Eo Tích Nhiệt Giảm Mỡ Bụng, Quần Gen Nịt Bụng Co Giãn Tốt Không Gây Khó Chịu'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '13 days'),
+"#quần_lót_đúc_su_nữ #quần_lót_đúc_su_thun_lạnh #quần_lót_đúc_su_không_lộ_viền #quần_lót_đúc_su_thông_hơi #quần_lót_đúc_su_bigsize #quần_lót_đúc_su_không_đường_may #quần_đúc_su #quần_lót_su_đúc_là_gì #quần_lót_nữ_đúc_su #quần_lót_thun_lạnh_nữ #quần_lót_thun_lạnh_bigsize #quần_lót_thun_lạnh_không_viền #quần_lót_thun_lạnh_lưng_cao', 'Gen Nịt Bụng Latex Định Hình Eo Tích Nhiệt Giảm Mỡ Bụng, Quần Gen Nịt Bụng Co Giãn Tốt Không Gây Khó Chịu', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '13 days'),
   ('66666666-6666-6666-6666-000000000017', 'Quần gen nịt bụng đúc su móc cài', 'quan-gen-nit-bung-moc-cai', 'QUẦN GEN NỊT BỤNG, GEN ĐỊNH HÌNH HANABI với mục đích lấy lại vóc dáng tuổi xuân của chị em một cách nhanh chóng, hiệu quả nhất với 3 tiêu chí:
 - KHÔNG LỘ
 - KHÔNG CỘM
@@ -452,7 +452,7 @@ XL: 69 - 80 kg     ( vòng 3 95cm - 120cm )
 (*)  Bảng size Áp dụng cho người cao 1m60, khách hàng có chiều cao thấp hoặc cao hơn tùy chỉnh size lên hoặc xuống cho phù hợp
 Bracherry
 
-Chị em xem thêm "bảng quy đổi kích cỡ" vòng EO và BỤNG để chọn size phù hợp nhất nhé !!!', 'QUẦN GEN NỊT BỤNG, GEN ĐỊNH HÌNH HANABI với mục đích lấy lại vóc dáng tuổi xuân của chị em một cách nhanh chóng, hiệu quả nhất với 3 tiêu chí:'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '12 days'),
+Chị em xem thêm "bảng quy đổi kích cỡ" vòng EO và BỤNG để chọn size phù hợp nhất nhé !!!', 'QUẦN GEN NỊT BỤNG, GEN ĐỊNH HÌNH HANABI với mục đích lấy lại vóc dáng tuổi xuân của chị em một cách nhanh chóng, hiệu quả nhất với 3 tiêu chí:', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '12 days'),
   ('66666666-6666-6666-6666-000000000018', 'Quần nano sinh nhiệt tan mỡ bụng', 'quan-nano-sinh-nhiet-tan-mo', 'Quần Tập HANABI Sinh Nhiệt Đánh Tan Mỡ, Quần Tập  Sinh Nhiệt Tráng Bạc Đổ Mồ Hôi Giảm Mỡ Siêu Tốc
 
 + Quần Đùi ,Ngố ,Dài tập thể thao Đốt Cháy Mỡ Bụng Giảm Eo Siêu Nhanh Quần Tập Thể Dục Đổ Mồ Hôi Tan Mỡ Bụng là sản phẩm quần tập thể thao Giúp tăng nhiệt độ cơ thể trong một khoảng thời gian ngắn, thúc đẩy việc tiết mồ hôi, cách ly hiệu quả nhiệt độ bên ngoài để duy trì nhiệt độ cơ thể
@@ -477,7 +477,7 @@ Mọi ý kiến thắc mắc vui lòng ib cho shop nhé
 🚛 Phí ship và thời gian nhận hàng sẽ được Shopee báo cụ thể khi bạn đặt đơn hàng.
 
 *Các cậu nhận được hàng đừng quên quay video unbox sản phẩm để được hỗ trợ tốt nhất nhé ạ .
-Hi vọng sẽ làm hài lòng các nàng, chúc các nàng mua sắm vui vẻ !', 'Quần Tập HANABI Sinh Nhiệt Đánh Tan Mỡ, Quần Tập  Sinh Nhiệt Tráng Bạc Đổ Mồ Hôi Giảm Mỡ Siêu Tốc'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '11 days'),
+Hi vọng sẽ làm hài lòng các nàng, chúc các nàng mua sắm vui vẻ !', 'Quần Tập HANABI Sinh Nhiệt Đánh Tan Mỡ, Quần Tập  Sinh Nhiệt Tráng Bạc Đổ Mồ Hôi Giảm Mỡ Siêu Tốc', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '11 days'),
   ('66666666-6666-6666-6666-000000000019', 'Quần lót cotton không đường may', 'quan-lot-cotton-khong-duong-may', 'Chào mừng bạn đã đến với gian Hàng của chúng mình
 Quần Lót Cotton Không Đường May Lưng Vừa Co Giãn, Quần Lót Nữ In Họa Tiết Gấu Dễ Thương Thoải Mái Cho Nữ HANABI
 
@@ -498,7 +498,7 @@ Quần Lót Cotton Không Đường May Lưng Vừa Co Giãn, Quần Lót Nữ I
 
 ⛔ CHÍNH SÁCH BẢO HÀNH: - Bảo hành sản phẩm 1 năm. - Phiếu bảo hành ghi rõ thông tin: Tên khách hàng - Sđt - Địa chỉ - Ngày bán sản phẩm. - Nếu sản phẩm có vấn đề, khách hàng gửi trực tiếp về nhà sản xuất để được bảo hành theo chính sách ghi trên phiếu bảo hành sản phẩm.
 
-Cảm ơn bạn đã ghé qua. Nhớ ủng hộ shop nha', 'Chào mừng bạn đã đến với gian Hàng của chúng mình'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '10 days'),
+Cảm ơn bạn đã ghé qua. Nhớ ủng hộ shop nha', 'Chào mừng bạn đã đến với gian Hàng của chúng mình', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '10 days'),
   ('66666666-6666-6666-6666-000000000020', 'Quần lót mặc trong váy chống lộ', 'quan-lot-mac-trong-vay', 'Quần Lót Mặc Trong Váy Chống lộ, Quần Lót Bảo Hộ Mặc Váy Thun Su Co Dãn
 
 Nàng có biết không, khi lần đầu nhìn thấy hình ảnh của em quần bảo hộ vạt trước này thì mình kiểu "Quàooooo!!! Con người thật là thông minh! Cái gì cũng nghĩ ra được!!!'' Giờ thì Nàng không phải lo bị kém duyên khi mặc váy mà đi lại lộ khe váy nữa rồi nha!
@@ -545,7 +545,7 @@ Nàng có biết không, khi lần đầu nhìn thấy hình ảnh của em qu�
 
 🔆 Hỗ trợ Quý khách đổi/trả hàng trong 0️⃣7️⃣ ngày kể từ khi nhận sản phẩm theo đúng quy định của Shopee
 
-Do màn hình và điều kiện ánh sáng khác nhau, màu sắc thực tế của sản phẩm có thể chênh lệch khoảng 3-5%', 'Quần Lót Mặc Trong Váy Chống lộ, Quần Lót Bảo Hộ Mặc Váy Thun Su Co Dãn'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '9 days'),
+Do màn hình và điều kiện ánh sáng khác nhau, màu sắc thực tế của sản phẩm có thể chênh lệch khoảng 3-5%', 'Quần Lót Mặc Trong Váy Chống lộ, Quần Lót Bảo Hộ Mặc Váy Thun Su Co Dãn', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '9 days'),
   ('66666666-6666-6666-6666-000000000021', 'Quần lót Air tăng hình lai băng siêu nhẹ', 'quan-lot-air-tang-hinh', 'Quần Lót Nữ Air Tàng Hình Lụa Băng Siêu Nhẹ
 🔸Chất Liệu: Su lụa siêu mịn siêu mềm , thoáng mát
 🔸Size:
@@ -559,7 +559,7 @@ Do màn hình và điều kiện ánh sáng khác nhau, màu sắc thực tế c
 - Đáy quần là lớp cotton kháng khuẩn, chống viêm nhiễm, nấm ngứa
 - Quần thấm hút mồ hôi cho ngày năng động. Quần mặc full vòng 3
 - Quần không đường viền nên thoải thích mặc đồ Body không lo lộ ngấn
-- Quần lót phù hợp cho dân công sở, bà mẹ nội trợ, dân kinh doanh muốn cả ngày vận động không lo bí, nóng nực.', 'Quần Lót Nữ Air Tàng Hình Lụa Băng Siêu Nhẹ'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '8 days'),
+- Quần lót phù hợp cho dân công sở, bà mẹ nội trợ, dân kinh doanh muốn cả ngày vận động không lo bí, nóng nực.', 'Quần Lót Nữ Air Tàng Hình Lụa Băng Siêu Nhẹ', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '8 days'),
   ('66666666-6666-6666-6666-000000000022', 'Quần lót cotton kháng khuẩn', 'quan-lot-cotton-khang-khuan', 'Hộp 5 Quần Lót Cotton Thiên Nga Kháng Khuẩn Dễ Thương Co Giãn 4 Chiều Cao Cấp
 MÔ TẢ SẢN PHẨM
 👙 Hộp 5 quần lót nữ hồng hạc cotton viền ren kháng khuẩn siêu xinh 👙
@@ -573,7 +573,7 @@ SIÊU CO DÃN, MỀM MẠI SIÊU SƯỚNG LUÔN Ạ!
 - Sản phẩm có đóng hộp cực xinh, thích hợp làm quà tặng ý nghĩa.
 Freesize : 40- 58kg
 Màu sắc tươi tắn đơn giản , dễ chịu
-theo khuyến cáo chỉ nên mặc quần chip trong vòng 3 - 4 tháng là phải thay ạ. Nên các mẹ sắm 1 sét này tha hồ mặc luôn', 'Hộp 5 Quần Lót Cotton Thiên Nga Kháng Khuẩn Dễ Thương Co Giãn 4 Chiều Cao Cấp'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '7 days'),
+theo khuyến cáo chỉ nên mặc quần chip trong vòng 3 - 4 tháng là phải thay ạ. Nên các mẹ sắm 1 sét này tha hồ mặc luôn', 'Hộp 5 Quần Lót Cotton Thiên Nga Kháng Khuẩn Dễ Thương Co Giãn 4 Chiều Cao Cấp', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '7 days'),
   ('66666666-6666-6666-6666-000000000023', 'Quần lót đúc su tăng hình chống lộ vi', 'quan-lot-duc-su-chong-lo', 'Quần Lót Nữ Đúc Su Tàng Hình Chống Lộ Viền, Quần lót nữ đúc su thun lạnh không đường may cao cấp
 
 Size
@@ -611,7 +611,7 @@ ANGEL_BOUTIQUE SHOP đảm bảo
 - Hoàn tiền ngay nếu sản phẩm không giống với mô tả.
 - Giao hàng toàn quốc, nhận hàng thanh toán.
 - Hỗ trợ đổi trả theo quy định.
-- Gửi hàng siêu tốc', 'Quần Lót Nữ Đúc Su Tàng Hình Chống Lộ Viền, Quần lót nữ đúc su thun lạnh không đường may cao cấp'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '6 days'),
+- Gửi hàng siêu tốc', 'Quần Lót Nữ Đúc Su Tàng Hình Chống Lộ Viền, Quần lót nữ đúc su thun lạnh không đường may cao cấp', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '6 days'),
   ('66666666-6666-6666-6666-000000000024', 'Quần lót Hanabi su lụa cao cấp', 'quan-lot-hanabi-su-lua', 'Quần Lót Nữ HANABI Su lụa Cao Cấp Thiết Kế Mỏng Mát Tôn Dáng Mềm Mại Thoáng Mát
 
 MÔ TẢ SẢN PHẨM:
@@ -636,7 +636,7 @@ CAM KẾT:
 LƯU Ý
 - Shop ưu tiên giao theo đơn khách đặt, không nhận giao hàng theo ghi chú và tin nhắn.
 - Màu sắc của sản phẩm thực tế có thể đậm, nhạt hơn ảnh mô tả do ánh sáng và màn hình thiết bị khác nhau.
-- Kích thước sản phẩm dung sai cho phép ±1-2cm.', 'Quần Lót Nữ HANABI Su lụa Cao Cấp Thiết Kế Mỏng Mát Tôn Dáng Mềm Mại Thoáng Mát'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '5 days'),
+- Kích thước sản phẩm dung sai cho phép ±1-2cm.', 'Quần Lót Nữ HANABI Su lụa Cao Cấp Thiết Kế Mỏng Mát Tôn Dáng Mềm Mại Thoáng Mát', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '5 days'),
   ('66666666-6666-6666-6666-000000000025', 'Quần lót đúc su tím thun lụa', 'quan-lot-duc-su-tim', 'Quần Lót Nữ - Quần lót Đúc Su Tim Thun Lạnh Viền Sóng Gợi Cảm Đính Trái Tim Nhỏ Dễ Thương
 
 Mô tả sản Phẩm
@@ -675,7 +675,7 @@ LƯU Ý KHI SỬ DỤNG CÁC SẢN PHẨM CỦA SHOP
 
 - Đối vơi sản phẩm cao cấp, sang chảnh, đa dạng về chất liệu, kiểu dáng, cách bảo quản sản phẩm tốt nhất là giặt tay với bột (nước) giặt nhẹ để giữ được độ bền của vải, tránh bị phai màu từ các loại quần áo khác.
 
-- Nên phơi sản phẩm ở nơi thoáng mát, tránh để ẩm ướt kéo dài gây mốc, nên làm khô quần áo bằng cách phơi ở những điểm đón gió sẽ giữ được màu vải tốt hơn.', 'Quần Lót Nữ - Quần lót Đúc Su Tim Thun Lạnh Viền Sóng Gợi Cảm Đính Trái Tim Nhỏ Dễ Thương'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '4 days'),
+- Nên phơi sản phẩm ở nơi thoáng mát, tránh để ẩm ướt kéo dài gây mốc, nên làm khô quần áo bằng cách phơi ở những điểm đón gió sẽ giữ được màu vải tốt hơn.', 'Quần Lót Nữ - Quần lót Đúc Su Tim Thun Lạnh Viền Sóng Gợi Cảm Đính Trái Tim Nhỏ Dễ Thương', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '4 days'),
   ('66666666-6666-6666-6666-000000000026', 'Quần lót su cạp cao năng mỏng gen', 'quan-lot-su-cap-cao', 'Quần Lót Nữ Su Cạp Cao - Nâng Mông - Gen Nịt Bụng - Giảm Mỡ Bụng HANABI
 
 2️⃣ Hỗ trợ đổi trả khi không vừa, hàng lỗi
@@ -753,7 +753,7 @@ Gửi lại hàng không đúng mẫu mã, không phải sản phẩm của shop
 
 Không thích, không hợp, đặt nhầm mã, nhầm màu,...
 
-✅Mọi trường hợp khiếu nại hay chưa hài lòng xin hãy phản hồi lại với shop', 'Quần Lót Nữ Su Cạp Cao - Nâng Mông - Gen Nịt Bụng - Giảm Mỡ Bụng HANABI'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '3 days'),
+✅Mọi trường hợp khiếu nại hay chưa hài lòng xin hãy phản hồi lại với shop', 'Quần Lót Nữ Su Cạp Cao - Nâng Mông - Gen Nịt Bụng - Giảm Mỡ Bụng HANABI', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '3 days'),
   ('66666666-6666-6666-6666-000000000027', 'Set 4 quần lót su full hộp quà gấu Cookie', 'set-4-quan-lot-hop-qua', 'Set 4 Quần Lót Su Full Hộp Gấu Cookie Cao Cấp, Quần Lót Su Kháng Khuẩn Nâng Mông Không Viền Quyến Rũ
 
 Việc mặc những chiếc quần bó hoặc váy ôm mà để lộ đường viền quần trong nhìn rất phản cảm. Quần chíp không viền  đã khắc phục những nhược điểm này với những đặc điểm thiết kế:
@@ -763,7 +763,7 @@ Việc mặc những chiếc quần bó hoặc váy ôm mà để lộ đường
 - Chất liệu đồng nhất, tiếp xúc cơ thể đồng nhất, không chỗ chặt chỗ lỏng.
 
 size 42-66kg
-Set 4 quần đủ 4 màu khác nhau!', 'Set 4 Quần Lót Su Full Hộp Gấu Cookie Cao Cấp, Quần Lót Su Kháng Khuẩn Nâng Mông Không Viền Quyến Rũ'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '2 days'),
+Set 4 quần đủ 4 màu khác nhau!', 'Set 4 Quần Lót Su Full Hộp Gấu Cookie Cao Cấp, Quần Lót Su Kháng Khuẩn Nâng Mông Không Viền Quyến Rũ', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '2 days'),
   ('66666666-6666-6666-6666-000000000028', 'Set 6 quần chip su thạch tan', 'set-6-quan-chip', 'Set 6 Quần Chip Quần Lót Nữ Su Thạch Tàng Hình Không Đường May Không Lộ Viền Kèm Hộp Mini
 
 ☘️ Mẫu quần lót su thiết kế không đường may thông minh không để lại vết hằn mỗi khi diện váy ngắn hay quần bó sát
@@ -815,7 +815,7 @@ HỖ TRỢ ĐỔI TRẢ THEO QUY ĐỊNH CỦA SHOPEE :
 
 + Không thích, không hợp, đặt nhầm mã, nhầm màu,...
 
-+ Gửi lại hàng không đúng mẫu mã, không phải sản phẩm của HANABI', 'Set 6 Quần Chip Quần Lót Nữ Su Thạch Tàng Hình Không Đường May Không Lộ Viền Kèm Hộp Mini'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '1 days'),
++ Gửi lại hàng không đúng mẫu mã, không phải sản phẩm của HANABI', 'Set 6 Quần Chip Quần Lót Nữ Su Thạch Tàng Hình Không Đường May Không Lộ Viền Kèm Hộp Mini', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '1 days'),
   ('66666666-6666-6666-6666-000000000029', 'Set túi 3 quần lót su đúc mặt lạnh', 'set-3-quan-lot-mat-lanh', 'Set túi 3 quần lót nữ su đúc mát lạnh viền ren phối nơ thiết kế cao cấp thoáng mát thấm hút mồ hôi bán chạy giá rẻ.
 
 ️SET 3 QUẦN LÓT NỮ SU ĐÚC MÁT LẠNH️
@@ -843,39 +843,172 @@ Hình ảnh sản phẩm giống 100%.
 Chất lượng sản phẩm tốt 100%.
 Sản phẩm được kiểm tra kĩ càng, nghiêm ngặt trước khi giao hàng.
 Sản phẩm luôn có sẵn trong kho hàng.
-Giao hàng ngay khi nhận được đơn hàng.', 'Set túi 3 quần lót nữ su đúc mát lạnh viền ren phối nơ thiết kế cao cấp thoáng mát thấm hút mồ hôi bán chạy giá rẻ.'', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '0 days');
+Giao hàng ngay khi nhận được đơn hàng.', 'Set túi 3 quần lót nữ su đúc mát lạnh viền ren phối nơ thiết kế cao cấp thoáng mát thấm hút mồ hôi bán chạy giá rẻ.', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '0 days');
 
 -- variants
 INSERT INTO product_variants (id, product_id, sku, price_cents, compare_at_price_cents, stock, attributes) VALUES
-  ('77777777-7777-7777-7777-000000000001', '66666666-6666-6666-6666-000000000001', 'AOKHOA01', 3500000, 4200000, 22, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000002', '66666666-6666-6666-6666-000000000002', 'AOTHET02', 2500000, NULL, 29, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000003', '66666666-6666-6666-6666-000000000003', 'AOCROP03', 1950000, 2535000, 36, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000004', '66666666-6666-6666-6666-000000000004', 'QUANDO04', 1190000, 1368500, 43, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000005', '66666666-6666-6666-6666-000000000005', 'SETTAT05', 1450000, NULL, 50, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000006', '66666666-6666-6666-6666-000000000006', 'KHAUTR06', 950000, 1187500, 57, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000007', '66666666-6666-6666-6666-000000000007', 'KHAUTR07', 850000, 1105000, 64, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000008', '66666666-6666-6666-6666-000000000008', 'DEPDAX08', 2100000, NULL, 71, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000009', '66666666-6666-6666-6666-000000000009', 'TATGAU09', 890000, NULL, 18, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000010', '66666666-6666-6666-6666-000000000010', 'DANNGU10', 590000, NULL, 25, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000011', '66666666-6666-6666-6666-000000000011', 'DANTIS11', 490000, NULL, 32, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000012', '66666666-6666-6666-6666-000000000012', 'AOLOTS12', 1290000, 1483500, 39, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000013', '66666666-6666-6666-6666-000000000013', 'AONGUC13', 1190000, 1427999, 46, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000014', '66666666-6666-6666-6666-000000000014', 'DAINIT14', 1590000, 1987500, 53, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000015', '66666666-6666-6666-6666-000000000015', 'DAYAON15', 450000, NULL, 60, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000016', '66666666-6666-6666-6666-000000000016', 'GENNIT16', 1890000, 2173500, 67, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000017', '66666666-6666-6666-6666-000000000017', 'QUANGE17', 1750000, 2100000, 74, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000018', '66666666-6666-6666-6666-000000000018', 'QUANNA18', 1390000, 1737500, 21, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000019', '66666666-6666-6666-6666-000000000019', 'QUANLO19', 790000, 1027000, 28, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000020', '66666666-6666-6666-6666-000000000020', 'QUANLO20', 890000, NULL, 35, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000021', '66666666-6666-6666-6666-000000000021', 'QUANLO21', 750000, 900000, 42, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000022', '66666666-6666-6666-6666-000000000022', 'QUANLO22', 850000, NULL, 49, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000023', '66666666-6666-6666-6666-000000000023', 'QUANLO23', 950000, 1235000, 56, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000024', '66666666-6666-6666-6666-000000000024', 'QUANLO24', 690000, 793499, 63, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000025', '66666666-6666-6666-6666-000000000025', 'QUANLO25', 650000, NULL, 70, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000026', '66666666-6666-6666-6666-000000000026', 'QUANLO26', 990000, 1237500, 17, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000027', '66666666-6666-6666-6666-000000000027', 'SET4QU27', 1590000, 2067000, 24, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000028', '66666666-6666-6666-6666-000000000028', 'SET6QU28', 1490000, 1713500, 31, '{"size": "Free size"}'),
-  ('77777777-7777-7777-7777-000000000029', '66666666-6666-6666-6666-000000000029', 'SET3QU29', 1290000, 1547999, 38, '{"size": "Free size"}');
+  ('77777777-7777-7777-7777-000000000001', '66666666-6666-6666-6666-000000000001', 'AOKHOA-01', 13900000, 17400000, 1234, '{"color": "Ghi form ôm"}'),
+  ('77777777-7777-7777-7777-000000000002', '66666666-6666-6666-6666-000000000001', 'AOKHOA-02', 19900000, 24900000, 0, '{"color": "Trắng"}'),
+  ('77777777-7777-7777-7777-000000000003', '66666666-6666-6666-6666-000000000001', 'AOKHOA-03', 13900000, NULL, 1234, '{"color": "Trắng form ôm"}'),
+  ('77777777-7777-7777-7777-000000000004', '66666666-6666-6666-6666-000000000001', 'AOKHOA-04', 13900000, 17400000, 1231, '{"color": "Đen form ôm"}'),
+  ('77777777-7777-7777-7777-000000000005', '66666666-6666-6666-6666-000000000001', 'AOKHOA-05', 13900000, 17400000, 1233, '{"color": "Hồng form ôm"}'),
+  ('77777777-7777-7777-7777-000000000006', '66666666-6666-6666-6666-000000000002', 'AOTHET-01', 15500000, 19400000, 12314, '{"color": "Đen có chữ", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000007', '66666666-6666-6666-6666-000000000002', 'AOTHET-02', 14500000, 18100000, 12319, '{"color": "Nâu su đúc", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000008', '66666666-6666-6666-6666-000000000002', '166242-DEN-XL-61-69KG', 9900000, NULL, 23156, '{"color": "Đen", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000009', '66666666-6666-6666-6666-000000000002', '166242-HONG-XL-61-69KG', 9900000, 12400000, 23158, '{"color": "Hồng", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000010', '66666666-6666-6666-6666-000000000002', 'AOTHET-05', 15900000, 19900000, 12317, '{"color": "Đen su đúc", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000011', '66666666-6666-6666-6666-000000000002', '166242-DA-M-40-50-KG', 9900000, NULL, 22562, '{"color": "Da", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000012', '66666666-6666-6666-6666-000000000002', 'AOTHET-07', 15500000, 19400000, 12311, '{"color": "Trắng có chữ", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000013', '66666666-6666-6666-6666-000000000002', 'AOTHET-08', 15500000, 19400000, 12317, '{"color": "Trắng có chữ", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000014', '66666666-6666-6666-6666-000000000002', '166242-XANH-LA-XL-61-69KG', 9900000, NULL, 23133, '{"color": "Xanh lá", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000015', '66666666-6666-6666-6666-000000000002', 'AOTHET-10', 15500000, 19400000, 154997, '{"color": "Đen có chữ", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000016', '66666666-6666-6666-6666-000000000002', 'AOTHET-11', 15900000, 19900000, 12316, '{"color": "Kem su đúc", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000017', '66666666-6666-6666-6666-000000000002', '166242-DEN-M-40-50-KG', 9900000, NULL, 23148, '{"color": "Đen", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000018', '66666666-6666-6666-6666-000000000002', '166242-DA-XL-61-69KG', 9900000, 12400000, 22944, '{"color": "Da", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000019', '66666666-6666-6666-6666-000000000002', '166242-XANH-LA-M-40-50-KG', 9900000, 12400000, 23091, '{"color": "Xanh lá", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000020', '66666666-6666-6666-6666-000000000002', '166242-HONG-L-51-60-KG', 9900000, NULL, 22997, '{"color": "Hồng", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000021', '66666666-6666-6666-6666-000000000002', 'AOTHET-16', 15500000, 19400000, 12315, '{"color": "Trắng có chữ", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000022', '66666666-6666-6666-6666-000000000002', '166242-DA-L-51-60-KG', 9900000, 12400000, 22587, '{"color": "Da", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000023', '66666666-6666-6666-6666-000000000002', '166242-DEN-L-51-60-KG', 9900000, NULL, 23079, '{"color": "Đen", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000024', '66666666-6666-6666-6666-000000000002', 'AOTHET-19', 15900000, 19900000, 12314, '{"color": "Đen su đúc", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000025', '66666666-6666-6666-6666-000000000002', 'AOTHET-20', 14900000, 18600000, 12313, '{"color": "Xám có chữ", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000026', '66666666-6666-6666-6666-000000000002', 'AOTHET-21', 15900000, NULL, 12309, '{"color": "Kem su đúc", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000027', '66666666-6666-6666-6666-000000000002', 'AOTHET-22', 15900000, 19900000, 12304, '{"color": "Kem su đúc", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000028', '66666666-6666-6666-6666-000000000002', 'AOTHET-23', 14900000, 18600000, 12318, '{"color": "Xám có chữ", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000029', '66666666-6666-6666-6666-000000000002', 'AOTHET-24', 15900000, NULL, 12315, '{"color": "Đen su đúc", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000030', '66666666-6666-6666-6666-000000000002', 'AOTHET-25', 14500000, 18100000, 12315, '{"color": "Nâu su đúc", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000031', '66666666-6666-6666-6666-000000000002', '166242-HONG-M-40-50-KG', 9900000, 12400000, 23143, '{"color": "Hồng", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000032', '66666666-6666-6666-6666-000000000002', 'AOTHET-27', 14900000, NULL, 12317, '{"color": "Xám có chữ", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000033', '66666666-6666-6666-6666-000000000002', '166242-XANH-LA-L-51-60-KG', 9900000, 12400000, 23054, '{"color": "Xanh lá", "size": "L (51 - 60 kg)"}'),
+  ('77777777-7777-7777-7777-000000000034', '66666666-6666-6666-6666-000000000002', 'AOTHET-29', 15500000, 19400000, 12315, '{"color": "Đen có chữ", "size": "XL ( 61 - 69kg)"}'),
+  ('77777777-7777-7777-7777-000000000035', '66666666-6666-6666-6666-000000000002', 'AOTHET-30', 14500000, NULL, 12317, '{"color": "Nâu su đúc", "size": "M (40 - 50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000036', '66666666-6666-6666-6666-000000000003', '166239-TRANG-CROPTOP', 23900000, 29900000, 2243, '{"color": "Xám Đậm croptop"}'),
+  ('77777777-7777-7777-7777-000000000037', '66666666-6666-6666-6666-000000000003', '166239-TIM-CROPTOP', 23900000, 29900000, 2258, '{"color": "Tím croptop"}'),
+  ('77777777-7777-7777-7777-000000000038', '66666666-6666-6666-6666-000000000003', '166239-XANH-REU-CROPTOP', 23900000, NULL, 2236, '{"color": "Xanh rêu croptop"}'),
+  ('77777777-7777-7777-7777-000000000039', '66666666-6666-6666-6666-000000000003', '166239-HONG-CROPTOP', 23900000, 29900000, 2212, '{"color": "Hồng croptop"}'),
+  ('77777777-7777-7777-7777-000000000040', '66666666-6666-6666-6666-000000000003', '166239-DA-CROPTOP', 23900000, 29900000, 2271, '{"color": "Da croptop"}'),
+  ('77777777-7777-7777-7777-000000000041', '66666666-6666-6666-6666-000000000003', '166239-DEN-FORM-OM', 16900000, NULL, 12287, '{"color": "Đen Form Ôm"}'),
+  ('77777777-7777-7777-7777-000000000042', '66666666-6666-6666-6666-000000000003', '166239-HONG-FORM-OM', 16900000, 21100000, 12295, '{"color": "Hồng Form Ôm"}'),
+  ('77777777-7777-7777-7777-000000000043', '66666666-6666-6666-6666-000000000003', '166239-TRANG-FORM-OM', 16900000, 21100000, 12302, '{"color": "Trắng Form Ôm"}'),
+  ('77777777-7777-7777-7777-000000000044', '66666666-6666-6666-6666-000000000004', '166227-DEN-XL-55-61KG', 19900000, 24900000, 2130, '{"color": "Đen", "size": "XL (55 - 61kg)"}'),
+  ('77777777-7777-7777-7777-000000000045', '66666666-6666-6666-6666-000000000004', '166227-DA-M-42-47KG', 19900000, 24900000, 2131, '{"color": "Da", "size": "M ( 42 - 47kg)"}'),
+  ('77777777-7777-7777-7777-000000000046', '66666666-6666-6666-6666-000000000004', '166227-DA-L-48-54KG', 19900000, NULL, 2130, '{"color": "Da", "size": "L ( 48 - 54kg)"}'),
+  ('77777777-7777-7777-7777-000000000047', '66666666-6666-6666-6666-000000000004', '166227-DA-XL-55-61KG', 19900000, 24900000, 2131, '{"color": "Da", "size": "XL (55 - 61kg)"}'),
+  ('77777777-7777-7777-7777-000000000048', '66666666-6666-6666-6666-000000000004', '166227-DEN-M-42-47KG', 19900000, 24900000, 2130, '{"color": "Đen", "size": "M ( 42 - 47kg)"}'),
+  ('77777777-7777-7777-7777-000000000049', '66666666-6666-6666-6666-000000000004', '166227-DEN-L-48-54KG', 19900000, NULL, 2130, '{"color": "Đen", "size": "L ( 48 - 54kg)"}'),
+  ('77777777-7777-7777-7777-000000000050', '66666666-6666-6666-6666-000000000005', '166246-1-DOI-NGAU-NHIEN', 2000000, 2500000, 3225, '{"size": "1 đôi (ngẫu nhiên)"}'),
+  ('77777777-7777-7777-7777-000000000051', '66666666-6666-6666-6666-000000000005', '166246-SET-5-DOI', 9000000, 11200000, 3229, '{"size": "Set 5 đôi"}'),
+  ('77777777-7777-7777-7777-000000000052', '66666666-6666-6666-6666-000000000006', '166231-2-GHI', 18900000, 23600000, 2282, '{"size": "2 Ghi"}'),
+  ('77777777-7777-7777-7777-000000000053', '66666666-6666-6666-6666-000000000006', '166231-GHI', 9900000, 12400000, 2598, '{"color": "Ghi"}'),
+  ('77777777-7777-7777-7777-000000000054', '66666666-6666-6666-6666-000000000006', '166231-1-HONG-1-DEN', 18900000, NULL, 2255, '{"size": "1 Hồng + 1 Đen"}'),
+  ('77777777-7777-7777-7777-000000000055', '66666666-6666-6666-6666-000000000006', '166231-2-DEN', 18900000, 23600000, 2274, '{"size": "2 Đen"}'),
+  ('77777777-7777-7777-7777-000000000056', '66666666-6666-6666-6666-000000000006', '166231-2-HONG', 18900000, 23600000, 2288, '{"size": "2 Hồng"}'),
+  ('77777777-7777-7777-7777-000000000057', '66666666-6666-6666-6666-000000000006', '166231-1-HONG-1-GHI', 18900000, NULL, 2622, '{"size": "1 Hồng + 1 Ghi"}'),
+  ('77777777-7777-7777-7777-000000000058', '66666666-6666-6666-6666-000000000006', '166231-HONG', 9900000, 12400000, 2239, '{"color": "Hồng"}'),
+  ('77777777-7777-7777-7777-000000000059', '66666666-6666-6666-6666-000000000006', '166231-1-DEN-1-GHI', 18900000, 23600000, 2181, '{"size": "1 Đen + 1 Ghi"}'),
+  ('77777777-7777-7777-7777-000000000060', '66666666-6666-6666-6666-000000000006', '166231-DEN', 9900000, NULL, 2079, '{"color": "Đen"}'),
+  ('77777777-7777-7777-7777-000000000061', '66666666-6666-6666-6666-000000000007', '166226-HONG', 15900000, 19900000, 23231, '{"color": "Hồng"}'),
+  ('77777777-7777-7777-7777-000000000062', '66666666-6666-6666-6666-000000000007', '166226-XAM', 15900000, 19900000, 0, '{"color": "Xám"}'),
+  ('77777777-7777-7777-7777-000000000063', '66666666-6666-6666-6666-000000000007', '166226-TRANG', 15900000, NULL, 0, '{"color": "Trắng"}'),
+  ('77777777-7777-7777-7777-000000000064', '66666666-6666-6666-6666-000000000007', '166226-DEN', 15900000, 19900000, 23222, '{"color": "Đen"}'),
+  ('77777777-7777-7777-7777-000000000065', '66666666-6666-6666-6666-000000000008', '166245-10-DOI', 10900000, 13600000, 2432, '{"size": "10 đôi"}'),
+  ('77777777-7777-7777-7777-000000000066', '66666666-6666-6666-6666-000000000008', '166245-5-DOI', 6900000, 8600000, 2426, '{"size": "5 đôi"}'),
+  ('77777777-7777-7777-7777-000000000067', '66666666-6666-6666-6666-000000000009', 'TATGAU-01', 9000000, 11200000, 5467, '{"size": "Free size"}'),
+  ('77777777-7777-7777-7777-000000000068', '66666666-6666-6666-6666-000000000010', 'DANNGU-01', 5900000, 7400000, 1216, '{"size": "Free size"}'),
+  ('77777777-7777-7777-7777-000000000069', '66666666-6666-6666-6666-000000000011', '166243-1-CAP-MAU-DA', 8900000, 11100000, 2420, '{"size": "1 cặp màu Da"}'),
+  ('77777777-7777-7777-7777-000000000070', '66666666-6666-6666-6666-000000000011', '166243-1-CAP-MAU-DEN', 8900000, 11100000, 2433, '{"size": "1 cặp màu Đen"}'),
+  ('77777777-7777-7777-7777-000000000071', '66666666-6666-6666-6666-000000000012', 'AOLOT-01', 16900000, 21100000, 1320, '{"color": "Đen", "size": "36 (V1 76 - 85cm)"}'),
+  ('77777777-7777-7777-7777-000000000072', '66666666-6666-6666-6666-000000000012', 'AOLOT-02', 15900000, 19900000, 1321, '{"color": "Nâu", "size": "38 (V1 86 - 92cm)"}'),
+  ('77777777-7777-7777-7777-000000000073', '66666666-6666-6666-6666-000000000012', 'AOLOT-03', 16900000, NULL, 1319, '{"color": "Màu nude", "size": "34 (V1 70-75cm)"}'),
+  ('77777777-7777-7777-7777-000000000074', '66666666-6666-6666-6666-000000000012', 'AOLOT-04', 16900000, 21100000, 1321, '{"color": "Đen", "size": "34 (V1 70-75cm)"}'),
+  ('77777777-7777-7777-7777-000000000075', '66666666-6666-6666-6666-000000000012', 'AOLOT-05', 16900000, 21100000, 1314, '{"color": "Màu nude", "size": "36 (V1 76 - 85cm)"}'),
+  ('77777777-7777-7777-7777-000000000076', '66666666-6666-6666-6666-000000000012', 'AOLOT-06', 16900000, NULL, 1321, '{"color": "Đen", "size": "38 (V1 86 - 92cm)"}'),
+  ('77777777-7777-7777-7777-000000000077', '66666666-6666-6666-6666-000000000012', 'AOLOT-07', 15900000, 19900000, 1321, '{"color": "Nâu", "size": "36 (V1 76 - 85cm)"}'),
+  ('77777777-7777-7777-7777-000000000078', '66666666-6666-6666-6666-000000000012', 'AOLOT-08', 15900000, 19900000, 1321, '{"color": "Nâu", "size": "34 (V1 70-75cm)"}'),
+  ('77777777-7777-7777-7777-000000000079', '66666666-6666-6666-6666-000000000012', 'AOLOT-09', 16900000, NULL, 1318, '{"color": "Màu nude", "size": "38 (V1 86 - 92cm)"}'),
+  ('77777777-7777-7777-7777-000000000080', '66666666-6666-6666-6666-000000000013', 'AONGUC-01', 16900000, 21100000, 1228, '{"color": "Màu nude", "size": "36 (V1 83 - 88 cm)"}'),
+  ('77777777-7777-7777-7777-000000000081', '66666666-6666-6666-6666-000000000013', 'AONGUC-02', 16900000, 21100000, 1230, '{"color": "Màu nude", "size": "38 (V1 89 - 94 cm)"}'),
+  ('77777777-7777-7777-7777-000000000082', '66666666-6666-6666-6666-000000000013', 'AONGUC-03', 16900000, NULL, 1229, '{"color": "Đen", "size": "36 (V1 83 - 88 cm)"}'),
+  ('77777777-7777-7777-7777-000000000083', '66666666-6666-6666-6666-000000000013', 'AONGUC-04', 16900000, 21100000, 1229, '{"color": "Đen", "size": "38 (V1 89 - 94 cm)"}'),
+  ('77777777-7777-7777-7777-000000000084', '66666666-6666-6666-6666-000000000013', 'AONGUC-05', 16900000, 21100000, 1227, '{"color": "Màu nude", "size": "34 (V1 77 - 82 cm)"}'),
+  ('77777777-7777-7777-7777-000000000085', '66666666-6666-6666-6666-000000000013', 'AONGUC-06', 16900000, NULL, 1230, '{"color": "Đen", "size": "34 (V1 77 - 82 cm)"}'),
+  ('77777777-7777-7777-7777-000000000086', '66666666-6666-6666-6666-000000000013', 'AONGUC-07', 15900000, 19900000, 1231, '{"color": "Xám", "size": "34 (V1 77 - 82 cm)"}'),
+  ('77777777-7777-7777-7777-000000000087', '66666666-6666-6666-6666-000000000013', 'AONGUC-08', 15900000, 19900000, 1231, '{"color": "Xám", "size": "36 (V1 83 - 88 cm)"}'),
+  ('77777777-7777-7777-7777-000000000088', '66666666-6666-6666-6666-000000000013', 'AONGUC-09', 15900000, NULL, 1231, '{"color": "Xám", "size": "38 (V1 89 - 94 cm)"}'),
+  ('77777777-7777-7777-7777-000000000089', '66666666-6666-6666-6666-000000000014', '166225-DEN-M-43-53-KG', 10900000, 13600000, 25362, '{"color": "Đen", "size": "M (43-53 kg)"}'),
+  ('77777777-7777-7777-7777-000000000090', '66666666-6666-6666-6666-000000000014', '166225-DEN-L-54-64-KG', 10900000, 13600000, 25380, '{"color": "Đen", "size": "L (54-64 kg)"}'),
+  ('77777777-7777-7777-7777-000000000091', '66666666-6666-6666-6666-000000000014', '166225-TRANG-M-43-53-KG', 10900000, NULL, 25266, '{"color": "Trắng", "size": "M (43-53 kg)"}'),
+  ('77777777-7777-7777-7777-000000000092', '66666666-6666-6666-6666-000000000014', '166225-TRANG-L-54-64-KG', 10900000, 13600000, 25322, '{"color": "Trắng", "size": "L (54-64 kg)"}'),
+  ('77777777-7777-7777-7777-000000000093', '66666666-6666-6666-6666-000000000014', '166225-TRANG-XL-65-75-KG', 10900000, 13600000, 25437, '{"color": "Trắng", "size": "XL (65-75 kg)"}'),
+  ('77777777-7777-7777-7777-000000000094', '66666666-6666-6666-6666-000000000014', '166225-DEN-XL-65-75-KG', 10900000, NULL, 25416, '{"color": "Đen", "size": "XL (65-75 kg)"}'),
+  ('77777777-7777-7777-7777-000000000095', '66666666-6666-6666-6666-000000000015', 'DAYAO-01', 900000, 1100000, 3124, '{"size": "Free size"}'),
+  ('77777777-7777-7777-7777-000000000096', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-L-DA', 17900000, 22400000, 2311, '{"color": "Da", "size": "Combo 2 L"}'),
+  ('77777777-7777-7777-7777-000000000097', '66666666-6666-6666-6666-000000000016', '166236-L-64-72-KG-DA', 9900000, 12400000, 2277, '{"color": "Da", "size": "L (64-72 kg)"}'),
+  ('77777777-7777-7777-7777-000000000098', '66666666-6666-6666-6666-000000000016', '166236-XL-73-85-KG-DA', 9900000, NULL, 2295, '{"color": "Da", "size": "XL (73-85 kg)"}'),
+  ('77777777-7777-7777-7777-000000000099', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-XL-DEN', 17900000, 22400000, 2303, '{"color": "Đen", "size": "Combo 2 XL"}'),
+  ('77777777-7777-7777-7777-000000000100', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-M-DA', 17900000, 22400000, 2286, '{"color": "Da", "size": "Combo 2 M"}'),
+  ('77777777-7777-7777-7777-000000000101', '66666666-6666-6666-6666-000000000016', '166236-M-55-63-KG-DA', 9900000, NULL, 2666, '{"color": "Da", "size": "M (55-63 kg)"}'),
+  ('77777777-7777-7777-7777-000000000102', '66666666-6666-6666-6666-000000000016', '166236-M-55-63-KG-DEN', 9900000, 12400000, 2695, '{"color": "Đen", "size": "M (55-63 kg)"}'),
+  ('77777777-7777-7777-7777-000000000103', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-L-DEN', 17900000, 22400000, 2315, '{"color": "Đen", "size": "Combo 2 L"}'),
+  ('77777777-7777-7777-7777-000000000104', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-M-DEN', 17900000, NULL, 2314, '{"color": "Đen", "size": "Combo 2 M"}'),
+  ('77777777-7777-7777-7777-000000000105', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-S-DA', 17900000, 22400000, 2291, '{"color": "Da", "size": "Combo 2 S"}'),
+  ('77777777-7777-7777-7777-000000000106', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-S-DEN', 17900000, 22400000, 2309, '{"color": "Đen", "size": "Combo 2 S"}'),
+  ('77777777-7777-7777-7777-000000000107', '66666666-6666-6666-6666-000000000016', '166236-XL-73-85-KG-DEN', 9900000, NULL, 2294, '{"color": "Đen", "size": "XL (73-85 kg)"}'),
+  ('77777777-7777-7777-7777-000000000108', '66666666-6666-6666-6666-000000000016', '166236-S-54-KG-DA', 9900000, 12400000, 2553, '{"color": "Da", "size": "S (<54 kg)"}'),
+  ('77777777-7777-7777-7777-000000000109', '66666666-6666-6666-6666-000000000016', '166236-S-54-KG-DEN', 9900000, 12400000, 3514, '{"color": "Đen", "size": "S (<54 kg)"}'),
+  ('77777777-7777-7777-7777-000000000110', '66666666-6666-6666-6666-000000000016', '166236-L-64-72-KG-DEN', 9900000, NULL, 2308, '{"color": "Đen", "size": "L (64-72 kg)"}'),
+  ('77777777-7777-7777-7777-000000000111', '66666666-6666-6666-6666-000000000016', '166236-COMBO-2-XL-DA', 17900000, 22400000, 2320, '{"color": "Da", "size": "Combo 2 XL"}'),
+  ('77777777-7777-7777-7777-000000000112', '66666666-6666-6666-6666-000000000017', '166241-DEN-L-57-68-KG', 13500000, 16900000, 12320, '{"color": "Đen", "size": "L :  57 -  68 kg"}'),
+  ('77777777-7777-7777-7777-000000000113', '66666666-6666-6666-6666-000000000017', '166241-DEN-XL-69-80-KG', 13500000, 16900000, 12322, '{"color": "Đen", "size": "XL: 69 - 80 kg"}'),
+  ('77777777-7777-7777-7777-000000000114', '66666666-6666-6666-6666-000000000017', '166241-DA-M-45-56-KG', 13500000, NULL, 12312, '{"color": "Da", "size": "M:  45 - 56 kg"}'),
+  ('77777777-7777-7777-7777-000000000115', '66666666-6666-6666-6666-000000000017', '166241-DA-L-57-68-KG', 13500000, 16900000, 12316, '{"color": "Da", "size": "L :  57 -  68 kg"}'),
+  ('77777777-7777-7777-7777-000000000116', '66666666-6666-6666-6666-000000000017', '166241-DA-XL-69-80-KG', 13500000, 16900000, 12320, '{"color": "Da", "size": "XL: 69 - 80 kg"}'),
+  ('77777777-7777-7777-7777-000000000117', '66666666-6666-6666-6666-000000000017', '166241-DEN-M-45-56-KG', 13500000, NULL, 12317, '{"color": "Đen", "size": "M:  45 - 56 kg"}'),
+  ('77777777-7777-7777-7777-000000000118', '66666666-6666-6666-6666-000000000018', '166248-DUI-XL-64-73KG', 7900000, 9900000, 136423, '{"color": "Đùi", "size": "XL: 64 - 73kg"}'),
+  ('77777777-7777-7777-7777-000000000119', '66666666-6666-6666-6666-000000000018', '166248-LUNG-M-40-53KG', 7900000, 9900000, 136434, '{"color": "Lửng", "size": "M: 40 - 53kg"}'),
+  ('77777777-7777-7777-7777-000000000120', '66666666-6666-6666-6666-000000000018', '166248-LUNG-L-53-63KG', 7900000, NULL, 136430, '{"color": "Lửng", "size": "L: 53 - 63kg"}'),
+  ('77777777-7777-7777-7777-000000000121', '66666666-6666-6666-6666-000000000018', '166248-LUNG-XL-64-73KG', 7900000, 9900000, 136432, '{"color": "Lửng", "size": "XL: 64 - 73kg"}'),
+  ('77777777-7777-7777-7777-000000000122', '66666666-6666-6666-6666-000000000018', '166248-DUI-M-40-53KG', 7900000, 9900000, 136411, '{"color": "Đùi", "size": "M: 40 - 53kg"}'),
+  ('77777777-7777-7777-7777-000000000123', '66666666-6666-6666-6666-000000000018', '166248-DUI-L-53-63KG', 7900000, NULL, 136421, '{"color": "Đùi", "size": "L: 53 - 63kg"}'),
+  ('77777777-7777-7777-7777-000000000124', '66666666-6666-6666-6666-000000000019', '166249-1-CAI-NGAU-NHIEN', 8900000, 11100000, 2317, '{"size": "1 cái ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000125', '66666666-6666-6666-6666-000000000019', '166249-SET-3-CAI-MIX-MAU', 16900000, 21100000, 2317, '{"size": "Set 3 cái (mix màu)"}'),
+  ('77777777-7777-7777-7777-000000000126', '66666666-6666-6666-6666-000000000020', '166234-DA-XL-56-65-KG', 10700000, 13400000, 58523, '{"color": "Da", "size": "XL (56-65 kg)"}'),
+  ('77777777-7777-7777-7777-000000000127', '66666666-6666-6666-6666-000000000020', '166234-DEN-L-40-55-KG', 10700000, 13400000, 58539, '{"color": "Đen", "size": "L (40-55 kg)"}'),
+  ('77777777-7777-7777-7777-000000000128', '66666666-6666-6666-6666-000000000020', '166234-DEN-XL-56-65-KG', 10700000, NULL, 58536, '{"color": "Đen", "size": "XL (56-65 kg)"}'),
+  ('77777777-7777-7777-7777-000000000129', '66666666-6666-6666-6666-000000000020', '166234-DA-L-40-55-KG', 10700000, 13400000, 58539, '{"color": "Da", "size": "L (40-55 kg)"}'),
+  ('77777777-7777-7777-7777-000000000130', '66666666-6666-6666-6666-000000000021', '166233-XL-64-70-KG-SET-5-CAI-MIX-MAU', 23900000, 29900000, 2665, '{"color": "XL (64-70 kg)", "size": "Set 5 cái mix màu"}'),
+  ('77777777-7777-7777-7777-000000000131', '66666666-6666-6666-6666-000000000021', '166233-M-38-50-KG-1-CAI-MAU-NGAU-NHIEN', 4900000, 6100000, 2291, '{"color": "M (38-50 kg)", "size": "1 cái màu ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000132', '66666666-6666-6666-6666-000000000021', '166233-M-38-50-KG-SET-5-CAI-MIX-MAU', 23900000, NULL, 2227, '{"color": "M (38-50 kg)", "size": "Set 5 cái mix màu"}'),
+  ('77777777-7777-7777-7777-000000000133', '66666666-6666-6666-6666-000000000021', '166233-L-51-63-KG-1-CAI-MAU-NGAU-NHIEN', 4900000, 6100000, 2270, '{"color": "L (51-63 kg)", "size": "1 cái màu ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000134', '66666666-6666-6666-6666-000000000021', '166233-L-51-63-KG-SET-5-CAI-MIX-MAU', 23900000, 29900000, 2209, '{"color": "L (51-63 kg)", "size": "Set 5 cái mix màu"}'),
+  ('77777777-7777-7777-7777-000000000135', '66666666-6666-6666-6666-000000000021', '166233-XL-64-70-KG-1-CAI-MAU-NGAU-NHIEN', 4900000, NULL, 2285, '{"color": "XL (64-70 kg)", "size": "1 cái màu ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000136', '66666666-6666-6666-6666-000000000022', 'QUANKH-01', 16900000, 21100000, 2315, '{"size": "Set 5 cái(ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000137', '66666666-6666-6666-6666-000000000022', 'QUANKH-02', 3900000, 4900000, 2321, '{"size": "1 cái(ngẫu nhiên)"}'),
+  ('77777777-7777-7777-7777-000000000138', '66666666-6666-6666-6666-000000000023', '166237-L-49-55KG-SET-5-CAI-MIX-MAU', 17500000, 21900000, 1225, '{"color": "L (49 - 55kg)", "size": "Set 5 cái (mix màu)"}'),
+  ('77777777-7777-7777-7777-000000000139', '66666666-6666-6666-6666-000000000023', '166237-XL-56-70KG-1-CAI-NGAU-NHIEN', 3500000, 4400000, 1228, '{"color": "XL (56 - 70kg)", "size": "1 cái (ngẫu nhiên)"}'),
+  ('77777777-7777-7777-7777-000000000140', '66666666-6666-6666-6666-000000000023', '166237-XL-56-70KG-SET-5-CAI-MIX-MAU', 17500000, NULL, 1221, '{"color": "XL (56 - 70kg)", "size": "Set 5 cái (mix màu)"}'),
+  ('77777777-7777-7777-7777-000000000141', '66666666-6666-6666-6666-000000000023', '166237-M-40-48KG-1-CAI-NGAU-NHIEN', 3500000, 4400000, 1226, '{"color": "M (40 - 48kg)", "size": "1 cái (ngẫu nhiên)"}'),
+  ('77777777-7777-7777-7777-000000000142', '66666666-6666-6666-6666-000000000023', '166237-M-40-48KG-SET-5-CAI-MIX-MAU', 17500000, 21900000, 1220, '{"color": "M (40 - 48kg)", "size": "Set 5 cái (mix màu)"}'),
+  ('77777777-7777-7777-7777-000000000143', '66666666-6666-6666-6666-000000000023', '166237-L-49-55KG-1-CAI-NGAU-NHIEN', 3500000, NULL, 1216, '{"color": "L (49 - 55kg)", "size": "1 cái (ngẫu nhiên)"}'),
+  ('77777777-7777-7777-7777-000000000144', '66666666-6666-6666-6666-000000000024', 'QUANLU-01', 2900000, 3600000, 3230, '{"size": "1c màu ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000145', '66666666-6666-6666-6666-000000000024', 'QUANLU-02', 8900000, 11100000, 3227, '{"size": "Set 3c ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000146', '66666666-6666-6666-6666-000000000025', '166235-SET-5-CAI-MIX-MAU-L-48-58-KG', 21900000, 27400000, 26435, '{"color": "Set 5 Cái (Mix màu)", "size": "L (48-58 kg)"}'),
+  ('77777777-7777-7777-7777-000000000147', '66666666-6666-6666-6666-000000000025', '166235-1-CAI-M-38-48-KG', 6700000, 8400000, 26435, '{"color": "1 cái", "size": "M (38-48 kg)"}'),
+  ('77777777-7777-7777-7777-000000000148', '66666666-6666-6666-6666-000000000025', '166235-SET-5-CAI-MIX-MAU-XL-59-70-KG', 21900000, NULL, 26434, '{"color": "Set 5 Cái (Mix màu)", "size": "XL (59-70 kg)"}'),
+  ('77777777-7777-7777-7777-000000000149', '66666666-6666-6666-6666-000000000025', '166235-1-CAI-L-48-58-KG', 6700000, 8400000, 26423, '{"color": "1 cái", "size": "L (48-58 kg)"}'),
+  ('77777777-7777-7777-7777-000000000150', '66666666-6666-6666-6666-000000000025', '166235-1-CAI-XL-59-70-KG', 6700000, 8400000, 26432, '{"color": "1 cái", "size": "XL (59-70 kg)"}'),
+  ('77777777-7777-7777-7777-000000000151', '66666666-6666-6666-6666-000000000025', '166235-SET-5-CAI-MIX-MAU-M-38-48-KG', 21900000, NULL, 26435, '{"color": "Set 5 Cái (Mix màu)", "size": "M (38-48 kg)"}'),
+  ('77777777-7777-7777-7777-000000000152', '66666666-6666-6666-6666-000000000026', '166238-DEN-XL-60-70-KG', 9700000, 12100000, 34503, '{"color": "Đen", "size": "XL (60-70 kg)"}'),
+  ('77777777-7777-7777-7777-000000000153', '66666666-6666-6666-6666-000000000026', '166238-DA-M-40-50-KG', 9700000, 12100000, 34489, '{"color": "Da", "size": "M (40-50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000154', '66666666-6666-6666-6666-000000000026', '166238-DA-L-50-60KG', 9700000, NULL, 34476, '{"color": "Da", "size": "L(50-60kg)"}'),
+  ('77777777-7777-7777-7777-000000000155', '66666666-6666-6666-6666-000000000026', '166238-DA-XL-60-70-KG', 9700000, 12100000, 34500, '{"color": "Da", "size": "XL (60-70 kg)"}'),
+  ('77777777-7777-7777-7777-000000000156', '66666666-6666-6666-6666-000000000026', '166238-DEN-M-40-50-KG', 9700000, 12100000, 34490, '{"color": "Đen", "size": "M (40-50 kg)"}'),
+  ('77777777-7777-7777-7777-000000000157', '66666666-6666-6666-6666-000000000026', '166238-DEN-L-50-60KG', 9700000, NULL, 34502, '{"color": "Đen", "size": "L(50-60kg)"}'),
+  ('77777777-7777-7777-7777-000000000158', '66666666-6666-6666-6666-000000000027', '166228-QUAN-COOKIE', 19900000, 24900000, 0, '{"size": "Quần cookie"}'),
+  ('77777777-7777-7777-7777-000000000159', '66666666-6666-6666-6666-000000000028', '166230-SET-3-CAI-MIX-MAU', 11900000, 14900000, 26431, '{"size": "Set 3 cái(mix màu)"}'),
+  ('77777777-7777-7777-7777-000000000160', '66666666-6666-6666-6666-000000000028', '166230-SET-6-CAI-MIX-MAU', 22900000, 28600000, 26420, '{"size": "Set 6 Cái (mix màu)"}'),
+  ('77777777-7777-7777-7777-000000000161', '66666666-6666-6666-6666-000000000028', '166230-1CAI-MAU-NGAU-NHIEN', 5900000, NULL, 26408, '{"size": "1cái màu ngẫu nhiên"}'),
+  ('77777777-7777-7777-7777-000000000162', '66666666-6666-6666-6666-000000000029', 'SET3QU-01', 8900000, 11100000, 3225, '{"size": "Free size"}');
 
 -- images (public/images/products — serve trực tiếp)
 INSERT INTO product_images (id, product_id, url, alt, position) VALUES
