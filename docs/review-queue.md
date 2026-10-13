@@ -36,3 +36,4 @@ Commits pending review. Auto-managed:
 - 8b8986f (2026-10-13) feat(admin): overhaul image manager UX with drag-drop reordering, primary badge, SEO alt modal, and multi-file dropzone
 - 1c8f0f6 (2026-10-13) feat(admin): enable editing existing images with Canvas rotate, flip, file replacement, and URL update
 - 00c1b4b (2026-10-13) fix(admin): fit image editor modal within viewport bounds with fixed header/footer and scrollable body
+- d9e923d (2026-10-13) feat(web): standardize on Lucide icons across admin and storefront UI
