@@ -553,7 +553,10 @@ export default function AdminBlogEdit({ postId }: Props) {
             </div>
 
             {/* Scrollable Products List */}
-            <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+            <div
+              className="max-h-[300px] space-y-2 overflow-y-auto pr-1.5 overscroll-contain"
+              style={{ maxHeight: '300px' }}
+            >
               {filteredProducts.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
                   {productFilterTab === 'selected' ? (

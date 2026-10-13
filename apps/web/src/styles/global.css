@@ -3,6 +3,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --spacing: 0.25rem;
+
   /* Warm studio boutique palette — strictly no gradients */
   --canvas: oklch(0.975 0.005 85); /* #F8F7F4 warm studio bone / off-white */
   --surface: oklch(0.948 0.007 85); /* #F1EFEB neutral studio cutout mat */
@@ -30,6 +32,22 @@
   --border: var(--border-hairline);
   --ring: var(--foreground);
   --radius: 0.375rem; /* 6px crisp architectural radius */
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-hairline);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-muted);
 }
 
 @theme inline {
