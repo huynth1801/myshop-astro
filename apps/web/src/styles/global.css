@@ -1,8 +1,11 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --spacing: 0.25rem;
+
   /* Warm studio boutique palette — strictly no gradients */
   --canvas: oklch(0.975 0.005 85); /* #F8F7F4 warm studio bone / off-white */
   --surface: oklch(0.948 0.007 85); /* #F1EFEB neutral studio cutout mat */
@@ -25,9 +28,27 @@
   --muted-foreground: var(--foreground-secondary);
   --accent: var(--accent-olive);
   --accent-foreground: oklch(0.985 0.004 95);
+  --destructive: oklch(0.57 0.22 27); /* #DC2626 crisp crimson red */
+  --destructive-foreground: oklch(0.99 0 0);
   --border: var(--border-hairline);
   --ring: var(--foreground);
   --radius: 0.375rem; /* 6px crisp architectural radius */
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-hairline);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-muted);
 }
 
 @theme inline {
@@ -49,6 +70,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
 

@@ -107,6 +107,36 @@ async function me(): Promise<AuthUser> {
   const parsed = meResponseSchema.parse(await res.json());
   return { email: parsed.email, name: parsed.name, role: parsed.role };
 }
+let refreshPromise: Promise<string | null> | null = null;
+
+/**
+ * Silently rotate access token using httpOnly refresh cookie.
+ * Deduplicated so multiple concurrent requests share the exact same refresh HTTP call.
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = (async () => {
+    try {
+      const tokens = await authPost('/api/v1/auth/refresh', {});
+      accessToken = tokens.accessToken;
+      return accessToken;
+    } catch {
+      accessToken = null;
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+  return refreshPromise;
+}
+
+/**
+ * Returns the current valid access token, or silently retrieves one via refresh cookie if missing.
+ */
+export async function getValidAccessToken(): Promise<string | null> {
+  if (accessToken) return accessToken;
+  return refreshAccessToken();
+}
 
 /**
  * Bearer headers for authenticated islands (admin) — empty when signed out.
@@ -121,17 +151,20 @@ export function authHeaders(): Record<string, string> {
  * silently rotate via the refresh cookie. Returns null for guests.
  */
 export async function bootstrapSession(): Promise<AuthUser | null> {
-  try {
-    return await me();
-  } catch {
-    // no/invalid access token — try refresh
+  if (accessToken) {
+    try {
+      return await me();
+    } catch {
+      // access token expired, fallthrough to refresh
+    }
   }
+  const token = await refreshAccessToken();
+  if (!token) return null;
   try {
-    const tokens = await authPost('/api/v1/auth/refresh', {});
-    accessToken = tokens.accessToken;
     return await me();
   } catch {
     accessToken = null;
     return null;
   }
 }
+

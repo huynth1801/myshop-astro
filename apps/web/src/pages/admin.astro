@@ -21,6 +21,23 @@ import { Icon } from 'astro-icon/components';
         <span>Về cửa hàng</span>
       </a>
     </div>
+
+    <!-- Navigation tabs between Products and Blog -->
+    <div class="mb-6 flex border-b border-border">
+      <a
+        href="/admin"
+        class="border-b-2 border-foreground px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground"
+      >
+        Sản phẩm
+      </a>
+      <a
+        href="/admin/blog"
+        class="border-b-2 border-transparent px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+      >
+        Bài viết & SEO Crawler
+      </a>
+    </div>
+
     <AdminDashboard client:load />
   </section>
 </Base>

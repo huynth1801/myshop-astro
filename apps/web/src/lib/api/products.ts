@@ -1,10 +1,7 @@
 import { z } from 'zod';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL;
-
-if (!API_BASE_URL) {
-  throw new Error('API_BASE_URL is not set — copy apps/web/.env.example to .env');
-}
+const API_BASE_URL =
+  import.meta.env.API_BASE_URL || import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
 
 async function apiGet<T>(path: string, schema: z.ZodType<T>): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { authHeaders } from './auth';
+import { authHeaders, getValidAccessToken, refreshAccessToken } from './auth';
 
 const BASE_URL = import.meta.env.PUBLIC_API_URL;
 
@@ -95,16 +95,32 @@ export type AdminCategory = z.infer<typeof categorySchema>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function adminFetch<T>(path: string, init: RequestInit, schema: z.ZodType<T, any, any>): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    credentials: 'include',
-    headers: {
+  let token = await getValidAccessToken();
+
+  const executeRequest = async (activeToken: string | null) => {
+    const headers: Record<string, string> = {
       'content-type': 'application/json',
       accept: 'application/json',
-      ...authHeaders(),
-      ...init.headers,
-    },
-  });
+      ...(activeToken ? { authorization: `Bearer ${activeToken}` } : {}),
+      ...(init.headers as Record<string, string> | undefined),
+    };
+
+    return fetch(`${BASE_URL}${path}`, {
+      ...init,
+      credentials: 'include',
+      headers,
+    });
+  };
+
+  let res = await executeRequest(token);
+
+  if (res.status === 401) {
+    const refreshedToken = await refreshAccessToken();
+    if (refreshedToken) {
+      token = refreshedToken;
+      res = await executeRequest(refreshedToken);
+    }
+  }
   if (!res.ok) {
     let code: string | undefined;
     let message = `Request failed (${res.status})`;
@@ -137,9 +153,9 @@ export async function listCategories(): Promise<AdminCategory[]> {
 }
 
 export async function listProducts(
-  params: { q?: string; status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'; categoryId?: string; page?: number } = {},
+  params: { q?: string; status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'; categoryId?: string; page?: number; size?: number } = {},
 ): Promise<z.infer<typeof adminPagedSchema>> {
-  const query = new URLSearchParams({ page: String(params.page ?? 0), size: '20' });
+  const query = new URLSearchParams({ page: String(params.page ?? 0), size: String(params.size ?? 20) });
   if (params.q && params.q.trim() !== '') query.set('q', params.q.trim());
   if (params.status) query.set('status', params.status);
   if (params.categoryId) query.set('categoryId', params.categoryId);

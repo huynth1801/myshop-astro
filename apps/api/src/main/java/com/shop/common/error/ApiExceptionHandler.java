@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -22,10 +23,18 @@ public class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
-    @ExceptionHandler({ProductNotFoundException.class, com.shop.catalog.CategoryNotFoundException.class})
+    @ExceptionHandler({ProductNotFoundException.class, com.shop.catalog.CategoryNotFoundException.class,
+            com.shop.blog.PostNotFoundException.class})
     public ProblemDetail handleNotFound(RuntimeException ex) {
-        String code = ex instanceof ProductNotFoundException ? "PRODUCT_NOT_FOUND" : "CATEGORY_NOT_FOUND";
+        String code = ex instanceof ProductNotFoundException ? "PRODUCT_NOT_FOUND"
+                : ex instanceof com.shop.catalog.CategoryNotFoundException ? "CATEGORY_NOT_FOUND"
+                : "POST_NOT_FOUND";
         return problem(HttpStatus.NOT_FOUND, code, ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.blog.CrawlFailedException.class)
+    public ProblemDetail handleCrawlFailed(com.shop.blog.CrawlFailedException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "CRAWL_FAILED", ex.getMessage());
     }
 
     @ExceptionHandler({com.shop.cart.VariantNotFoundException.class,
@@ -95,10 +104,17 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, "INVALID_UPLOAD", ex.getMessage());
     }
 
-    @ExceptionHandler({com.shop.catalog.SlugTakenException.class, com.shop.catalog.SkuTakenException.class})
+    @ExceptionHandler({com.shop.catalog.SlugTakenException.class, com.shop.catalog.SkuTakenException.class, com.shop.blog.rss.RssSourceAlreadyExistsException.class})
     public ProblemDetail handleTaken(RuntimeException ex) {
-        String code = ex instanceof com.shop.catalog.SlugTakenException ? "SLUG_TAKEN" : "SKU_TAKEN";
+        String code = ex instanceof com.shop.catalog.SlugTakenException ? "SLUG_TAKEN"
+                : ex instanceof com.shop.blog.rss.RssSourceAlreadyExistsException ? "URL_ALREADY_EXISTS"
+                : "SKU_TAKEN";
         return problem(HttpStatus.CONFLICT, code, ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.blog.rss.RssSourceNotFoundException.class)
+    public ProblemDetail handleRssSourceNotFound(com.shop.blog.rss.RssSourceNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "RSS_SOURCE_NOT_FOUND", ex.getMessage());
     }
 
     /** Unmapped URLs — without this the generic handler turns them into 500s. */
@@ -107,13 +123,21 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "NOT_FOUND", "No such endpoint");
     }
 
-    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class})
+    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class,
+            MethodArgumentNotValidException.class})
     public ProblemDetail handleValidation(Exception ex) {
-        String detail = ex instanceof ConstraintViolationException cve
-                ? cve.getConstraintViolations().stream()
-                        .map(v -> v.getPropertyPath() + " " + v.getMessage())
-                        .collect(Collectors.joining("; "))
-                : ex.getMessage();
+        String detail;
+        if (ex instanceof ConstraintViolationException cve) {
+            detail = cve.getConstraintViolations().stream()
+                    .map(v -> v.getPropertyPath() + " " + v.getMessage())
+                    .collect(Collectors.joining("; "));
+        } else if (ex instanceof MethodArgumentNotValidException manve) {
+            detail = manve.getBindingResult().getFieldErrors().stream()
+                    .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                    .collect(Collectors.joining("; "));
+        } else {
+            detail = ex.getMessage();
+        }
         return problem(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", detail);
     }
 

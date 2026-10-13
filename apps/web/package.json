@@ -26,6 +26,7 @@
     "@astrojs/check": "^0.9.0",
     "@fontsource-variable/inter": "^5.0.0",
     "@iconify-json/lucide": "^1.2.143",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

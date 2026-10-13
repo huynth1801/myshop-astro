@@ -96,28 +96,26 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
     <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground-muted">
       {product.category.name}
     </p>
-    <div class="flex items-start justify-between gap-2">
-      <h3 class="text-sm font-medium leading-snug text-foreground">
-        <a href={`/products/${product.slug}/`} class="transition-colors hover:text-foreground-secondary">
-          {product.name}
-        </a>
-      </h3>
-      <div class="shrink-0 text-right">
-        {product.priceFromCents != null ? (
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-sm font-semibold tabular-nums tracking-tight text-foreground">
-              {formatCents(product.priceFromCents)}
+    <h3 class="text-sm font-medium leading-snug text-foreground line-clamp-2">
+      <a href={`/products/${product.slug}/`} class="transition-colors hover:text-foreground-secondary">
+        {product.name}
+      </a>
+    </h3>
+    <div class="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      {product.priceFromCents != null ? (
+        <>
+          <span class="text-sm font-semibold tabular-nums tracking-tight text-foreground">
+            {formatCents(product.priceFromCents)}
+          </span>
+          {compareAt != null && compareAt > product.priceFromCents && (
+            <span class="text-xs tabular-nums text-foreground-muted line-through">
+              {formatCents(compareAt)}
             </span>
-            {compareAt != null && compareAt > product.priceFromCents && (
-              <span class="text-xs tabular-nums text-foreground-muted line-through">
-                {formatCents(compareAt)}
-              </span>
-            )}
-          </div>
-        ) : (
-          <span class="text-xs text-foreground-muted">Ngừng bán</span>
-        )}
-      </div>
+          )}
+        </>
+      ) : (
+        <span class="text-xs text-foreground-muted">Ngừng bán</span>
+      )}
     </div>
   </div>
 </article>

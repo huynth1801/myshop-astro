@@ -1,0 +1,313 @@
+---
+import Base from '../../layouts/Base.astro';
+import JsonLd from '../../components/astro/JsonLd.astro';
+import ProductCard from '../../components/astro/ProductCard.astro';
+import TableOfContents from '../../components/astro/TableOfContents.astro';
+import { getPost, type PostDetail } from '../../lib/api/blog';
+import { resolveImageUrl } from '../../lib/api/urls';
+import { enhanceBlogContent } from '../../lib/blog/contentEnhancer';
+import { Icon } from 'astro-icon/components';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+if (!slug) {
+  return Astro.redirect('/blog');
+}
+
+let post: PostDetail;
+try {
+  post = await getPost(slug);
+} catch (err) {
+  return new Response('Bài viết không tồn tại', { status: 404 });
+}
+
+const coverUrl = resolveImageUrl(post.featuredImage);
+const canonicalUrl = Astro.url.pathname;
+const metaTitle = post.seoTitle || `${post.title} | myshop Blog`;
+const metaDescription = post.seoDescription || post.summary || post.title;
+
+// Enhance content: extract TOC, beautify headings, disclaimers, links, and reading time
+const { enhancedHtml, toc, readingTimeMinutes } = enhanceBlogContent(post.content);
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+}
+
+const siteOrigin = Astro.site?.origin ?? Astro.url.origin;
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.title,
+  description: metaDescription,
+  image: coverUrl ? new URL(coverUrl, siteOrigin).href : undefined,
+  author: {
+    '@type': 'Person',
+    name: post.author || 'myshop Editorial',
+  },
+  datePublished: post.publishedAt || post.createdAt,
+  dateModified: post.publishedAt || post.createdAt,
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': Astro.url.href,
+  },
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${siteOrigin}/` },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: `${siteOrigin}/blog` },
+    { '@type': 'ListItem', position: 3, name: post.title, item: Astro.url.href },
+  ],
+};
+---
+
+<Base
+  title={metaTitle}
+  description={metaDescription}
+  canonical={canonicalUrl}
+  ogImage={coverUrl ?? undefined}
+>
+  <JsonLd schema={articleSchema} />
+  <JsonLd schema={breadcrumbSchema} />
+
+  <!-- Reading Progress Bar -->
+  <div
+    id="reading-progress-bar"
+    class="fixed top-0 left-0 z-50 h-1 w-0 bg-accent-olive shadow-xs transition-all duration-75 ease-out"
+  ></div>
+
+  <article class="mx-auto max-w-4xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+    <!-- Breadcrumb -->
+    <nav aria-label="Đường dẫn điều hướng" class="mb-8 flex items-center gap-2 text-xs text-muted-foreground">
+      <a href="/" class="transition hover:text-foreground">Trang chủ</a>
+      <Icon name="lucide:chevron-right" class="h-3 w-3 opacity-60" />
+      <a href="/blog" class="transition hover:text-foreground">Blog</a>
+      <Icon name="lucide:chevron-right" class="h-3 w-3 opacity-60" />
+      <span class="line-clamp-1 max-w-[220px] text-foreground font-medium sm:max-w-none">{post.title}</span>
+    </nav>
+
+    <!-- Post Header -->
+    <header class="mb-10 text-center sm:mb-12">
+      <!-- Tag / Category Badge -->
+      <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-accent-olive/30 bg-accent-olive/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent-olive">
+        <Icon name="lucide:sparkles" class="h-3 w-3" />
+        <span>myshop Journal • Cẩm nang làm đẹp & phong cách</span>
+      </div>
+
+      <!-- Main Title -->
+      <h1 class="text-2xl font-light leading-snug tracking-tight text-foreground sm:text-3xl md:text-4xl lg:text-[2.6rem] text-balance">
+        {post.title}
+      </h1>
+
+      <!-- Meta info row: Author, Date, Reading Time -->
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-y-2 gap-x-4 text-xs text-muted-foreground">
+        {post.author && (
+          <div class="flex items-center gap-2">
+            <div class="flex h-6 w-6 items-center justify-center rounded-full bg-accent-olive/15 text-[11px] font-semibold text-accent-olive">
+              {post.author.charAt(0).toUpperCase()}
+            </div>
+            <span>Tác giả: <strong class="font-medium text-foreground">{post.author}</strong></span>
+          </div>
+        )}
+
+        {post.publishedAt && (
+          <div class="flex items-center gap-1.5">
+            <span class="hidden h-1 w-1 rounded-full bg-border sm:inline-block"></span>
+            <Icon name="lucide:calendar" class="h-3.5 w-3.5 opacity-70" />
+            <time datetime={post.publishedAt} class="font-medium">
+              {formatDate(post.publishedAt)}
+            </time>
+          </div>
+        )}
+
+        <div class="flex items-center gap-1.5">
+          <span class="inline-block h-1 w-1 rounded-full bg-border"></span>
+          <Icon name="lucide:clock" class="h-3.5 w-3.5 opacity-70" />
+          <span>{readingTimeMinutes} phút đọc</span>
+        </div>
+      </div>
+
+      <!-- Lead Summary / Excerpt -->
+      {post.summary && (
+        <div class="mx-auto mt-6 max-w-2xl text-left sm:text-center">
+          <p class="rounded-xl border-l-2 border-accent-olive/50 bg-surface/60 px-4 py-3 text-base leading-relaxed text-foreground-secondary italic sm:text-lg">
+            "{post.summary}"
+          </p>
+        </div>
+      )}
+    </header>
+
+    <!-- Featured Cover Image -->
+    {coverUrl && (
+      <figure class="mb-12 overflow-hidden rounded-2xl border border-border/80 bg-muted shadow-sm">
+        <img
+          src={coverUrl}
+          alt={post.title}
+          class="aspect-[16/9] w-full object-cover object-center"
+          loading="eager"
+        />
+      </figure>
+    )}
+
+    <!-- Table of Contents (Mục lục bài viết) -->
+    <div class="mx-auto max-w-3xl">
+      <TableOfContents toc={toc} />
+    </div>
+
+    <!-- Main Editorial Content -->
+    <div class="mx-auto max-w-3xl">
+      <div
+        class="prose prose-neutral max-w-none text-base leading-relaxed text-foreground/90 sm:text-[17px]
+          prose-headings:font-medium prose-headings:tracking-tight prose-headings:text-foreground
+          prose-h2:mt-12 prose-h2:mb-4 prose-h2:text-2xl sm:prose-h2:text-3xl
+          prose-h3:mt-8 prose-h3:mb-3 prose-h3:text-xl
+          prose-p:my-5 prose-p:leading-[1.8]
+          prose-strong:font-semibold prose-strong:text-foreground
+          prose-img:my-8 prose-img:rounded-2xl prose-img:border prose-img:border-border/80 prose-img:shadow-sm
+          prose-figcaption:text-center prose-figcaption:text-xs prose-figcaption:text-muted-foreground prose-figcaption:italic prose-figcaption:mt-2
+          prose-a:text-accent-olive prose-a:font-medium prose-a:underline hover:prose-a:text-foreground
+          prose-blockquote:border-l-2 prose-blockquote:border-accent-olive prose-blockquote:pl-5 prose-blockquote:italic prose-blockquote:text-foreground-secondary
+          prose-ul:my-5 prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-2
+          prose-ol:my-5 prose-ol:list-decimal prose-ol:pl-6 prose-ol:space-y-2
+          prose-li:text-[16.5px] prose-li:leading-relaxed"
+        set:html={enhancedHtml}
+      />
+    </div>
+
+    <!-- Article Actions & Share Bar -->
+    <div class="mx-auto mt-12 max-w-3xl">
+      <div class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/80 bg-surface/50 p-4 sm:p-5 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-card border border-border text-accent-olive">
+            <Icon name="lucide:share-2" class="h-4 w-4" />
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-foreground">Chia sẻ cẩm nang</p>
+            <p class="text-[11px] text-muted-foreground">Lan tỏa bài viết hữu ích tới bạn bè</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="copy-article-link-btn"
+            class="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground transition-all hover:border-accent-olive/40 hover:bg-muted"
+          >
+            <Icon name="lucide:link" class="h-3.5 w-3.5" />
+            <span>Sao chép link</span>
+          </button>
+
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground transition-all hover:border-accent-olive/40 hover:bg-muted"
+          >
+            <span>Facebook</span>
+          </a>
+
+          <a
+            href={`https://zalo.me/share?url=${encodeURIComponent(Astro.url.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground transition-all hover:border-accent-olive/40 hover:bg-muted"
+          >
+            <span>Zalo</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversion Section: Related Products -->
+    {post.relatedProducts.length > 0 && (
+      <section class="mt-16 border-t border-border pt-12">
+        <div class="mb-8 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-accent-olive">
+              <Icon name="lucide:sparkles" class="h-3.5 w-3.5" />
+              <span>Gợi ý trang phục & sản phẩm</span>
+            </div>
+            <h2 class="mt-1 text-xl font-medium tracking-tight text-foreground sm:text-2xl">
+              Sản phẩm được nhắc đến trong bài viết
+            </h2>
+          </div>
+          <a
+            href="/#products"
+            class="hidden text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground sm:inline-flex items-center gap-1 transition"
+          >
+            <span>Xem tất cả</span>
+            <Icon name="lucide:arrow-right" class="h-3 w-3" />
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+          {post.relatedProducts.map((product) => (
+            <ProductCard product={product} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Back to blog link -->
+    <div class="mt-16 border-t border-border/60 pt-8 text-center">
+      <a
+        href="/blog"
+        class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-foreground transition hover:border-accent-olive/50 hover:bg-muted shadow-xs"
+      >
+        <Icon name="lucide:arrow-left" class="h-3.5 w-3.5" />
+        <span>Quay lại danh sách bài viết</span>
+      </a>
+    </div>
+  </article>
+
+  <!-- Interactive Client Script for Reading Progress & Share -->
+  <script>
+    import { toast } from '../../lib/stores/toast';
+
+    function initArticleFeatures() {
+      // 1. Copy article URL with Nanostores Toast feedback
+      const copyBtn = document.getElementById('copy-article-link-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            toast.success('Đã sao chép liên kết bài viết vào bộ nhớ tạm!');
+          } catch {
+            toast.info(window.location.href, 'Liên kết bài viết');
+          }
+        });
+      }
+
+      // 2. Reading progress bar
+      const progressBar = document.getElementById('reading-progress-bar');
+      if (progressBar) {
+        const updateProgress = () => {
+          const scrollTop = window.scrollY || document.documentElement.scrollTop;
+          const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          const percent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+          progressBar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+        };
+
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        updateProgress();
+      }
+    }
+
+    initArticleFeatures();
+    document.addEventListener('astro:page-load', initArticleFeatures);
+  </script>
+</Base>

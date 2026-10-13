@@ -44,3 +44,27 @@ Commits pending review. Auto-managed:
 - 77576ec (2026-10-13) chore(docs): update review queue for variant table redesign
 - b932883 (2026-10-13) feat(admin): add sticky live storefront preview widget to product edit sidebar
 - b36f97d (2026-10-13) feat(web): redesign variant picker with grouped multi-attribute selectors, color swatches, and live price
+- b8f4ee3 (2026-10-13) chore: update review queue
+- 5e3961f (2026-10-13) feat(blog): implement blog engine, SEO crawler, storefront routes and admin management
+- a92c46a (2026-10-13) chore: update review queue
+- 13660b8 (2026-10-13) fix(web): fallback client API_BASE_URL and align admin auth fallback states
+- 5667664 (2026-10-13) feat(blog): implement automated RSS crawler and product-keyword matching engine
+- 66db6d3 (2026-10-13) feat(blog): add quick paste crawler bar and curate dedicated fashion RSS feeds
+- c2b0302 (2026-10-13) feat(blog): replace native alert and confirm with custom boutique ConfirmDialog
+- 2de0322 (2026-10-13) chore(docs): update review queue for blog confirm dialog
+- eb5c2eb (2026-10-13) chore(docs): update review queue for blog confirm dialog
+- 8b5e52e (2026-10-13) feat(blog): improve delete UI/UX with prominent red styling on dialog and action buttons
+- 7223b17 (2026-10-13) fix(blog): ensure createdAt non-null serialization and resilient client parsing
+- 55e5e77 (2026-10-13) chore(docs): update review queue for blog fixes
+- c923058 (2026-10-13) chore(docs): sync review queue
+- 059e0a6 (2026-10-13) fix(blog): resolve auth 401 race condition, auto-refresh tokens, and add bulk post actions
+- de683e2 (2026-10-13) chore(docs): update review queue for auth and blog save fixes
+- b71b695 (2026-10-13) chore(docs): sync review queue
+- ddd4332 (2026-10-13) chore(docs): sync review queue
+- f051157 (2026-10-13) feat(blog): lock header buttons to right on long titles and add global toast notifications
+- 654361c (2026-10-13) fix(api): allow PUT and HEAD methods in CORS configuration
+- 59fe4dd (2026-10-13) chore(docs): update review queue for CORS fix
+- a452886 (2026-10-13) chore(docs): sync review queue
+- 438c4d5 (2026-10-13) feat(blog): fetch all catalog products and add live search with filter tabs in post editor
+- f1e9c1d (2026-10-13) fix(blog): constrain related products list height with scroll and add global spacing tokens
+- 3913a74 (2026-10-13) fix(catalog): separate product title and price onto dedicated rows in ProductCard
