@@ -198,7 +198,7 @@ public class PostCrawlerService {
         // Remove junk elements
         target.select("script, style, noscript, iframe, nav, header, footer, aside, form, svg, button, "
                 + ".ad, .ads, .advertisement, .social-share, .tags, .comment, .comments, "
-                + ".related-posts, .related-articles, .author-bio, [aria-hidden=true]").remove();
+                + ".related-posts, .related-articles, .author-bio, .toc, .table-of-contents, .box-toc, [aria-hidden=true]").remove();
 
         // Fix lazy-loaded image sources: data-src / data-original -> src
         for (Element img : target.select("img")) {

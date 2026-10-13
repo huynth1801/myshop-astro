@@ -67,3 +67,4 @@ Commits pending review. Auto-managed:
 - a452886 (2026-10-13) chore(docs): sync review queue
 - 438c4d5 (2026-10-13) feat(blog): fetch all catalog products and add live search with filter tabs in post editor
 - f1e9c1d (2026-10-13) fix(blog): constrain related products list height with scroll and add global spacing tokens
+- 3913a74 (2026-10-13) fix(catalog): separate product title and price onto dedicated rows in ProductCard
