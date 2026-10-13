@@ -45,8 +45,7 @@ public class ProductVariant {
         }
     }
 
-    /** Admin create — wires both sides of the association so the in-memory graph stays consistent. */
-    static ProductVariant newVariant(Product product, String sku, long priceCents,
+    public static ProductVariant newVariant(Product product, String sku, long priceCents,
             Long compareAtPriceCents, int stock, Map<String, Object> attributes) {
         ProductVariant variant = new ProductVariant();
         variant.product = product;
@@ -99,6 +98,17 @@ public class ProductVariant {
 
     public int getStock() {
         return stock;
+    }
+
+    public void decrementStock(int qty) {
+        if (this.stock < qty) {
+            throw new com.shop.cart.OutOfStockException(this.sku, this.stock);
+        }
+        this.stock -= qty;
+    }
+
+    public void incrementStock(int qty) {
+        this.stock += qty;
     }
 
     public Map<String, Object> getAttributes() {

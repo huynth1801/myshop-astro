@@ -66,6 +66,14 @@ export default function AuthButton() {
           <span className="hidden text-muted-foreground sm:inline">
             Chào, <strong>{user.name}</strong>
           </span>
+          {user.role === 'ADMIN' && (
+            <a
+              href="/admin"
+              className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition hover:bg-primary/20"
+            >
+              Quản trị
+            </a>
+          )}
           <button
             type="button"
             onClick={() => void signOut()}

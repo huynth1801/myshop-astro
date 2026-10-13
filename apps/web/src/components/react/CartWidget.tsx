@@ -243,14 +243,13 @@ export default function CartWidget() {
                     </div>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled
-                  title="Thanh toán sẽ mở cùng Stripe"
-                  className="mt-3 w-full cursor-not-allowed rounded-full bg-muted px-6 py-3 font-semibold text-muted-foreground"
+                <a
+                  href="/checkout"
+                  onClick={() => cartOpen.set(false)}
+                  className="mt-3 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
                 >
-                  Thanh toán — sắp mở
-                </button>
+                  Tiến hành thanh toán
+                </a>
               </div>
             )}
           </aside>

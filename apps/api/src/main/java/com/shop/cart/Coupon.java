@@ -74,4 +74,16 @@ public class Coupon {
     public boolean isUsable(Instant now) {
         return active && (expiresAt == null || expiresAt.isAfter(now));
     }
+
+    public static Coupon newCoupon(String code, Type type, int value, long minOrderCents, Instant expiresAt) {
+        Coupon coupon = new Coupon();
+        coupon.id = com.shop.common.uuid.Ids.newId();
+        coupon.code = code;
+        coupon.type = type;
+        coupon.value = value;
+        coupon.minOrderCents = minOrderCents;
+        coupon.expiresAt = expiresAt;
+        coupon.active = true;
+        return coupon;
+    }
 }

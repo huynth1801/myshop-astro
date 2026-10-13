@@ -60,7 +60,7 @@ public class Product {
     }
 
     /** Admin create (CatalogAdminService) — NOT NULL columns get defaults, never null. */
-    static Product newProduct(String name, String slug, String description, String shortDescription,
+    public static Product newProduct(String name, String slug, String description, String shortDescription,
             ProductStatus status, Category category) {
         Product product = new Product();
         product.name = name;
