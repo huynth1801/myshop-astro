@@ -93,7 +93,8 @@ export type AdminProductDetail = z.infer<typeof adminDetailSchema>;
 export type AdminVariant = z.infer<typeof variantSchema>;
 export type AdminCategory = z.infer<typeof categorySchema>;
 
-async function adminFetch<T>(path: string, init: RequestInit, schema: z.ZodType<T>): Promise<T> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function adminFetch<T>(path: string, init: RequestInit, schema: z.ZodType<T, any, any>): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     credentials: 'include',
