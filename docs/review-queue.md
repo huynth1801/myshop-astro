@@ -44,3 +44,4 @@ Commits pending review. Auto-managed:
 - 77576ec (2026-10-13) chore(docs): update review queue for variant table redesign
 - b932883 (2026-10-13) feat(admin): add sticky live storefront preview widget to product edit sidebar
 - b36f97d (2026-10-13) feat(web): redesign variant picker with grouped multi-attribute selectors, color swatches, and live price
+- b8f4ee3 (2026-10-13) chore: update review queue

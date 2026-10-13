@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminBlogDashboard from '../../components/react/AdminBlogDashboard';
+import { Icon } from 'astro-icon/components';
+---
+
+<Base title="Quản trị Blog & SEO" description="Quản lý bài viết và công cụ crawl nội dung SEO cho myshop">
+  <section class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-foreground">Quản trị — Blog & SEO Crawler</h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          Quản lý bài viết, bóc tách nội dung từ link ngoài để tối ưu SEO và kéo traffic vào cửa hàng.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a
+          href="/blog"
+          target="_blank"
+          class="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Icon name="lucide:external-link" class="h-3.5 w-3.5" />
+          <span>Xem trang Blog</span>
+        </a>
+        <a
+          href="/"
+          class="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Icon name="lucide:arrow-left" class="h-3.5 w-3.5" />
+          <span>Về cửa hàng</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation tabs between Products and Blog -->
+    <div class="mb-6 flex border-b border-border">
+      <a
+        href="/admin"
+        class="border-b-2 border-transparent px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+      >
+        Sản phẩm
+      </a>
+      <a
+        href="/admin/blog"
+        class="border-b-2 border-foreground px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground"
+      >
+        Bài viết & SEO Crawler
+      </a>
+    </div>
+
+    <AdminBlogDashboard client:load />
+  </section>
+</Base>

@@ -1138,4 +1138,45 @@ INSERT INTO related_products (product_id, related_product_id, type) VALUES
   ('66666666-6666-6666-6666-000000000029', '66666666-6666-6666-6666-000000000010', 'CROSS_SELL'),
   ('66666666-6666-6666-6666-000000000029', '66666666-6666-6666-6666-000000000012', 'CROSS_SELL');
 
+-- Demo blog posts for content marketing and SEO (ADR 0006)
+INSERT INTO posts (id, title, slug, summary, content, featured_image, author, status, seo_title, seo_description, view_count, published_at) VALUES
+  ('88888888-8888-8888-8888-000000000001',
+   'Bí Quyết Chọn Đồ Lót Thoáng Khí & Êm Ái Cho Cả Ngày Dài',
+   'bi-quyet-chon-do-lot-thoang-khi-em-ai',
+   'Lựa chọn chất liệu đồ lót phù hợp không chỉ mang lại sự thoải mái tối đa mà còn bảo vệ sức khỏe làn da của bạn. Cùng myshop khám phá cẩm nang chọn đồ lót chuẩn boutique.',
+   '<h2>1. Tầm quan trọng của chất liệu thoáng mát</h2><p>Đồ lót là lớp trang phục tiếp xúc trực tiếp nhất với cơ thể suốt ngày dài hoạt động. Khi thời tiết oi bức hoặc vận động nhiều, các chất liệu bí bách có thể gây khó chịu và kích ứng da.</p><p>Các dòng vải cotton tự nhiên và su lạnh cao cấp được xem là tiêu chuẩn vàng nhờ khả năng thấm hút mồ hôi và bề mặt mượt mà, thân thiện với làn da nhạy cảm.</p><h2>2. Ưu điểm vượt trội của đồ lót không đường may (Seamless)</h2><p>Thiết kế đúc su không đường viền giúp loại bỏ hoàn toàn cảm giác cộm ngứa hay để lại vết hằn khi mặc cùng trang phục bó sát như váy lụa hay quần âu.</p><blockquote>"Sự tự tin của một bộ trang phục bắt đầu từ lớp lót vừa vặn và êm ái bên trong."</blockquote><h2>3. Cách bảo quản để đồ lót luôn bền đẹp</h2><p>Giặt tay với nước ấm nhẹ hoặc dùng túi giặt chuyên dụng khi giặt máy là cách tốt nhất để giữ form dáng và độ đàn hồi của sợi vải.</p>',
+   '/images/hero/lookbook-1.jpg',
+   'myshop Editorial',
+   'PUBLISHED',
+   'Bí Quyết Chọn Đồ Lót Thoáng Khí & Êm Ái Cho Cả Ngày Dài | myshop Blog',
+   'Cẩm nang chọn đồ lót chất liệu su lạnh, cotton kháng khuẩn thoáng mát, êm ái cho phái đẹp.',
+   128,
+   now())
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO post_related_products (post_id, product_id, position) VALUES
+  ('88888888-8888-8888-8888-000000000001', '66666666-6666-6666-6666-000000000001', 0),
+  ('88888888-8888-8888-8888-000000000001', '66666666-6666-6666-6666-000000000004', 1)
+ON CONFLICT (post_id, product_id) DO NOTHING;
+
+INSERT INTO posts (id, title, slug, summary, content, featured_image, author, status, seo_title, seo_description, view_count, published_at) VALUES
+  ('88888888-8888-8888-8888-000000000002',
+   'Xu Hướng Thời Trang Tối Giản (Minimalism) Năm 2026',
+   'xu-huong-thoi-trang-toi-gian-minimalism-2026',
+   'Phong cách tối giản không đơn thuần là sự giản lược chi tiết, mà là nghệ thuật tôn vinh chất liệu và đường cắt tinh xảo. Tìm hiểu cách xây dựng tủ đồ con nhộng (capsule wardrobe) cùng myshop.',
+   '<h2>Nghệ thuật của sự giản lược</h2><p>Bước sang năm 2026, xu hướng thời trang hướng mạnh mẽ về sự bền vững và tính ứng dụng cao. Thay vì chạy theo những mốt ngắn hạn, người tiêu dùng hiện đại ưu tiên những món đồ có thể phối hợp linh hoạt cho nhiều dịp khác nhau.</p><h2>Cách xây dựng Capsule Wardrobe chuẩn gu</h2><ul><li><strong>Gam màu trung tính:</strong> Đen, trắng, kem, xám và be là nền tảng dễ kết hợp nhất.</li><li><strong>Đầu tư vào phom dáng:</strong> Một chiếc áo khoác hay áo croptop có đường may tỉ mỉ sẽ nâng tầm toàn bộ outfit.</li><li><strong>Phụ kiện tối giản:</strong> Những chi tiết nhỏ như khẩu trang chống nắng UV phom 3D hay nón trơn màu vừa bảo vệ vừa tạo điểm nhấn phong cách.</li></ul>',
+   '/images/hero/lookbook-2.jpg',
+   'Stylist Lan Anh',
+   'PUBLISHED',
+   'Xu Hướng Thời Trang Tối Giản 2026: Xây Dựng Tủ Đồ Capsule Wardrobe',
+   'Khám phá xu hướng thời trang Minimalism 2026 và cách chọn trang phục tinh tế cho ngày thường.',
+   95,
+   now() - interval '2 days')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO post_related_products (post_id, product_id, position) VALUES
+  ('88888888-8888-8888-8888-000000000002', '66666666-6666-6666-6666-000000000027', 0),
+  ('88888888-8888-8888-8888-000000000002', '66666666-6666-6666-6666-000000000023', 1)
+ON CONFLICT (post_id, product_id) DO NOTHING;
+
 COMMIT;

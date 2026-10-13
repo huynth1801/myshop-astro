@@ -22,10 +22,18 @@ public class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
-    @ExceptionHandler({ProductNotFoundException.class, com.shop.catalog.CategoryNotFoundException.class})
+    @ExceptionHandler({ProductNotFoundException.class, com.shop.catalog.CategoryNotFoundException.class,
+            com.shop.blog.PostNotFoundException.class})
     public ProblemDetail handleNotFound(RuntimeException ex) {
-        String code = ex instanceof ProductNotFoundException ? "PRODUCT_NOT_FOUND" : "CATEGORY_NOT_FOUND";
+        String code = ex instanceof ProductNotFoundException ? "PRODUCT_NOT_FOUND"
+                : ex instanceof com.shop.catalog.CategoryNotFoundException ? "CATEGORY_NOT_FOUND"
+                : "POST_NOT_FOUND";
         return problem(HttpStatus.NOT_FOUND, code, ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.blog.CrawlFailedException.class)
+    public ProblemDetail handleCrawlFailed(com.shop.blog.CrawlFailedException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "CRAWL_FAILED", ex.getMessage());
     }
 
     @ExceptionHandler({com.shop.cart.VariantNotFoundException.class,
