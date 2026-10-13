@@ -16,6 +16,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
 
     boolean existsBySlugAndStatus(String slug, ProductStatus status);
 
+    List<Product> findByStatus(ProductStatus status);
+
     @Query("select p.id from Product p "
             + "where p.slug = :slug and p.status = com.shop.catalog.ProductStatus.ACTIVE")
     Optional<UUID> findIdBySlugAndStatus(@Param("slug") String slug);

@@ -954,6 +954,81 @@ paths:
               schema: { $ref: '#/components/schemas/CrawledPostPreview' }
         '400': { $ref: '#/components/responses/ValidationError' }
 
+  /api/v1/admin/rss-sources:
+    get:
+      tags: [Blog, Admin]
+      summary: List configured RSS feed sources
+      description: Paginated RSS feed sources
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: Paginated RSS sources
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedRssSources' }
+    post:
+      tags: [Blog, Admin]
+      summary: Add an RSS feed source
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRssSourceRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RssSourceResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { description: URL_ALREADY_EXISTS }
+
+  /api/v1/admin/rss-sources/{id}:
+    delete:
+      tags: [Blog, Admin]
+      summary: Delete an RSS feed source
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/rss-sources/scan-all:
+    post:
+      tags: [Blog, Admin]
+      summary: Scan all active RSS sources and auto-create matching drafts
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Scan summary and list of created drafts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RssScanResultResponse' }
+
+  /api/v1/admin/rss-sources/{id}/scan:
+    post:
+      tags: [Blog, Admin]
+      summary: Scan a specific RSS source and auto-create matching drafts
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Scan summary and list of created drafts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RssScanResultResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
 components:
   parameters:
     Slug:
@@ -1379,4 +1454,49 @@ components:
         author: { type: string, nullable: true }
         sourceUrl: { type: string }
         suggestedSlug: { type: string }
+
+    RssSourceResponse:
+      type: object
+      required: [id, name, url, isActive, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        url: { type: string, format: uri }
+        category: { type: string, nullable: true }
+        isActive: { type: boolean }
+        lastFetchedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    PagedRssSources:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/RssSourceResponse' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+
+    CreateRssSourceRequest:
+      type: object
+      required: [name, url]
+      properties:
+        name: { type: string, maxLength: 255 }
+        url: { type: string, maxLength: 2048 }
+        category: { type: string, maxLength: 100 }
+        isActive: { type: boolean, default: true }
+
+    RssScanResultResponse:
+      type: object
+      required: [sourcesScanned, articlesScanned, newDraftsCreated, skippedExisting, createdPosts]
+      properties:
+        sourcesScanned: { type: integer }
+        articlesScanned: { type: integer }
+        newDraftsCreated: { type: integer }
+        skippedExisting: { type: integer }
+        createdPosts:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPostSummary' }
 

@@ -56,6 +56,9 @@ public class Post {
     @Column(name = "view_count", nullable = false)
     private long viewCount = 0;
 
+    @Column(name = "source_url", length = 2048)
+    private String sourceUrl;
+
     @Column(name = "published_at")
     private Instant publishedAt;
 
@@ -170,6 +173,14 @@ public class Post {
 
     public void setViewCount(long viewCount) {
         this.viewCount = viewCount;
+    }
+
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    public void setSourceUrl(String sourceUrl) {
+        this.sourceUrl = sourceUrl;
     }
 
     public Instant getPublishedAt() {

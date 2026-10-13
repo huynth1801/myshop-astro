@@ -14,6 +14,8 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
 
     boolean existsBySlug(String slug);
 
+    boolean existsBySourceUrl(String sourceUrl);
+
     boolean existsBySlugAndIdNot(String slug, UUID id);
 
     Optional<Post> findBySlugAndStatus(String slug, PostStatus status);

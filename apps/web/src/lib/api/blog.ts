@@ -83,6 +83,38 @@ export const crawledPostSchema = z.object({
 
 export type CrawledPost = z.infer<typeof crawledPostSchema>;
 
+export const rssSourceSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  url: z.string(),
+  category: z.string().nullish(),
+  isActive: z.boolean(),
+  lastFetchedAt: z.string().nullish(),
+  createdAt: z.string(),
+});
+
+export type RssSource = z.infer<typeof rssSourceSchema>;
+
+export const pagedRssSourcesSchema = z.object({
+  content: z.array(rssSourceSchema),
+  page: z.number().int(),
+  size: z.number().int(),
+  totalElements: z.number().int(),
+  totalPages: z.number().int(),
+});
+
+export type PagedRssSources = z.infer<typeof pagedRssSourcesSchema>;
+
+export const rssScanResultSchema = z.object({
+  sourcesScanned: z.number().int(),
+  articlesScanned: z.number().int(),
+  newDraftsCreated: z.number().int(),
+  skippedExisting: z.number().int(),
+  createdPosts: z.array(postSummarySchema),
+});
+
+export type RssScanResult = z.infer<typeof rssScanResultSchema>;
+
 export class BlogApiError extends Error {
   constructor(
     message: string,
@@ -231,3 +263,32 @@ export async function adminCrawlPost(sourceUrl: string): Promise<CrawledPost> {
     body: JSON.stringify({ sourceUrl }),
   }, crawledPostSchema);
 }
+
+export async function adminListRssSources(page = 0, size = 20): Promise<PagedRssSources> {
+  return adminBlogFetch(`/api/v1/admin/rss-sources?page=${page}&size=${size}`, { method: 'GET' }, pagedRssSourcesSchema);
+}
+
+export async function adminCreateRssSource(input: {
+  name: string;
+  url: string;
+  category?: string;
+  isActive?: boolean;
+}): Promise<RssSource> {
+  return adminBlogFetch('/api/v1/admin/rss-sources', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  }, rssSourceSchema);
+}
+
+export async function adminDeleteRssSource(id: string): Promise<void> {
+  await adminBlogFetch(`/api/v1/admin/rss-sources/${id}`, { method: 'DELETE' }, z.void());
+}
+
+export async function adminScanAllRss(): Promise<RssScanResult> {
+  return adminBlogFetch('/api/v1/admin/rss-sources/scan-all', { method: 'POST' }, rssScanResultSchema);
+}
+
+export async function adminScanRssSource(id: string): Promise<RssScanResult> {
+  return adminBlogFetch(`/api/v1/admin/rss-sources/${id}/scan`, { method: 'POST' }, rssScanResultSchema);
+}
+

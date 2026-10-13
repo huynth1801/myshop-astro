@@ -103,10 +103,17 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, "INVALID_UPLOAD", ex.getMessage());
     }
 
-    @ExceptionHandler({com.shop.catalog.SlugTakenException.class, com.shop.catalog.SkuTakenException.class})
+    @ExceptionHandler({com.shop.catalog.SlugTakenException.class, com.shop.catalog.SkuTakenException.class, com.shop.blog.rss.RssSourceAlreadyExistsException.class})
     public ProblemDetail handleTaken(RuntimeException ex) {
-        String code = ex instanceof com.shop.catalog.SlugTakenException ? "SLUG_TAKEN" : "SKU_TAKEN";
+        String code = ex instanceof com.shop.catalog.SlugTakenException ? "SLUG_TAKEN"
+                : ex instanceof com.shop.blog.rss.RssSourceAlreadyExistsException ? "URL_ALREADY_EXISTS"
+                : "SKU_TAKEN";
         return problem(HttpStatus.CONFLICT, code, ex.getMessage());
+    }
+
+    @ExceptionHandler(com.shop.blog.rss.RssSourceNotFoundException.class)
+    public ProblemDetail handleRssSourceNotFound(com.shop.blog.rss.RssSourceNotFoundException ex) {
+        return problem(HttpStatus.NOT_FOUND, "RSS_SOURCE_NOT_FOUND", ex.getMessage());
     }
 
     /** Unmapped URLs — without this the generic handler turns them into 500s. */
