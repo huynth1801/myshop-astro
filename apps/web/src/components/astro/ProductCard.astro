@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
 import type { ProductSummary } from '../../lib/api/products';
 import { resolveImageUrl } from '../../lib/api/urls';
 import { formatCents } from '../../lib/money';
@@ -81,9 +82,10 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
         <button
           type="button"
           data-quick-add={quickAddVariant}
-          class="h-9 items-center justify-center rounded-full bg-foreground px-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-background transition-all duration-200 ease-out translate-y-2 opacity-0 hover:bg-neutral-800 active:scale-95 group-hover:translate-y-0 group-hover:opacity-100"
+          class="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-foreground px-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-background transition-all duration-200 ease-out translate-y-2 opacity-0 hover:bg-neutral-800 active:scale-95 group-hover:translate-y-0 group-hover:opacity-100"
         >
-          Thêm nhanh +
+          <span>Thêm nhanh</span>
+          <Icon name="lucide:plus" class="h-3.5 w-3.5" />
         </button>
       </div>
     )}

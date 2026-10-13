@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export interface LookbookItem {
   id: string;
@@ -133,7 +134,7 @@ export default function HeroLookbookSlider({
                 aria-label="Lookbook trước"
                 className="flex size-7 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition hover:bg-white hover:text-black active:scale-95"
               >
-                ←
+                <ArrowLeft className="size-3.5" />
               </button>
               <button
                 type="button"
@@ -141,7 +142,7 @@ export default function HeroLookbookSlider({
                 aria-label="Lookbook tiếp theo"
                 className="flex size-7 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition hover:bg-white hover:text-black active:scale-95"
               >
-                →
+                <ArrowRight className="size-3.5" />
               </button>
             </div>
           </div>
@@ -197,9 +198,10 @@ export default function HeroLookbookSlider({
           </p>
           <a
             href="#philosophy"
-            className="mt-2.5 inline-block text-[11px] font-semibold uppercase tracking-[0.08em] text-accent underline-offset-4 hover:underline"
+            className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-accent underline-offset-4 hover:underline"
           >
-            Khám phá thớ vải →
+            <span>Khám phá thớ vải</span>
+            <ArrowRight className="size-3" />
           </a>
         </div>
       </div>

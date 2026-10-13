@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ChevronDown, ChevronUp, ExternalLink, Pencil } from 'lucide-react';
 import type { AdminProduct } from '../../lib/api/admin';
 import { resolveImageUrl } from '../../lib/api/urls';
 import {
@@ -36,7 +37,7 @@ export default function AdminProductRow({ product: p, busy, onStatusChange, onRe
               aria-label={expanded ? 'Thu gọn' : 'Xem chi tiết'}
               className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border/80 bg-background text-xs text-muted-foreground transition hover:border-foreground hover:text-foreground"
             >
-              {expanded ? '▲' : '▼'}
+              {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
             </button>
             <a
               href={`/admin/products/${p.id}`}
@@ -55,8 +56,9 @@ export default function AdminProductRow({ product: p, busy, onStatusChange, onRe
               <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="truncate">/{p.slug}</span>
                 <span>·</span>
-                <a href={`/products/${p.slug}`} target="_blank" rel="noreferrer" title="Xem trên shop" className="hover:text-foreground">
-                  Shop ↗
+                <a href={`/products/${p.slug}`} target="_blank" rel="noreferrer" title="Xem trên shop" className="inline-flex items-center gap-0.5 hover:text-foreground">
+                  <span>Shop</span>
+                  <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
             </div>
@@ -127,16 +129,17 @@ export default function AdminProductRow({ product: p, busy, onStatusChange, onRe
               <option value="DRAFT">● Bản nháp</option>
               <option value="ARCHIVED">● Lưu trữ</option>
             </select>
-            <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-[10px] opacity-70">▼</span>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 opacity-70" />
           </div>
         </td>
 
         <td className="px-4 py-3.5 text-right whitespace-nowrap">
           <a
             href={`/admin/products/${p.id}`}
-            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-2xs transition hover:border-foreground hover:bg-muted"
+            className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-2xs transition hover:border-foreground hover:bg-muted"
           >
-            Chỉnh sửa
+            <Pencil className="h-3 w-3" />
+            <span>Chỉnh sửa</span>
           </a>
         </td>
       </tr>

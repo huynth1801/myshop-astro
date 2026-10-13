@@ -1,3 +1,4 @@
+import { Plus, RefreshCw, Search, X } from 'lucide-react';
 import type { AdminCategory } from '../../lib/api/admin';
 
 interface Props {
@@ -28,13 +29,16 @@ export default function AdminToolbar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3.5">
       <div className="flex flex-1 flex-wrap items-center gap-2.5">
-        <input
-          value={q}
-          onChange={(e) => onQChange(e.target.value)}
-          placeholder="Tìm theo tên hoặc slug sản phẩm…"
-          aria-label="Tìm sản phẩm"
-          className="h-9.5 min-w-56 flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none transition focus:border-foreground"
-        />
+        <div className="relative min-w-56 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={(e) => onQChange(e.target.value)}
+            placeholder="Tìm theo tên hoặc slug sản phẩm…"
+            aria-label="Tìm sản phẩm"
+            className="h-9.5 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none transition focus:border-foreground"
+          />
+        </div>
         <select
           value={status}
           onChange={(e) => onStatusChange(e.target.value)}
@@ -65,16 +69,18 @@ export default function AdminToolbar({
         <button
           type="button"
           onClick={onReload}
-          className="h-9.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition hover:text-foreground"
+          className="flex h-9.5 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition hover:text-foreground"
         >
-          Làm mới
+          <RefreshCw className="h-3.5 w-3.5" />
+          <span>Làm mới</span>
         </button>
         <button
           type="button"
           onClick={onToggleForm}
-          className="h-9.5 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-xs transition hover:opacity-90"
+          className="flex h-9.5 items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-xs transition hover:opacity-90"
         >
-          {showForm ? 'Đóng form' : '+ Thêm sản phẩm'}
+          {showForm ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+          <span>{showForm ? 'Đóng form' : 'Thêm sản phẩm'}</span>
         </button>
       </div>
     </div>

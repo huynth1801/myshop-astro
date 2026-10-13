@@ -1,5 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Contrast,
+  FlipHorizontal,
+  FlipVertical,
+  FolderUp,
+  ImageIcon,
+  Link2,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  RotateCw,
+  SlidersHorizontal,
+  Star,
+  Sun,
+  Trash2,
+  Upload,
+  UploadCloud,
+  X,
+  ZoomIn,
+} from 'lucide-react';
+import {
   addImageByUrl,
   AdminError,
   deleteImage,
@@ -188,7 +217,6 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
     setReplacementFilePreview(url);
   }
 
-  // Helper to generate edited Blob from Canvas
   async function generateEditedBlob(imgSrc: string): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -230,13 +258,11 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
     });
   }
 
-  // Save changes in Image Editor Modal
   async function saveImageEditorChanges() {
     if (!editingImage) return;
     const imgId = editingImage.id;
     const finalAlt = editAltValue.trim();
 
-    // Case 1: Replaced with a new file from device
     if (editTab === 'replace-file' && replacementFile) {
       setEditingImage(null);
       await runAction(
@@ -246,7 +272,6 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
       return;
     }
 
-    // Case 2: Replaced with a new URL
     if (editTab === 'replace-url' && replacementUrl.trim() && replacementUrl.trim() !== editingImage.url) {
       setEditingImage(null);
       await runAction(
@@ -256,7 +281,6 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
       return;
     }
 
-    // Case 3: Canvas visual tools used (rotation, flip, or adjustments)
     const hasVisualEdits =
       editRotation !== 0 || editFlipH || editFlipV || editBrightness !== 100 || editContrast !== 100;
 
@@ -283,15 +307,12 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
       return;
     }
 
-    // Case 4: Only Alt text was updated
     setEditingImage(null);
     await runAction(
       () => updateImage(detail.id, imgId, { alt: finalAlt }),
       'Đã cập nhật mô tả SEO cho ảnh.',
     );
   }
-
-  // --- DELETE ACTION ---
 
   async function confirmDelete() {
     if (!deletingImage) return;
@@ -302,8 +323,6 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
       'Đã xóa ảnh khỏi sản phẩm thành công.',
     );
   }
-
-  // --- UPLOAD MULTIPLE FILES ---
 
   async function handleFilesSelected(files: FileList | File[]) {
     const fileList = Array.from(files);
@@ -359,15 +378,16 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
             <h2 className="text-lg font-semibold tracking-tight text-foreground">
               Hình ảnh sản phẩm
             </h2>
-            <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+              <ImageIcon className="h-3 w-3" />
               {images.length} ảnh
             </span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
             Ảnh vị trí đầu tiên <strong className="text-foreground">(#1)</strong> là{' '}
             <span className="font-semibold text-amber-700 dark:text-amber-400">Ảnh đại diện chính</span>.
-            Bạn có thể kéo thả để sắp xếp, bấm nút <strong>⭐ Đặt làm ảnh chính</strong>, hoặc nhấp{' '}
-            <strong>✏️ Sửa ảnh</strong> để xoay, lật hoặc thay thế tệp ảnh mới.
+            Bạn có thể kéo thả để sắp xếp vị trí, đặt làm ảnh chính, hoặc nhấp{' '}
+            <strong>Sửa ảnh</strong> để xoay, lật hoặc thay thế tệp ảnh mới.
           </p>
         </div>
 
@@ -380,9 +400,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
           }}
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-95"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <Plus className="h-4 w-4" />
           Thêm ảnh mới
         </button>
       </div>
@@ -394,9 +412,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
           role="alert"
         >
           <div className="flex items-center gap-2">
-            <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
           <button
@@ -405,7 +421,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
             className="text-destructive/80 hover:text-destructive"
             title="Đóng thông báo"
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
         </div>
       )}
@@ -416,9 +432,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
           role="status"
         >
           <div className="flex items-center gap-2">
-            <svg className="h-4 w-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
             <span>{success}</span>
           </div>
           <button
@@ -427,17 +441,14 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
             className="text-emerald-700 hover:opacity-75"
             title="Đóng thông báo"
           >
-            ✕
+            <X className="h-4 w-4" />
           </button>
         </div>
       )}
 
       {uploadProgress && (
         <div className="mt-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-primary animate-pulse">
-          <svg className="h-4 w-4 animate-spin text-primary" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
+          <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
           <span>{uploadProgress}</span>
         </div>
       )}
@@ -447,9 +458,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
         {images.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 py-12 px-4 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <ImageIcon className="h-6 w-6" />
             </div>
             <h3 className="mt-3 text-sm font-medium text-foreground">Chưa có hình ảnh nào</h3>
             <p className="mt-1 text-xs text-muted-foreground max-w-sm">
@@ -505,9 +514,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                       </span>
                       {isPrimary && (
                         <span className="inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white shadow-md">
-                          <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
+                          <Star className="h-3 w-3 fill-white text-white" />
                           Ảnh chính
                         </span>
                       )}
@@ -525,9 +532,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         title="Đặt ảnh này làm ảnh đại diện chính"
                         className="absolute right-2.5 top-2.5 z-10 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 text-[11px] font-semibold text-gray-800 shadow-md backdrop-blur transition hover:bg-amber-500 hover:text-white disabled:opacity-40"
                       >
-                        <svg className="h-3 w-3 text-amber-500 group-hover:text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
+                        <Star className="h-3 w-3 text-amber-500 group-hover:text-white" />
                         <span className="hidden sm:inline">Đặt ảnh chính</span>
                         <span className="sm:hidden">Chính</span>
                       </button>
@@ -541,9 +546,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         title="Chỉnh sửa ảnh hoặc thay thế bằng ảnh mới"
                         className="flex h-9 items-center gap-1.5 rounded-full bg-white/90 px-3 text-xs font-semibold text-foreground shadow-lg backdrop-blur transition hover:bg-white hover:scale-105 active:scale-95"
                       >
-                        <svg className="h-3.5 w-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
+                        <Pencil className="h-3.5 w-3.5 text-primary" />
                         Sửa ảnh
                       </button>
 
@@ -553,9 +556,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         title="Phóng to ảnh"
                         className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur transition hover:bg-black hover:scale-110 active:scale-95"
                       >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                        </svg>
+                        <ZoomIn className="h-4 w-4" />
                       </button>
                     </div>
 
@@ -568,7 +569,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         title="Chuyển sang trái"
                         className="flex h-7 w-7 items-center justify-center rounded-md bg-black/70 text-white backdrop-blur transition hover:bg-black disabled:opacity-20 disabled:pointer-events-none"
                       >
-                        ←
+                        <ArrowLeft className="h-3.5 w-3.5" />
                       </button>
                       <button
                         type="button"
@@ -577,7 +578,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         title="Chuyển sang phải"
                         className="flex h-7 w-7 items-center justify-center rounded-md bg-black/70 text-white backdrop-blur transition hover:bg-black disabled:opacity-20 disabled:pointer-events-none"
                       >
-                        →
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </div>
@@ -603,9 +604,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary transition hover:underline"
                         title="Chỉnh sửa ảnh cũ hoặc thay thế tệp"
                       >
-                        <svg className="h-3.5 w-3.5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                        <Pencil className="h-3 w-3 text-muted-foreground" />
                         Chỉnh sửa
                       </button>
 
@@ -616,9 +615,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         className="inline-flex items-center gap-1 text-destructive hover:opacity-80 transition hover:underline"
                         title="Xóa ảnh khỏi sản phẩm"
                       >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <Trash2 className="h-3 w-3" />
                         Xóa
                       </button>
                     </div>
@@ -637,24 +634,26 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
             <button
               type="button"
               onClick={() => setAddMode('upload')}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition ${
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition ${
                 addMode === 'upload'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              📁 Tải tệp lên từ máy
+              <UploadCloud className="h-3.5 w-3.5" />
+              Tải tệp lên từ máy
             </button>
             <button
               type="button"
               onClick={() => setAddMode('url')}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition ${
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition ${
                 addMode === 'url'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              🔗 Dán URL hình ảnh
+              <Link2 className="h-3.5 w-3.5" />
+              Dán URL hình ảnh
             </button>
           </div>
           <span className="text-[11px] text-muted-foreground">
@@ -697,9 +696,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 className="hidden"
               />
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+                <UploadCloud className="h-6 w-6" />
               </div>
               <p className="mt-3 text-sm font-medium text-foreground">
                 Kéo thả nhiều ảnh vào đây, hoặc <span className="text-primary underline">chọn từ thiết bị</span>
@@ -761,6 +758,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 disabled={busy || !newUrl.trim()}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-40"
               >
+                <Plus className="h-4 w-4" />
                 Thêm ảnh vào sản phẩm
               </button>
             </div>
@@ -776,9 +774,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
             <div className="shrink-0 flex items-center justify-between border-b border-border px-4 sm:px-5 py-3 bg-muted/20">
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
+                  <SlidersHorizontal className="h-4 w-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">
@@ -795,7 +791,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                 title="Đóng (Huỷ)"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -804,35 +800,38 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
               <button
                 type="button"
                 onClick={() => setEditTab('tools')}
-                className={`border-b-2 px-3 py-1.5 font-medium transition ${
+                className={`inline-flex items-center gap-1.5 border-b-2 px-3 py-1.5 font-medium transition ${
                   editTab === 'tools'
                     ? 'border-primary text-primary font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                🛠️ Xoay, lật &amp; chỉnh sửa ảnh
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Xoay, lật &amp; chỉnh sửa ảnh
               </button>
               <button
                 type="button"
                 onClick={() => setEditTab('replace-file')}
-                className={`border-b-2 px-3 py-1.5 font-medium transition ${
+                className={`inline-flex items-center gap-1.5 border-b-2 px-3 py-1.5 font-medium transition ${
                   editTab === 'replace-file'
                     ? 'border-primary text-primary font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                📁 Thay bằng tệp ảnh mới
+                <Upload className="h-3.5 w-3.5" />
+                Thay bằng tệp ảnh mới
               </button>
               <button
                 type="button"
                 onClick={() => setEditTab('replace-url')}
-                className={`border-b-2 px-3 py-1.5 font-medium transition ${
+                className={`inline-flex items-center gap-1.5 border-b-2 px-3 py-1.5 font-medium transition ${
                   editTab === 'replace-url'
                     ? 'border-primary text-primary font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                🔗 Đổi liên kết URL
+                <Link2 className="h-3.5 w-3.5" />
+                Đổi liên kết URL
               </button>
             </div>
 
@@ -866,38 +865,42 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         <button
                           type="button"
                           onClick={() => setEditRotation((prev) => (prev + 90) % 360)}
-                          className="flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-background py-1 hover:bg-muted font-medium transition active:scale-95"
+                          className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-background py-1 hover:bg-muted font-medium transition active:scale-95"
                         >
-                          ↻ Xoay 90°
+                          <RotateCw className="h-3.5 w-3.5" />
+                          Xoay 90°
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditRotation((prev) => (prev - 90 + 360) % 360)}
-                          className="flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-background py-1 hover:bg-muted font-medium transition active:scale-95"
+                          className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-background py-1 hover:bg-muted font-medium transition active:scale-95"
                         >
-                          ↺ Xoay -90°
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Xoay -90°
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditFlipH((prev) => !prev)}
-                          className={`flex h-8 items-center justify-center gap-1 rounded-lg border py-1 font-medium transition active:scale-95 ${
+                          className={`flex h-8 items-center justify-center gap-1.5 rounded-lg border py-1 font-medium transition active:scale-95 ${
                             editFlipH
                               ? 'border-primary bg-primary/10 text-primary'
                               : 'border-border bg-background hover:bg-muted'
                           }`}
                         >
-                          ↔ Lật ngang
+                          <FlipHorizontal className="h-3.5 w-3.5" />
+                          Lật ngang
                         </button>
                         <button
                           type="button"
                           onClick={() => setEditFlipV((prev) => !prev)}
-                          className={`flex h-8 items-center justify-center gap-1 rounded-lg border py-1 font-medium transition active:scale-95 ${
+                          className={`flex h-8 items-center justify-center gap-1.5 rounded-lg border py-1 font-medium transition active:scale-95 ${
                             editFlipV
                               ? 'border-primary bg-primary/10 text-primary'
                               : 'border-border bg-background hover:bg-muted'
                           }`}
                         >
-                          ↕ Lật dọc
+                          <FlipVertical className="h-3.5 w-3.5" />
+                          Lật dọc
                         </button>
                       </div>
                     </div>
@@ -905,7 +908,8 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                     {/* Brightness & Contrast Sliders */}
                     <div className="space-y-1.5 text-xs">
                       <div className="flex items-center justify-between">
-                        <label htmlFor="edit-brightness" className="font-medium text-foreground">
+                        <label htmlFor="edit-brightness" className="inline-flex items-center gap-1 font-medium text-foreground">
+                          <Sun className="h-3.5 w-3.5 text-muted-foreground" />
                           Độ sáng:
                         </label>
                         <span className="text-muted-foreground">{editBrightness}%</span>
@@ -921,7 +925,8 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                       />
 
                       <div className="flex items-center justify-between pt-0.5">
-                        <label htmlFor="edit-contrast" className="font-medium text-foreground">
+                        <label htmlFor="edit-contrast" className="inline-flex items-center gap-1 font-medium text-foreground">
+                          <Contrast className="h-3.5 w-3.5 text-muted-foreground" />
                           Độ tương phản:
                         </label>
                         <span className="text-muted-foreground">{editContrast}%</span>
@@ -946,9 +951,10 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                         setEditBrightness(100);
                         setEditContrast(100);
                       }}
-                      className="text-xs text-muted-foreground hover:text-foreground underline block"
+                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground underline"
                     >
-                      ↺ Khôi phục ảnh gốc
+                      <RefreshCw className="h-3 w-3" />
+                      Khôi phục ảnh gốc
                     </button>
                   </div>
                 </div>
@@ -979,17 +985,16 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                           alt="Ảnh mới thay thế"
                           className="h-24 rounded-lg object-contain border border-border shadow-md"
                         />
-                        <p className="text-xs font-semibold text-emerald-600">
-                          ✓ Đã chọn: {replacementFile?.name} ({(replacementFile!.size / 1024).toFixed(0)} KB)
+                        <p className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                          <Check className="h-3.5 w-3.5" />
+                          Đã chọn: {replacementFile?.name} ({(replacementFile!.size / 1024).toFixed(0)} KB)
                         </p>
                         <span className="text-[11px] text-primary underline">Nhấp để chọn tệp khác</span>
                       </div>
                     ) : (
                       <div className="space-y-2">
                         <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                          </svg>
+                          <FolderUp className="h-5 w-5" />
                         </div>
                         <p className="text-xs font-medium text-foreground">
                           Nhấp để chọn tệp ảnh mới thay thế cho ảnh hiện tại
@@ -1084,9 +1089,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
           <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
             <div className="flex items-center gap-3 text-destructive">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+                <Trash2 className="h-5 w-5" />
               </div>
               <h3 className="text-base font-semibold text-foreground">Xóa hình ảnh này?</h3>
             </div>
@@ -1118,8 +1121,9 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 type="button"
                 disabled={busy}
                 onClick={() => void confirmDelete()}
-                className="rounded-lg bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground shadow-sm hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground shadow-sm hover:opacity-90 disabled:opacity-50"
               >
+                <Trash2 className="h-3.5 w-3.5" />
                 Xác nhận xóa
               </button>
             </div>
@@ -1146,8 +1150,9 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                   {lightboxIndex + 1} / {images.length}
                 </span>
                 {lightboxIndex === 0 && (
-                  <span className="rounded bg-amber-500 px-2 py-0.5 font-semibold text-white">
-                    ⭐ Ảnh đại diện
+                  <span className="inline-flex items-center gap-1 rounded bg-amber-500 px-2 py-0.5 font-semibold text-white">
+                    <Star className="h-3 w-3 fill-white text-white" />
+                    Ảnh đại diện
                   </span>
                 )}
               </div>
@@ -1157,7 +1162,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40"
                 title="Đóng xem trước (Esc)"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -1169,6 +1174,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                 className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl"
               />
 
+              {/* Prev / Next buttons */}
               {images.length > 1 && (
                 <>
                   <button
@@ -1180,7 +1186,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                     className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-black/90 hover:scale-110 transition"
                     title="Ảnh trước"
                   >
-                    ←
+                    <ChevronLeft className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
@@ -1191,7 +1197,7 @@ export default function AdminImagesManager({ detail, onChanged }: Props) {
                     className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-black/90 hover:scale-110 transition"
                     title="Ảnh tiếp theo"
                   >
-                    →
+                    <ChevronRight className="h-5 w-5" />
                   </button>
                 </>
               )}

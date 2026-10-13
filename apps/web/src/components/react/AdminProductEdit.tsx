@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 import { AdminError, getProduct, updateProduct, type AdminProductDetail } from '../../lib/api/admin';
 import { authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
@@ -101,9 +102,10 @@ export default function AdminProductEdit({ id }: { id: string }) {
           href={`/products/${detail.slug}/`}
           target="_blank"
           rel="noreferrer"
-          className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          Xem trên shop ↗
+          <span>Xem trên shop</span>
+          <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </div>
 

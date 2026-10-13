@@ -3,13 +3,14 @@ import react from '@astrojs/react';
 import node from '@astrojs/node';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import icon from 'astro-icon';
 
 export default defineConfig({
   // TODO: set to the real domain before launch — required for sitemap + canonical URLs
   site: 'https://myshop.example.com',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
-  integrations: [react(), sitemap()],
+  integrations: [react(), sitemap(), icon()],
   vite: {
     plugins: [tailwindcss()],
   },

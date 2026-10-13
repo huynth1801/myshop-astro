@@ -33,3 +33,6 @@ Commits pending review. Auto-managed:
 - cfd6013 (2026-10-13) feat(admin): Shopee-style product edit page /admin/products/[id]
 - b05a18d (2026-10-13) chore: update review queue
 - 57c3cec (2026-10-13) feat(admin): support editing all product parameters, multi-attribute variants, images, and descriptions
+- 8b8986f (2026-10-13) feat(admin): overhaul image manager UX with drag-drop reordering, primary badge, SEO alt modal, and multi-file dropzone
+- 1c8f0f6 (2026-10-13) feat(admin): enable editing existing images with Canvas rotate, flip, file replacement, and URL update
+- 00c1b4b (2026-10-13) fix(admin): fit image editor modal within viewport bounds with fixed header/footer and scrollable body

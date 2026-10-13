@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Loader2, ShoppingBag } from 'lucide-react';
 import { ApiError } from '../../lib/api/cart';
 import { formatCents } from '../../lib/money';
 import { addToCart } from '../../lib/stores/cart';
@@ -81,20 +82,28 @@ export default function AddToCartButton({ variants }: { variants: VariantOption[
         type="button"
         onClick={() => void handleAdd()}
         disabled={!anyInStock || busy}
-        className="mt-4 h-12 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {busy
-          ? 'Đang thêm…'
-          : !anyInStock
-            ? 'Hết hàng'
-            : selected && selected.compareAtPriceCents != null ? (
-              <>
+        {busy ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Đang thêm…</span>
+          </>
+        ) : !anyInStock ? (
+          <span>Hết hàng</span>
+        ) : (
+          <>
+            <ShoppingBag className="h-4 w-4" />
+            {selected && selected.compareAtPriceCents != null ? (
+              <span>
                 <s className="mr-2 opacity-60">{formatCents(selected.compareAtPriceCents)}</s>
                 Thêm vào giỏ — {formatCents(selected.priceCents)}
-              </>
+              </span>
             ) : (
-              <>Thêm vào giỏ — {selected ? formatCents(selected.priceCents) : ''}</>
+              <span>Thêm vào giỏ — {selected ? formatCents(selected.priceCents) : ''}</span>
             )}
+          </>
+        )}
       </button>
 
       {error && <p className="mt-2 text-xs font-medium text-accent-terracotta" role="alert">{error}</p>}

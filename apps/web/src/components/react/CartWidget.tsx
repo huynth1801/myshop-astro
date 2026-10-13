@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { ShoppingBag, Sparkles, X } from 'lucide-react';
 import { ApiError } from '../../lib/api/cart';
 import { formatCents } from '../../lib/money';
 import {
@@ -83,10 +84,7 @@ export default function CartWidget() {
         aria-label={`Mở giỏ hàng (${count} sản phẩm)`}
         className="relative rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-          <path d="M6 7h12l1.5 12.5a1 1 0 0 1-1 1.1H5.5a1 1 0 0 1-1-1.1L6 7Z" strokeLinejoin="round" />
-          <path d="M9 9V6a3 3 0 0 1 6 0v3" strokeLinecap="round" />
-        </svg>
+        <ShoppingBag className="h-5 w-5" aria-hidden="true" />
         {count > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
             {count}
@@ -116,9 +114,7 @@ export default function CartWidget() {
                 aria-label="Đóng giỏ hàng"
                 className="rounded-full p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" />
-                </svg>
+                <X className="h-4.5 w-4.5" aria-hidden="true" />
               </button>
             </div>
 
@@ -179,7 +175,10 @@ export default function CartWidget() {
                     Thêm <strong>{formatCents(remainingForFreeShipping)}</strong> nữa để được freeship
                   </p>
                 ) : (
-                  <p className="text-sm font-medium text-foreground">Đã đạt mức freeship 🎉</p>
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <Sparkles className="h-4 w-4 shrink-0" />
+                    <span>Đã đạt mức freeship</span>
+                  </p>
                 )}
 
                 {data.couponCode ? (

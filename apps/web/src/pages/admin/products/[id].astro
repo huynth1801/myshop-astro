@@ -1,6 +1,7 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import AdminProductEdit from '../../../components/react/AdminProductEdit';
+import { Icon } from 'astro-icon/components';
 
 const { id } = Astro.params;
 ---
@@ -9,9 +10,10 @@ const { id } = Astro.params;
   <section class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
     <a
       href="/admin"
-      class="text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+      class="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
     >
-      ← Danh sách sản phẩm
+      <Icon name="lucide:arrow-left" class="h-4 w-4" />
+      <span>Danh sách sản phẩm</span>
     </a>
     <div class="mt-4">
       {id ? <AdminProductEdit client:load id={id} /> : <p class="text-sm text-muted-foreground">Thiếu id sản phẩm.</p>}

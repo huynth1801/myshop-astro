@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import AdminDashboard from '../components/react/AdminDashboard';
+import { Icon } from 'astro-icon/components';
 ---
 
 <Base title="Quản trị" description="Quản trị myshop — dành cho ADMIN">
@@ -14,9 +15,10 @@ import AdminDashboard from '../components/react/AdminDashboard';
       </div>
       <a
         href="/"
-        class="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        class="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
-        ← Về cửa hàng
+        <Icon name="lucide:arrow-left" class="h-4 w-4" />
+        <span>Về cửa hàng</span>
       </a>
     </div>
     <AdminDashboard client:load />

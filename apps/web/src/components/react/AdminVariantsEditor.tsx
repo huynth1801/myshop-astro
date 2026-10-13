@@ -1,5 +1,14 @@
 import { useState } from 'react';
 import {
+  CheckCircle2,
+  Layers,
+  Plus,
+  Search,
+  Sparkles,
+  X,
+  Zap,
+} from 'lucide-react';
+import {
   addVariant,
   AdminError,
   deleteVariant,
@@ -285,9 +294,10 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
                 setShowBulk((v) => !v);
                 setShowAdd(false);
               }}
-              className="rounded-full border border-border px-3.5 py-1.5 text-xs font-medium transition hover:bg-muted"
+              className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-xs font-medium transition hover:bg-muted"
             >
-              ⚡ {showBulk ? 'Đóng cập nhật' : 'Cập nhật hàng loạt'}
+              <Layers className="h-3.5 w-3.5" />
+              <span>{showBulk ? 'Đóng cập nhật' : 'Cập nhật hàng loạt'}</span>
             </button>
           )}
           <button
@@ -296,9 +306,10 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
               setShowAdd((v) => !v);
               setShowBulk(false);
             }}
-            className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
+            className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
           >
-            {showAdd ? 'Đóng' : '+ Thêm phân loại'}
+            {showAdd ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+            <span>{showAdd ? 'Đóng' : 'Thêm phân loại'}</span>
           </button>
         </div>
       </div>
@@ -310,8 +321,9 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
         </p>
       )}
       {success && (
-        <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200" role="status">
-          ✓ {success}
+        <p className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200" role="status">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span>{success}</span>
         </p>
       )}
 
@@ -319,7 +331,10 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
       {showBulk && (
         <div className="mt-4 rounded-xl border border-border bg-muted/30 p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">⚡ Cập nhật đồng loạt cho tất cả {detail.variants.length} biến thể</h3>
+            <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+              <Zap className="h-4 w-4 text-amber-500" />
+              <span>Cập nhật đồng loạt cho tất cả {detail.variants.length} biến thể</span>
+            </h3>
             <span className="text-xs text-muted-foreground">Để trống ô nào thì thông số đó sẽ giữ nguyên</span>
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -382,9 +397,10 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
             <button
               type="button"
               onClick={autoGenerateSku}
-              className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted"
+              className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-muted"
             >
-              ⚡ Tạo gợi ý SKU
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <span>Tạo gợi ý SKU</span>
             </button>
           </div>
 
@@ -454,10 +470,10 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
                   <button
                     type="button"
                     onClick={() => setNewAttrs(newAttrs.filter((_, i) => i !== idx))}
-                    className="p-1 text-xs text-muted-foreground hover:text-destructive"
+                    className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                     title="Xóa thuộc tính này"
                   >
-                    ✕
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
@@ -466,9 +482,10 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
             <button
               type="button"
               onClick={() => setNewAttrs([...newAttrs, { key: '', value: '' }])}
-              className="text-xs text-primary underline-offset-4 hover:underline"
+              className="flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline"
             >
-              + Thêm thuộc tính khác (vd: chất liệu, kiểu dáng)
+              <Plus className="h-3.5 w-3.5" />
+              <span>Thêm thuộc tính khác (vd: chất liệu, kiểu dáng)</span>
             </button>
           </div>
 
@@ -540,19 +557,23 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
       {/* 4. Search Filter (khi có từ 3 biến thể trở lên) */}
       {detail.variants.length > 2 && (
         <div className="mt-4 flex items-center justify-between gap-3">
-          <input
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
-            placeholder="🔍 Tìm theo SKU, màu, size..."
-            className="h-8 max-w-xs rounded-lg border border-border bg-background px-3 text-xs"
-          />
+          <div className="relative max-w-xs flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Tìm theo SKU, màu, size..."
+              className="h-8 w-full rounded-lg border border-border bg-background pl-8 pr-3 text-xs outline-none focus:border-foreground"
+            />
+          </div>
           {searchFilter && (
             <button
               type="button"
               onClick={() => setSearchFilter('')}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
-              Xóa bộ lọc
+              <X className="h-3 w-3" />
+              <span>Xóa bộ lọc</span>
             </button>
           )}
         </div>
@@ -612,18 +633,20 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
                           <button
                             type="button"
                             onClick={() => setEditAttrs(editAttrs.filter((_, i) => i !== idx))}
-                            className="text-xs text-muted-foreground hover:text-destructive"
+                            className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                            title="Xóa thuộc tính"
                           >
-                            ✕
+                            <X className="h-3 w-3" />
                           </button>
                         </div>
                       ))}
                       <button
                         type="button"
                         onClick={() => setEditAttrs([...editAttrs, { key: '', value: '' }])}
-                        className="text-[11px] text-primary hover:underline"
+                        className="flex items-center gap-1 text-[11px] text-primary hover:underline"
                       >
-                        + Thêm thuộc tính
+                        <Plus className="h-3 w-3" />
+                        <span>Thêm thuộc tính</span>
                       </button>
                     </div>
                   </td>
