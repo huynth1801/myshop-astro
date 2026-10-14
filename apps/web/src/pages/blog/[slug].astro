@@ -24,7 +24,7 @@ try {
 
 const coverUrl = resolveImageUrl(post.featuredImage);
 const canonicalUrl = Astro.url.pathname;
-const metaTitle = post.seoTitle || `${post.title} | myshop Blog`;
+const metaTitle = post.seoTitle || `${post.title} | Thuy Shop Blog`;
 const metaDescription = post.seoDescription || post.summary || post.title;
 
 // Enhance content: extract TOC, beautify headings, disclaimers, links, and reading time
@@ -54,7 +54,7 @@ const articleSchema = {
   image: coverUrl ? new URL(coverUrl, siteOrigin).href : undefined,
   author: {
     '@type': 'Person',
-    name: post.author || 'myshop Editorial',
+    name: post.author || 'Thuy Shop Editorial',
   },
   datePublished: post.publishedAt || post.createdAt,
   dateModified: post.publishedAt || post.createdAt,
@@ -105,7 +105,7 @@ const breadcrumbSchema = {
       <!-- Tag / Category Badge -->
       <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-accent-olive/30 bg-accent-olive/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent-olive">
         <Icon name="lucide:sparkles" class="h-3 w-3" />
-        <span>myshop Journal • Cẩm nang làm đẹp & phong cách</span>
+        <span>Thuy Shop Journal • Cẩm nang làm đẹp & phong cách</span>
       </div>
 
       <!-- Main Title -->

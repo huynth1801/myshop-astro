@@ -369,7 +369,7 @@ export default function MyOrdersView() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-muted/20 px-4 py-3 sm:px-6">
                   <div className="flex items-center gap-2 text-xs">
                     <Store className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-foreground">myshop</span>
+                    <span className="font-semibold text-foreground">Thuy Shop</span>
                     <span className="text-muted-foreground">|</span>
                     <span className="font-mono font-medium text-foreground">
                       #{order.orderCode}

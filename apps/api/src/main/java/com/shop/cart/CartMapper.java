@@ -18,8 +18,8 @@ import java.util.UUID;
  */
 public final class CartMapper {
 
-    /** Free-shipping threshold: 500,000₫ stored as minor units (ADR 0003). */
-    static final long FREE_SHIPPING_THRESHOLD_CENTS = 50_000_000L;
+    /** Free-shipping threshold: 99,000₫ stored as minor units (ADR 0003). */
+    static final long FREE_SHIPPING_THRESHOLD_CENTS = 9_900_000L;
 
     private CartMapper() {
     }

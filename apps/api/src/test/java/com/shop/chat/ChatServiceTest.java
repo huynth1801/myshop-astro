@@ -134,7 +134,7 @@ class ChatServiceTest {
 
         TelegramUpdate.TelegramMessage replyMsg = new TelegramUpdate.TelegramMessage(
                 9990L,
-                "Dạ đơn từ 500k bên mình freeship nha!",
+                "Dạ đơn từ 99k bên mình freeship nha!",
                 new TelegramUpdate.TelegramChat(12345L),
                 new TelegramUpdate.TelegramMessage(8888L, "Có freeship không ạ?", null, null)
         );
@@ -146,7 +146,7 @@ class ChatServiceTest {
         ArgumentCaptor<ChatMessage> msgCaptor = ArgumentCaptor.forClass(ChatMessage.class);
         verify(messageRepository).save(msgCaptor.capture());
         assertThat(msgCaptor.getValue().getSenderType()).isEqualTo(SenderType.ADMIN);
-        assertThat(msgCaptor.getValue().getContent()).isEqualTo("Dạ đơn từ 500k bên mình freeship nha!");
+        assertThat(msgCaptor.getValue().getContent()).isEqualTo("Dạ đơn từ 99k bên mình freeship nha!");
         assertThat(msgCaptor.getValue().getConversation().getSessionToken()).isEqualTo("token-xyz");
     }
 

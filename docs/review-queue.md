@@ -89,3 +89,4 @@ Commits pending review. Auto-managed:
 - 0b33e86 (2026-10-14) feat(chat): dispatch Telegram notifications asynchronously with higher network timeout
 - 3ddd8f0 (2026-10-14) fix(chat): remove unencoded allowed_updates param from telegram getUpdates URL
 - 26ae7c2 (2026-10-14) fix(web): switch heading balance to text-pretty to improve title wrapping
+- 2a21b2f (2026-10-14) fix(cart): do not auto-open cart drawer on add to cart and show toast feedback

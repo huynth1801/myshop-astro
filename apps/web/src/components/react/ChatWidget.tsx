@@ -94,7 +94,7 @@ export function ChatWidget({ productTitle, productSku }: ChatWidgetProps) {
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border border-neutral-900 rounded-full" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold leading-tight">myshop Tư Vấn</h3>
+                <h3 className="text-sm font-semibold leading-tight">Thuy Shop Tư Vấn</h3>
                 <p className="text-[11px] text-emerald-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Trực tuyến qua Telegram
@@ -162,7 +162,7 @@ export function ChatWidget({ productTitle, productSku }: ChatWidgetProps) {
                     className={`flex flex-col ${isAdmin ? 'items-start' : 'items-end'}`}
                   >
                     <span className="text-[10px] text-neutral-400 mb-1 px-1">
-                      {isAdmin ? 'myshop' : 'Bạn'}
+                      {isAdmin ? 'Thuy Shop' : 'Bạn'}
                     </span>
                     <div
                       className={`px-3.5 py-2.5 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-sm ${

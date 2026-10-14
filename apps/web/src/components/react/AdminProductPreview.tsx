@@ -68,7 +68,7 @@ export default function AdminProductPreview({ detail }: Props) {
   const metaDesc = (
     detail.shortDescription ||
     detail.description ||
-    'Đồ dùng hàng ngày được chọn kỹ — chọn ít, dùng lâu. Miễn phí giao hàng cho đơn từ 500K.'
+    'Đồ dùng hàng ngày được chọn kỹ — chọn ít, dùng lâu. Miễn phí giao hàng cho đơn từ 99K.'
   )
     .replace(/\s+/g, ' ')
     .trim()
@@ -258,7 +258,7 @@ export default function AdminProductPreview({ detail }: Props) {
             <div className="flex items-center justify-between border-b border-border/50 pb-2 text-[10px] text-muted-foreground">
               <span className="font-mono">9:41</span>
               <span className="font-semibold uppercase tracking-wider text-foreground">
-                myshop.
+                Thuy Shop.
               </span>
               <ShoppingBag className="h-3.5 w-3.5" />
             </div>
@@ -410,7 +410,7 @@ export default function AdminProductPreview({ detail }: Props) {
               </div>
               <div className="min-w-0 flex-1 leading-tight">
                 <p className="text-[11px] font-medium text-foreground truncate">
-                  myshop
+                  Thuy Shop
                 </p>
                 <p className="text-[10px] text-muted-foreground truncate font-mono">
                   https://myshop.example.com › products › {detail.slug}
@@ -420,7 +420,7 @@ export default function AdminProductPreview({ detail }: Props) {
 
             <div className="pt-0.5">
               <h3 className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400 leading-snug">
-                {detail.name} | myshop
+                {detail.name} | Thuy Shop
               </h3>
               <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                 {metaDesc}

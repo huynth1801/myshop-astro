@@ -106,9 +106,9 @@ class CheckoutServiceTest {
         Cart cart = Cart.newCart(cartToken, Instant.now().plusSeconds(3600));
 
         Product product = createProduct("Áo thun", "ao-thun");
-        ProductVariant variant = createVariant(product, "AT-BLACK-M", 200_000_00L, 10); // 200,000 VND
+        ProductVariant variant = createVariant(product, "AT-BLACK-M", 40_000_00L, 10); // 40,000 VND
 
-        CartItem item = CartItem.newItem(cart, variant, 2); // 400,000 VND total < 500,000 -> shipping applies
+        CartItem item = CartItem.newItem(cart, variant, 2); // 80,000 VND total < 99,000 -> shipping applies
         List<CartItem> items = List.of(item);
 
         when(cartRepository.findByCartToken(cartToken)).thenReturn(Optional.of(cart));
@@ -130,10 +130,10 @@ class CheckoutServiceTest {
         assertThat(response.orderCode()).startsWith("MS-");
         assertThat(response.status()).isEqualTo("PENDING");
         assertThat(response.paymentMethod()).isEqualTo(PaymentMethod.COD);
-        assertThat(response.subtotalCents()).isEqualTo(400_000_00L);
+        assertThat(response.subtotalCents()).isEqualTo(80_000_00L);
         assertThat(response.discountCents()).isEqualTo(0L);
         assertThat(response.shippingCents()).isEqualTo(CheckoutService.STANDARD_SHIPPING_CENTS); // 30,000 VND
-        assertThat(response.totalCents()).isEqualTo(430_000_00L);
+        assertThat(response.totalCents()).isEqualTo(110_000_00L);
         assertThat(response.vietQrUrl()).isNull();
 
         // Variant stock should be decremented from 10 to 8
@@ -151,7 +151,7 @@ class CheckoutServiceTest {
         Cart cart = Cart.newCart(cartToken, Instant.now().plusSeconds(3600));
 
         Product product = createProduct("Váy lụa", "vay-lua");
-        ProductVariant variant = createVariant(product, "VL-RED-S", 600_000_00L, 5); // 600,000 VND >= 500,000 -> free shipping
+        ProductVariant variant = createVariant(product, "VL-RED-S", 600_000_00L, 5); // 600,000 VND >= 99,000 -> free shipping
         CartItem item = CartItem.newItem(cart, variant, 1);
         List<CartItem> items = List.of(item);
 
@@ -212,7 +212,7 @@ class CheckoutServiceTest {
 
         assertThat(response.subtotalCents()).isEqualTo(1_000_000_00L);
         assertThat(response.discountCents()).isEqualTo(100_000_00L);
-        assertThat(response.shippingCents()).isEqualTo(0L); // >= 500k free shipping
+        assertThat(response.shippingCents()).isEqualTo(0L); // >= 99k free shipping
         assertThat(response.totalCents()).isEqualTo(900_000_00L);
     }
 
