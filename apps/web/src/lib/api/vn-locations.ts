@@ -50,6 +50,24 @@ export function matchesLocationQuery(item: LocationItem, query: string): boolean
     return normalizedName.includes('can tho');
   }
 
+  // Multi-word token matching (e.g. "10 tan binh", "p10 tan binh", "binh thanh 15")
+  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  if (tokens.length > 1) {
+    const allMatch = tokens.every((token) => {
+      if (normalizedName.includes(token)) return true;
+      if (/^p\s*\.?\s*\d+/.test(token)) {
+        const num = token.replace(/\D/g, '');
+        return normalizedName.includes(`phuong ${num}`) || normalizedName.includes(`p. ${num}`);
+      }
+      if (/^q\s*\.?\s*\d+/.test(token)) {
+        const num = token.replace(/\D/g, '');
+        return normalizedName.includes(`quan ${num}`) || normalizedName.includes(`q. ${num}`);
+      }
+      return false;
+    });
+    if (allMatch) return true;
+  }
+
   // "q1", "q2", "q.tan binh" -> "quan 1", "quan tan binh"
   if (/^q\s*\.?\s*\d+/.test(normalizedQuery)) {
     const num = normalizedQuery.replace(/\D/g, '');
@@ -208,6 +226,61 @@ export async function fetchWards(districtCode: number | string): Promise<Locatio
     return items;
   } catch (err) {
     console.warn(`Failed to fetch wards for district ${districtCode}`, err);
+    return [];
+  }
+}
+
+export interface WardOption extends LocationItem {
+  wardName: string;
+  districtName: string;
+}
+
+/**
+ * Fetch all wards in a province (flattened across all districts), with district name included.
+ * Endpoint: /p/{provinceCode}?depth=3
+ */
+export async function fetchProvinceWards(provinceCode: number | string): Promise<WardOption[]> {
+  if (!provinceCode) return [];
+  const cacheKey = `province_all_wards_${provinceCode}`;
+  if (memoryCache.has(cacheKey)) {
+    return memoryCache.get(cacheKey)! as WardOption[];
+  }
+
+  const stored = getFromStorage(cacheKey);
+  if (stored && stored.length > 0) {
+    memoryCache.set(cacheKey, stored);
+    return stored as WardOption[];
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/p/${provinceCode}?depth=3`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const districts = data?.districts || [];
+    const allWards: WardOption[] = [];
+
+    for (const d of districts) {
+      const dName = d.name || '';
+      const wards = d.wards || [];
+      for (const w of wards) {
+        allWards.push({
+          code: w.code,
+          name: `${w.name} (${dName})`,
+          wardName: w.name,
+          districtName: dName,
+          divisionType: w.division_type,
+          codename: w.codename,
+        });
+      }
+    }
+
+    if (allWards.length > 0) {
+      memoryCache.set(cacheKey, allWards);
+      setToStorage(cacheKey, allWards);
+    }
+    return allWards;
+  } catch (err) {
+    console.warn(`Failed to fetch all wards for province ${provinceCode}`, err);
     return [];
   }
 }

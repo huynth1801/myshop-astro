@@ -22,9 +22,9 @@ import { submitCheckout, type CustomerAddress, type PaymentMethod } from '../../
 import { SearchableSelect } from './SearchableSelect';
 import {
   fetchProvinces,
-  fetchDistricts,
-  fetchWards,
+  fetchProvinceWards,
   type LocationItem,
+  type WardOption,
   FALLBACK_PROVINCES,
 } from '../../lib/api/vn-locations';
 
@@ -47,15 +47,12 @@ export default function CheckoutForm() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('VIETQR');
   const [isAutoFilled, setIsAutoFilled] = useState(false);
 
-  // Location Cascading States
+  // Location Cascading States (Province -> Direct Wards with District info)
   const [provinces, setProvinces] = useState<LocationItem[]>(FALLBACK_PROVINCES);
-  const [districts, setDistricts] = useState<LocationItem[]>([]);
-  const [wards, setWards] = useState<LocationItem[]>([]);
+  const [wards, setWards] = useState<WardOption[]>([]);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
-  const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
   const [selectedProvinceCode, setSelectedProvinceCode] = useState<number | string | null>(79);
-  const [, setSelectedDistrictCode] = useState<number | string | null>(null);
 
   // Submit State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,33 +98,21 @@ export default function CheckoutForm() {
       .finally(() => setLoadingCart(false));
   }, [user]);
 
-  // Cascade districts when province (city) or provinces list changes
+  // Cascade wards when province (city) or provinces list changes
   useEffect(() => {
     if (!city || provinces.length === 0) return;
     const prov = provinces.find(
       (p) => p.name === city || p.name.includes(city) || city.includes(p.name)
     );
-    if (prov && prov.code !== selectedProvinceCode) {
-      setSelectedProvinceCode(prov.code);
-      setLoadingDistricts(true);
-      fetchDistricts(prov.code)
-        .then((loadedDistricts) => {
-          setDistricts(loadedDistricts);
-          // If a district is already set (e.g. from saved address), load its wards
-          if (district) {
-            const dist = loadedDistricts.find(
-              (d) => d.name === district || d.name.includes(district) || district.includes(d.name)
-            );
-            if (dist) {
-              setSelectedDistrictCode(dist.code);
-              setLoadingWards(true);
-              fetchWards(dist.code)
-                .then((loadedWards) => setWards(loadedWards))
-                .finally(() => setLoadingWards(false));
-            }
-          }
+    const code = prov?.code ?? 79;
+    if (code !== selectedProvinceCode || wards.length === 0) {
+      setSelectedProvinceCode(code);
+      setLoadingWards(true);
+      fetchProvinceWards(code)
+        .then((loadedWards) => {
+          setWards(loadedWards);
         })
-        .finally(() => setLoadingDistricts(false));
+        .finally(() => setLoadingWards(false));
     }
   }, [city, provinces]);
 
@@ -136,43 +121,34 @@ export default function CheckoutForm() {
     setCity(cityName);
     setDistrict('');
     setWard('');
-    setDistricts([]);
     setWards([]);
-    setSelectedDistrictCode(null);
 
     const code = item?.code ?? provinces.find((p) => p.name === cityName)?.code;
     if (code) {
       setSelectedProvinceCode(code);
-      setLoadingDistricts(true);
+      setLoadingWards(true);
       try {
-        const loadedDistricts = await fetchDistricts(code);
-        setDistricts(loadedDistricts);
+        const loadedWards = await fetchProvinceWards(code);
+        setWards(loadedWards);
       } finally {
-        setLoadingDistricts(false);
+        setLoadingWards(false);
       }
     } else {
       setSelectedProvinceCode(null);
     }
   }
 
-  // District selection handler
-  async function handleDistrictChange(distName: string, item?: LocationItem) {
-    setDistrict(distName);
-    setWard('');
-    setWards([]);
-
-    const code = item?.code ?? districts.find((d) => d.name === distName)?.code;
-    if (code) {
-      setSelectedDistrictCode(code);
-      setLoadingWards(true);
-      try {
-        const loadedWards = await fetchWards(code);
-        setWards(loadedWards);
-      } finally {
-        setLoadingWards(false);
-      }
+  // Ward selection handler
+  function handleWardChange(val: string, item?: LocationItem) {
+    const wardItem = item as WardOption | undefined;
+    if (wardItem?.wardName) {
+      setWard(wardItem.wardName);
+      setDistrict(wardItem.districtName || '');
     } else {
-      setSelectedDistrictCode(null);
+      setWard(val);
+      if (!val) {
+        setDistrict('');
+      }
     }
   }
 
@@ -212,6 +188,7 @@ export default function CheckoutForm() {
   const shippingCents = isFreeShipping ? 0 : STANDARD_SHIPPING_CENTS;
   const totalCents = Math.max(0, cartData.subtotalCents - cartData.discountCents + shippingCents);
   const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD_CENTS - cartData.subtotalCents);
+  const wardSelectValue = district && ward && !ward.includes('(') ? `${ward} (${district})` : ward;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -393,8 +370,8 @@ export default function CheckoutForm() {
                 />
               </div>
 
-              {/* Tỉnh / Thành phố, Quận / Huyện, Phường / Xã — Searchable & Cascading */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {/* Tỉnh / Thành phố & Phường / Xã — 2 select boxes */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <SearchableSelect
                   id="checkout-city"
                   label="Tỉnh / Thành phố"
@@ -408,27 +385,17 @@ export default function CheckoutForm() {
                 />
 
                 <SearchableSelect
-                  id="checkout-district"
-                  label="Quận / Huyện"
-                  placeholder={city ? 'Chọn Quận / Huyện' : 'Chọn Tỉnh / TP trước'}
-                  searchPlaceholder="Tìm Quận / Huyện (VD: Tân Bình, Q1)…"
-                  value={district}
-                  items={districts}
-                  loading={loadingDistricts}
-                  disabled={!city || loadingDistricts}
-                  onChange={handleDistrictChange}
-                />
-
-                <SearchableSelect
                   id="checkout-ward"
                   label="Phường / Xã"
-                  placeholder={district ? 'Chọn Phường / Xã' : 'Chọn Quận / Huyện trước'}
-                  searchPlaceholder="Tìm Phường / Xã (VD: Phường 10, Bến Nghé)…"
-                  value={ward}
+                  required
+                  placeholder={city ? 'Chọn Phường / Xã' : 'Chọn Tỉnh / TP trước'}
+                  searchPlaceholder="Tìm Phường / Xã hoặc Quận / Huyện (VD: Tân Bình, P10)…"
+                  value={wardSelectValue}
                   items={wards}
                   loading={loadingWards}
-                  disabled={!district || loadingWards}
-                  onChange={(val) => setWard(val)}
+                  disabled={!city || loadingWards}
+                  onChange={handleWardChange}
+                  helperText={district ? `Khu vực: ${district}` : undefined}
                 />
               </div>
 

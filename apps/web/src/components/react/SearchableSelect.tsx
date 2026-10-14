@@ -83,7 +83,11 @@ export function SearchableSelect({
   // Selected item object if present in list
   const selectedItem = useMemo(() => {
     if (!value) return null;
-    return items.find((item) => item.name === value || String(item.code) === value) || null;
+    return (
+      items.find((item) => item.name === value || String(item.code) === value) ||
+      items.find((item) => (item as any).wardName === value) ||
+      null
+    );
   }, [items, value]);
 
   const displayValue = selectedItem ? selectedItem.name : value;
@@ -110,7 +114,7 @@ export function SearchableSelect({
   }
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div ref={containerRef} className={`relative w-full ${isOpen ? 'z-50' : 'z-10'}`}>
       {label && (
         <label htmlFor={id} className="block text-xs font-medium text-foreground">
           {label} {required && <span className="text-destructive">*</span>}
@@ -167,9 +171,9 @@ export function SearchableSelect({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 flex max-h-72 flex-col rounded-xl border border-border bg-popover text-popover-foreground shadow-xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1.5 flex max-h-72 flex-col rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-foreground shadow-2xl ring-1 ring-black/10 animate-in fade-in-0 zoom-in-95">
           {/* Search Bar */}
-          <div className="sticky top-0 z-10 border-b border-border/70 bg-popover p-2">
+          <div className="sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2">
             <div className="relative flex items-center">
               <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <input
@@ -178,7 +182,7 @@ export function SearchableSelect({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="h-8 w-full rounded-md bg-muted/50 pl-8 pr-7 text-xs outline-none transition focus:bg-background focus:ring-1 focus:ring-foreground"
+                className="h-8 w-full rounded-md bg-zinc-100 dark:bg-zinc-800 pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground outline-none transition focus:bg-white dark:focus:bg-zinc-900 focus:ring-1 focus:ring-foreground"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -206,7 +210,7 @@ export function SearchableSelect({
           <div className="flex-1 overflow-y-auto p-1 text-sm divide-y divide-border/20" role="listbox">
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => {
-                const isSelected = item.name === value || String(item.code) === value;
+                const isSelected = item.name === value || String(item.code) === value || (item as any).wardName === value;
                 return (
                   <div
                     key={item.code}
@@ -216,7 +220,7 @@ export function SearchableSelect({
                     className={`flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-xs transition ${
                       isSelected
                         ? 'bg-primary/10 font-medium text-primary'
-                        : 'text-foreground hover:bg-muted/70 hover:text-foreground'
+                        : 'text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-foreground'
                     }`}
                   >
                     <span className="truncate">{item.name}</span>
@@ -231,7 +235,7 @@ export function SearchableSelect({
                   <button
                     type="button"
                     onClick={handleUseCustomQuery}
-                    className="mt-2 inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+                    className="mt-2 inline-flex items-center rounded-md bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
                   >
                     Dùng &quot;{query.trim()}&quot;
                   </button>
