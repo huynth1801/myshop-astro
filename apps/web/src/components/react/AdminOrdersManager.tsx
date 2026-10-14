@@ -551,7 +551,30 @@ export default function AdminOrdersManager() {
                         </span>
                       ) : (
                         <>
-                          {(ord.status === 'PENDING' || ord.status === 'CONFIRMED') && (
+                          {ord.status === 'PENDING' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => void handleQuickStatusChange(ord.id, 'CONFIRMED', ord.orderCode)}
+                                className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-blue-700 active:scale-95"
+                                title="Xác nhận đơn hàng"
+                              >
+                                <Check className="h-3 w-3" />
+                                <span>Xác nhận</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
+                                className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                                title="Giao cho đơn vị vận chuyển"
+                              >
+                                <Truck className="h-3 w-3" />
+                                <span>Giao ĐVVC</span>
+                              </button>
+                            </>
+                          )}
+
+                          {ord.status === 'CONFIRMED' && (
                             <button
                               type="button"
                               onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
