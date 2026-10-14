@@ -1,15 +1,18 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import node from '@astrojs/node';
+import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
 
+const isCloudflare = process.env.OUTPUT_ADAPTER === 'cloudflare' || Boolean(process.env.CF_PAGES);
+
 export default defineConfig({
-  // TODO: set to the real domain before launch — required for sitemap + canonical URLs
-  site: 'https://myshop.example.com',
+  // Default to pages.dev, customizable via SITE_URL or custom domain
+  site: process.env.SITE_URL || 'https://myshop.pages.dev',
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  adapter: isCloudflare ? cloudflare() : node({ mode: 'standalone' }),
   integrations: [react(), sitemap(), icon()],
   vite: {
     plugins: [tailwindcss()],

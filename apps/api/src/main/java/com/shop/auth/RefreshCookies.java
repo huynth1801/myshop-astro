@@ -20,9 +20,13 @@ public class RefreshCookies {
     public static final String NAME = "refresh_token";
 
     private final boolean secure;
+    private final String sameSite;
 
-    public RefreshCookies(@Value("${shop.cookie.secure:false}") boolean secure) {
+    public RefreshCookies(
+            @Value("${shop.cookie.secure:false}") boolean secure,
+            @Value("${shop.cookie.same-site:Lax}") String sameSite) {
         this.secure = secure;
+        this.sameSite = sameSite;
     }
 
     public Optional<String> read(HttpServletRequest request) {
@@ -50,7 +54,7 @@ public class RefreshCookies {
         return ResponseCookie.from(NAME, value)
                 .httpOnly(true)
                 .path("/api/v1/auth")
-                .sameSite("Lax")
+                .sameSite(sameSite)
                 .maxAge(maxAge)
                 .secure(secure)
                 .build()

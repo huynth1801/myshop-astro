@@ -26,9 +26,13 @@ public class CartTokens {
     private static final Duration MAX_AGE = Duration.ofDays(30);
 
     private final boolean secure;
+    private final String sameSite;
 
-    public CartTokens(@Value("${shop.cookie.secure:false}") boolean secure) {
+    public CartTokens(
+            @Value("${shop.cookie.secure:false}") boolean secure,
+            @Value("${shop.cookie.same-site:Lax}") String sameSite) {
         this.secure = secure;
+        this.sameSite = sameSite;
     }
 
     public Optional<String> read(HttpServletRequest request) {
@@ -48,7 +52,7 @@ public class CartTokens {
         ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, token)
                 .httpOnly(true)
                 .path("/")
-                .sameSite("Lax")
+                .sameSite(sameSite)
                 .maxAge(MAX_AGE)
                 .secure(secure)
                 .build();
