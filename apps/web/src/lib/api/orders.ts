@@ -196,6 +196,26 @@ export async function getOrder(idOrCode: string): Promise<OrderDetail> {
 }
 
 /**
+ * Public: Cancel order by customer (allowed for PENDING or CONFIRMED orders).
+ */
+export async function cancelCustomerOrder(idOrCode: string): Promise<OrderDetail> {
+  const baseUrl = getApiBaseUrl();
+  const res = await fetch(`${baseUrl}/api/v1/orders/${encodeURIComponent(idOrCode)}/cancel`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!res.ok) {
+    const errorJson = await res.json().catch(() => null);
+    const message = errorJson?.detail || errorJson?.message || `Không thể hủy đơn hàng (${res.status})`;
+    throw new Error(message);
+  }
+
+  const data = await res.json();
+  return orderDetailSchema.parse(data);
+}
+
+/**
  * Admin: List paged orders.
  */
 export async function listAdminOrders(params?: {

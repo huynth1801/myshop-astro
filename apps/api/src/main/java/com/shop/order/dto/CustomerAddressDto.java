@@ -1,5 +1,6 @@
 package com.shop.order.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +8,7 @@ import java.util.Map;
 public record CustomerAddressDto(
         @NotBlank(message = "Full name is required") String fullName,
         @NotBlank(message = "Phone number is required") String phone,
-        String email,
+        @NotBlank(message = "Email is required") @Email(message = "Invalid email format") String email,
         @NotBlank(message = "Address line is required") String line1,
         @NotBlank(message = "City / Province is required") String city,
         String district,
@@ -34,7 +35,7 @@ public record CustomerAddressDto(
         return new CustomerAddressDto(
                 (String) map.getOrDefault("fullName", ""),
                 (String) map.getOrDefault("phone", ""),
-                (String) map.get("email"),
+                (String) map.getOrDefault("email", ""),
                 (String) map.getOrDefault("line1", ""),
                 (String) map.getOrDefault("city", ""),
                 (String) map.get("district"),

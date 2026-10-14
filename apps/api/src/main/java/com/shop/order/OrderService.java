@@ -132,6 +132,29 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderDetailResponse cancelCustomerOrder(String identifier) {
+        Order order = findByIdentifier(identifier)
+                .orElseThrow(() -> new OrderNotFoundException(identifier));
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Đơn hàng đã được hủy trước đó");
+        }
+        if (order.getStatus() == OrderStatus.SHIPPING || order.getStatus() == OrderStatus.FULFILLED) {
+            throw new IllegalStateException("Không thể hủy đơn hàng đang giao hoặc đã hoàn thành");
+        }
+        if (order.getStatus() == OrderStatus.REFUNDED) {
+            throw new IllegalStateException("Đơn hàng đã được hoàn tiền");
+        }
+        if (order.getStatus() == OrderStatus.PAID) {
+            throw new IllegalStateException("Đơn hàng đã thanh toán. Vui lòng liên hệ shop để được hỗ trợ hoàn tiền và hủy đơn.");
+        }
+
+        cancelOrderInternal(order);
+        log.info("Customer cancelled order {}", order.getOrderCode());
+        return toDetailResponse(order);
+    }
+
+    @Transactional
     public int cancelUnpaidOrdersOlderThan(Duration duration) {
         Instant cutoff = Instant.now().minus(duration);
         int totalCancelled = 0;
@@ -190,7 +213,7 @@ public class OrderService {
         restoreStockForOrder(order);
         order.updateStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-        log.info("Order {} cancelled due to unpaid expiration", order.getOrderCode());
+        log.info("Order {} transitioned to CANCELLED and stock restored", order.getOrderCode());
     }
 
     @Transactional(readOnly = true)

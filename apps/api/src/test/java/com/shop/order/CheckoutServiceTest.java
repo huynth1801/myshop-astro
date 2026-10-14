@@ -47,6 +47,9 @@ class CheckoutServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private OrderEmailService orderEmailService;
+
     private VietQrService vietQrService;
     private CheckoutService checkoutService;
 
@@ -58,7 +61,8 @@ class CheckoutServiceTest {
                 cartItemRepository,
                 couponRepository,
                 orderRepository,
-                vietQrService
+                vietQrService,
+                orderEmailService
         );
     }
 
@@ -138,6 +142,7 @@ class CheckoutServiceTest {
         // Cart items should be deleted
         verify(cartItemRepository).deleteAll(items);
         verify(orderRepository).save(any(Order.class));
+        verify(orderEmailService).sendOrderConfirmationEmail(any(Order.class), any(CustomerAddressDto.class));
     }
 
     @Test

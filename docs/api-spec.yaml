@@ -337,6 +337,22 @@ paths:
               schema: { $ref: '#/components/schemas/OrderDetailResponse' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /api/v1/orders/{id}/cancel:
+    post:
+      tags: [Checkout, Orders]
+      summary: Cancel order by customer
+      description: Allows a customer to cancel an order that is pending or confirmed before fulfillment. Restores inventory stock.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Cancelled order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
   /api/v1/webhooks/stripe:
     post:
       tags: [Webhooks]

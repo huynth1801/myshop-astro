@@ -196,6 +196,11 @@ export default function CheckoutForm() {
       setError('Vui lòng nhập số điện thoại hợp lệ (ít nhất 9 chữ số).');
       return;
     }
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setError('Vui lòng nhập địa chỉ email hợp lệ để nhận thông báo đơn hàng.');
+      return;
+    }
     if (!city.trim()) {
       setError('Vui lòng chọn hoặc nhập Tỉnh / Thành phố.');
       return;
@@ -211,7 +216,7 @@ export default function CheckoutForm() {
       const address: CustomerAddress = {
         fullName: fullName.trim(),
         phone: cleanPhone,
-        email: email.trim() || undefined,
+        email: cleanEmail,
         line1: line1.trim(),
         city: city.trim(),
         district: district.trim() || undefined,
@@ -223,7 +228,7 @@ export default function CheckoutForm() {
       const response = await submitCheckout(
         {
           cartToken: cartData?.id,
-          email: email.trim() || undefined,
+          email: cleanEmail,
           phone: cleanPhone,
           shippingAddress: address,
           paymentMethod,
@@ -351,11 +356,12 @@ export default function CheckoutForm() {
 
               <div>
                 <label htmlFor="email" className="block text-xs font-medium text-foreground">
-                  Email nhận thông báo <span className="text-muted-foreground font-normal">(không bắt buộc)</span>
+                  Email nhận thông báo & hóa đơn <span className="text-destructive">*</span>
                 </label>
                 <input
                   id="email"
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@example.com"

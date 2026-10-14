@@ -227,4 +227,42 @@ class OrderServiceTest {
         verify(productVariantRepository).save(variant);
         verify(orderRepository).save(order1);
     }
+
+    @Test
+    void cancelCustomerOrder_success_when_pending() {
+        Order order = createSampleOrder("MS-261014-CUST", OrderStatus.PENDING);
+        Product p = Product.newProduct("Quần lót su", "quan-lot-su", "Desc", "Short", com.shop.catalog.ProductStatus.ACTIVE, null);
+        ProductVariant variant = ProductVariant.newVariant(p, "QL-SU-M", 150_000_00L, null, 10, Map.of());
+
+        when(orderRepository.findByOrderCode("MS-261014-CUST")).thenReturn(Optional.of(order));
+        when(productVariantRepository.findBySku("QL-SU-M")).thenReturn(Optional.of(variant));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        OrderDetailResponse response = orderService.cancelCustomerOrder("MS-261014-CUST");
+
+        assertThat(response.status()).isEqualTo("CANCELLED");
+        assertThat(variant.getStock()).isEqualTo(12);
+        verify(productVariantRepository).save(variant);
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void cancelCustomerOrder_fails_when_shipping_or_fulfilled() {
+        Order shippingOrder = createSampleOrder("MS-261014-SHIP", OrderStatus.SHIPPING);
+        when(orderRepository.findByOrderCode("MS-261014-SHIP")).thenReturn(Optional.of(shippingOrder));
+
+        assertThatThrownBy(() -> orderService.cancelCustomerOrder("MS-261014-SHIP"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Không thể hủy đơn hàng");
+    }
+
+    @Test
+    void cancelCustomerOrder_fails_when_already_cancelled() {
+        Order cancelledOrder = createSampleOrder("MS-261014-ALREADY", OrderStatus.CANCELLED);
+        when(orderRepository.findByOrderCode("MS-261014-ALREADY")).thenReturn(Optional.of(cancelledOrder));
+
+        assertThatThrownBy(() -> orderService.cancelCustomerOrder("MS-261014-ALREADY"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Đơn hàng đã được hủy trước đó");
+    }
 }

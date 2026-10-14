@@ -36,6 +36,24 @@ public class CheckoutService {
     private final CouponRepository couponRepository;
     private final OrderRepository orderRepository;
     private final VietQrService vietQrService;
+    private final OrderEmailService orderEmailService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public CheckoutService(
+            CartRepository cartRepository,
+            CartItemRepository cartItemRepository,
+            CouponRepository couponRepository,
+            OrderRepository orderRepository,
+            VietQrService vietQrService,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) OrderEmailService orderEmailService
+    ) {
+        this.cartRepository = cartRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.couponRepository = couponRepository;
+        this.orderRepository = orderRepository;
+        this.vietQrService = vietQrService;
+        this.orderEmailService = orderEmailService;
+    }
 
     public CheckoutService(
             CartRepository cartRepository,
@@ -44,11 +62,7 @@ public class CheckoutService {
             OrderRepository orderRepository,
             VietQrService vietQrService
     ) {
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
-        this.couponRepository = couponRepository;
-        this.orderRepository = orderRepository;
-        this.vietQrService = vietQrService;
+        this(cartRepository, cartItemRepository, couponRepository, orderRepository, vietQrService, null);
     }
 
     @Transactional
@@ -164,6 +178,11 @@ public class CheckoutService {
 
         log.info("Order successfully created: id={}, code={}, totalCents={}, method={}",
                 savedOrder.getId(), savedOrder.getOrderCode(), savedOrder.getTotalCents(), savedOrder.getPaymentMethod());
+
+        // 10. Asynchronously send order confirmation email to customer
+        if (orderEmailService != null) {
+            orderEmailService.sendOrderConfirmationEmail(savedOrder, request.shippingAddress());
+        }
 
         return toCheckoutResponse(savedOrder);
     }

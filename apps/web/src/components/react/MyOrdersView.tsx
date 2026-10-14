@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import {
   AlertCircle,
   ArrowLeft,
+  Ban,
   Check,
   CheckCircle2,
   Clock,
@@ -16,12 +17,13 @@ import {
   Truck,
 } from 'lucide-react';
 import { formatCents } from '../../lib/money';
-import { getOrder, type OrderDetail } from '../../lib/api/orders';
+import { getOrder, cancelCustomerOrder, type OrderDetail } from '../../lib/api/orders';
 import {
   getRecentOrderCodes,
   addRecentOrderCode,
 } from '../../lib/stores/recent-orders';
 import { toast } from '../../lib/stores/toast';
+import ConfirmDialog from './ConfirmDialog';
 
 type TabKey = 'ALL' | 'PAY' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
 
@@ -40,6 +42,25 @@ export default function MyOrdersView() {
   const [manualCode, setManualCode] = useState('');
   const [addingCode, setAddingCode] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [orderToCancel, setOrderToCancel] = useState<OrderDetail | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+
+  async function handleConfirmCancel() {
+    if (!orderToCancel) return;
+    setCancelling(true);
+    try {
+      const updated = await cancelCustomerOrder(orderToCancel.orderCode);
+      setOrders((prev) =>
+        prev.map((o) => (o.orderCode === updated.orderCode ? updated : o))
+      );
+      toast.success(`Đã hủy đơn hàng #${updated.orderCode} thành công!`);
+      setOrderToCancel(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Không thể hủy đơn hàng. Vui lòng thử lại.');
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   // Load all recent orders on mount
   useEffect(() => {
@@ -461,6 +482,17 @@ export default function MyOrdersView() {
 
                   {/* Actions Group (Shopee style buttons) */}
                   <div className="mt-4 flex flex-wrap items-center justify-end gap-2.5">
+                    {(order.status === 'PENDING' || order.status === 'CONFIRMED') && (
+                      <button
+                        type="button"
+                        onClick={() => setOrderToCancel(order)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-destructive/30 bg-background px-4 py-2 text-xs font-semibold text-destructive transition hover:bg-destructive/10 hover:border-destructive/60"
+                      >
+                        <Ban className="h-3.5 w-3.5" />
+                        <span>Hủy đơn</span>
+                      </button>
+                    )}
+
                     {isUnpaidVietQr && (
                       <a
                         href={`/order-success?code=${encodeURIComponent(order.orderCode)}`}
@@ -493,6 +525,32 @@ export default function MyOrdersView() {
           })}
         </div>
       )}
+
+      {/* Cancel Order Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={!!orderToCancel}
+        title="Xác nhận hủy đơn hàng"
+        description={
+          orderToCancel ? (
+            <>
+              Bạn có chắc chắn muốn hủy đơn hàng <strong>#{orderToCancel.orderCode}</strong> không?
+              <br />
+              <span className="mt-1 block text-muted-foreground">
+                Số lượng sản phẩm trong đơn sẽ được hoàn lại kho cho các khách hàng khác.
+              </span>
+            </>
+          ) : undefined
+        }
+        note="Thao tác này sẽ hủy đơn hàng và không thể khôi phục."
+        icon={<Ban className="h-5 w-5 text-destructive" />}
+        confirmIcon={<Ban className="h-3.5 w-3.5 text-white" />}
+        confirmLabel="Xác nhận hủy đơn"
+        cancelLabel="Giữ lại đơn"
+        variant="danger"
+        isLoading={cancelling}
+        onConfirm={handleConfirmCancel}
+        onClose={() => setOrderToCancel(null)}
+      />
     </div>
   );
 }

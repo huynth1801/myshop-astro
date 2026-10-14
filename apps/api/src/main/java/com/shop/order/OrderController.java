@@ -3,6 +3,7 @@ package com.shop.order;
 import com.shop.order.dto.OrderDetailResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,5 +20,10 @@ public class OrderController {
     @GetMapping("/{id}")
     public OrderDetailResponse getOrder(@PathVariable String id) {
         return orderService.getOrderDetail(id);
+    }
+
+    @PostMapping("/{id}/cancel")
+    public OrderDetailResponse cancelOrder(@PathVariable String id) {
+        return orderService.cancelCustomerOrder(id);
     }
 }

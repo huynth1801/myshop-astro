@@ -123,6 +123,11 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.NOT_FOUND, "RSS_SOURCE_NOT_FOUND", ex.getMessage());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail handleIllegalState(IllegalStateException ex) {
+        return problem(HttpStatus.CONFLICT, "INVALID_STATE", ex.getMessage());
+    }
+
     /** Unmapped URLs — without this the generic handler turns them into 500s. */
     @ExceptionHandler(NoResourceFoundException.class)
     public ProblemDetail handleNoResource(NoResourceFoundException ex) {

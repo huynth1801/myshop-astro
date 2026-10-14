@@ -148,6 +148,17 @@ export default function AdminOrdersManager() {
     }
   };
 
+  const handleQuickStatusChange = async (orderId: string, nextStatus: OrderStatus, orderCode: string) => {
+    try {
+      await updateAdminOrderStatus(orderId, nextStatus);
+      toast.success(`Đã cập nhật đơn ${orderCode} sang ${nextStatus}`);
+      void loadOrders(page);
+      void loadMetrics();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Cập nhật trạng thái thất bại.');
+    }
+  };
+
   const handleConfirmCancel = async () => {
     if (!cancelDialogOrder) return;
     setCancelling(true);
@@ -425,14 +436,63 @@ export default function AdminOrdersManager() {
                   </td>
                   <td className="px-4 py-3">{renderStatusBadge(ord.status)}</td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => void openOrderDetail(ord.id)}
-                      className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                      <span>Xem</span>
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      {ord.status === 'PENDING' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
+                            className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-indigo-700"
+                            title="Xác nhận & Giao cho đơn vị vận chuyển"
+                          >
+                            <Truck className="h-3 w-3" />
+                            <span>Giao ĐVVC</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleQuickStatusChange(ord.id, 'CONFIRMED', ord.orderCode)}
+                            className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-blue-700"
+                            title="Xác nhận đơn hàng"
+                          >
+                            <Check className="h-3 w-3" />
+                            <span>Xác nhận</span>
+                          </button>
+                        </>
+                      )}
+
+                      {ord.status === 'CONFIRMED' && (
+                        <button
+                          type="button"
+                          onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
+                          className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-indigo-700"
+                          title="Giao cho đơn vị vận chuyển"
+                        >
+                          <Truck className="h-3 w-3" />
+                          <span>Giao ĐVVC</span>
+                        </button>
+                      )}
+
+                      {ord.status === 'SHIPPING' && (
+                        <button
+                          type="button"
+                          onClick={() => void handleQuickStatusChange(ord.id, 'FULFILLED', ord.orderCode)}
+                          className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-emerald-700"
+                          title="Hoàn thành đơn hàng"
+                        >
+                          <PackageCheck className="h-3 w-3" />
+                          <span>Hoàn thành</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => void openOrderDetail(ord.id)}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Xem</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -519,15 +579,28 @@ export default function AdminOrdersManager() {
                     {/* Action buttons depending on status */}
                     <div className="flex flex-wrap items-center gap-2">
                       {orderDetail.status === 'PENDING' && (
-                        <button
-                          type="button"
-                          disabled={updatingStatus}
-                          onClick={() => void handleStatusChange('CONFIRMED')}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                          <span>Xác nhận đơn</span>
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            disabled={updatingStatus}
+                            onClick={() => void handleStatusChange('SHIPPING')}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:opacity-50"
+                            title="Xác nhận và chuyển đơn hàng sang trạng thái đang giao cho đơn vị vận chuyển"
+                          >
+                            <Truck className="h-3.5 w-3.5" />
+                            <span>Giao cho ĐVVC</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={updatingStatus}
+                            onClick={() => void handleStatusChange('CONFIRMED')}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            <span>Xác nhận đơn</span>
+                          </button>
+                        </>
                       )}
 
                       {orderDetail.status === 'CONFIRMED' && (
@@ -538,7 +611,7 @@ export default function AdminOrdersManager() {
                           className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700 disabled:opacity-50"
                         >
                           <Truck className="h-3.5 w-3.5" />
-                          <span>Chuyển sang giao hàng</span>
+                          <span>Giao cho ĐVVC</span>
                         </button>
                       )}
 
