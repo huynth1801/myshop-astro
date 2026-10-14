@@ -93,3 +93,4 @@ Commits pending review. Auto-managed:
 - dae98df (2026-10-14) feat(brand): update storefront branding to Thuy Shop and adjust free shipping threshold to 99k
 - 44c2085 (2026-10-14) docs: update review queue and brand title for admin blog edit page
 - 74500ad (2026-10-14) docs: update store branding in admin orders page and sync review queue
+- 6aace3b (2026-10-14) docs: sync review queue
