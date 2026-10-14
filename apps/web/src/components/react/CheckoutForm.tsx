@@ -19,6 +19,7 @@ import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
 import { resolveImageUrl } from '../../lib/api/urls';
 import { submitCheckout, type CustomerAddress, type PaymentMethod } from '../../lib/api/orders';
+import { addRecentOrderCode } from '../../lib/stores/recent-orders';
 import { SearchableSelect } from './SearchableSelect';
 import {
   fetchProvinces,
@@ -250,6 +251,7 @@ export default function CheckoutForm() {
       }
 
       clearCart();
+      addRecentOrderCode(response.orderCode);
       toast.success('Đặt hàng thành công! Đang chuyển hướng…');
 
       // Navigate to order success page
