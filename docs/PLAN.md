@@ -82,9 +82,12 @@ Stripe test-mode keys.
   dashboard displays lifetime aggregate revenue (`SUM(total_cents - shipping_cents)` for non-cancelled
   orders). Planned for future release: daily and monthly aggregated revenue reports, date-range
   filtering, and visual charts for the admin dashboard.
-- 2026-10-14 — **Product View & Click Tracking planned:** Track product view impressions and user clicks
-  to measure product interest and conversion rates. Options evaluated: lightweight first-party
-  `views_count` counter in DB via beacon API, or privacy-first web analytics (Plausible / PostHog).
+- 2026-10-14 — **Product View Tracking (Hướng 1 - First-Party Counter) planned:**
+  Track product clicks / detail views to measure customer interest and show metrics directly on Admin:
+  - **Database:** Flyway migration adding `views_count BIGINT NOT NULL DEFAULT 0` column to `products` table and an index on `products(views_count DESC)`.
+  - **API Backend:** Lightweight endpoint `POST /api/v1/products/{slug}/view` (unauthenticated, atomic `UPDATE products SET views_count = views_count + 1 WHERE slug = :slug`).
+  - **Storefront (PDP):** Non-blocking beacon request via `navigator.sendBeacon('/api/v1/products/' + slug + '/view')` (or `fetch(..., { keepalive: true })`) on product page load, with client-side 30-minute debounce (`localStorage` key `viewed_${slug}`) to avoid counting repeated F5 refreshes as duplicate views.
+  - **Admin UI:** Add "Lượt xem" (Views) column in the Admin Products table (`/admin/products`) with ability to sort by popularity.
 
 ## 4. Data Model (core tables)
 
@@ -542,6 +545,8 @@ Env handling: each app keeps a committed `.env.example`; real `.env` files are g
 - [ ] Checkout E2E passes in staging with Stripe live keys (test a real $1 product)
 - [ ] Stripe webhook verified + retry-safe order fulfillment
 - [ ] (Optional) Automated Bank Transfer Webhook (SePay.vn / Casso.vn) for instant VietQR order confirmation
+- [ ] (Optional) Product view counter (Hướng 1: first-party `views_count` on products + beacon tracking)
+- [ ] (Optional) Daily and monthly revenue reporting & sales charts in Admin dashboard
 - [ ] Sitemap, robots, canonical URLs, JSON-LD validated in Google Rich Results Test
 - [ ] Lighthouse ≥ 90 on product/category/home
 - [ ] Sentry receiving errors from both apps; uptime monitoring on `/api/health` and homepage
