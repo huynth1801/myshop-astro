@@ -3,6 +3,7 @@ import { Check, Loader2, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { ApiError } from '../../lib/api/cart';
 import { formatCents } from '../../lib/money';
 import { addToCart } from '../../lib/stores/cart';
+import { toast } from '../../lib/stores/toast';
 import {
   checkOptionAvailability,
   extractDimensionGroups,
@@ -48,6 +49,7 @@ export default function AddToCartButton({ variants }: { variants: VariantOption[
     try {
       await addToCart(selected.id, quantity);
       setAdded(true);
+      toast.success('Đã thêm sản phẩm vào giỏ hàng!');
       setTimeout(() => setAdded(false), 2500);
     } catch (e) {
       setError(e instanceof ApiError && e.code === 'OUT_OF_STOCK'
