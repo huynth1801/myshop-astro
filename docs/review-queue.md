@@ -83,3 +83,4 @@ Commits pending review. Auto-managed:
 - 9571785 (2026-10-14) fix(admin): streamline orders table actions to eliminate horizontal scroll and improve confirmation toasts
 - ef7e562 (2026-10-14) docs: update review queue
 - 93df6e6 (2026-10-14) feat(admin): support both quick in-table and modal order confirmation without horizontal scroll
+- 89d73f9 (2026-10-14) fix(metrics): exclude shipping fee from total revenue calculation
