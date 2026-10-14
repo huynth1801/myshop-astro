@@ -33,9 +33,9 @@ export default function CartWidget() {
   const [couponBusy, setCouponBusy] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  // Fetch the cart on first open (not on page load — bots would mint carts)
+  // Fetch/refresh the cart when drawer opens
   useEffect(() => {
-    if (open && cart.get() === null) {
+    if (open) {
       refreshCart().catch(() => {
         /* drawer shows an error via empty state */
       });
