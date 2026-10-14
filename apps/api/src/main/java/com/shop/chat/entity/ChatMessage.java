@@ -33,8 +33,9 @@ public class ChatMessage {
     @Column(columnDefinition = "text", nullable = false)
     private String content;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "metadata", columnDefinition = "jsonb")
-    private String metadata;
+    private java.util.Map<String, Object> metadata;
 
     @Column(name = "telegram_message_id")
     private Long telegramMessageId;
@@ -46,7 +47,7 @@ public class ChatMessage {
     public ChatMessage() {
     }
 
-    public ChatMessage(ChatConversation conversation, SenderType senderType, String content, String metadata, Long telegramMessageId) {
+    public ChatMessage(ChatConversation conversation, SenderType senderType, String content, java.util.Map<String, Object> metadata, Long telegramMessageId) {
         this.conversation = conversation;
         this.senderType = senderType;
         this.content = content;
@@ -93,11 +94,11 @@ public class ChatMessage {
         this.content = content;
     }
 
-    public String getMetadata() {
+    public java.util.Map<String, Object> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(String metadata) {
+    public void setMetadata(java.util.Map<String, Object> metadata) {
         this.metadata = metadata;
     }
 

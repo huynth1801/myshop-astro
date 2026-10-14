@@ -67,7 +67,7 @@ public class ChatService {
         }
 
         List<ChatMessageResponse> messages = entities.stream()
-                .map(msg -> ChatMessageResponse.from(msg, sessionToken, parseMetadata(msg.getMetadata())))
+                .map(msg -> ChatMessageResponse.from(msg, sessionToken, msg.getMetadata()))
                 .toList();
 
         return new ChatConversationResponse(conv.getSessionToken(), conv.getCustomerName(), conv.getCustomerPhone(), messages);
@@ -108,15 +108,6 @@ public class ChatService {
             metaMap.put("productSku", request.productSku().trim());
         }
 
-        String metadataJson = null;
-        if (!metaMap.isEmpty()) {
-            try {
-                metadataJson = objectMapper.writeValueAsString(metaMap);
-            } catch (Exception e) {
-                log.warn("Failed to serialize metadata for chat message: {}", e.getMessage());
-            }
-        }
-
         // Format and send to Telegram
         String telegramHtml = buildTelegramMessageHtml(conversation, request.content(), metaMap);
         Long telegramMessageId = telegramClient.sendMessage(telegramHtml, null);
@@ -125,7 +116,7 @@ public class ChatService {
                 conversation,
                 SenderType.CUSTOMER,
                 request.content().trim(),
-                metadataJson,
+                metaMap.isEmpty() ? null : metaMap,
                 telegramMessageId
         );
         ChatMessage saved = messageRepository.save(message);
