@@ -77,3 +77,4 @@ Commits pending review. Auto-managed:
 - 5520f52 (2026-10-14) fix(locations): upgrade Vietnam administrative API to v2 (34 provinces & new wards without district level)
 - f4847a2 (2026-10-14) chore: sync review queue
 - c5c83c2 (2026-10-14) feat(orders): add customer order tracking portal and recent orders navigation
+- 0d252ab (2026-10-14) feat(orders): auto-cancel unpaid orders after 24h with inventory restoration and VietQR env support
