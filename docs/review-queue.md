@@ -95,3 +95,4 @@ Commits pending review. Auto-managed:
 - 74500ad (2026-10-14) docs: update store branding in admin orders page and sync review queue
 - 6aace3b (2026-10-14) docs: sync review queue
 - 540892f (2026-10-14) feat(brand): update Thuy Shop metadata description across remaining storefront pages
+- 78065af (2026-10-14) feat(infra): prepare Cloudflare Pages adapter and multi-stage Docker build for zero-cost deployment

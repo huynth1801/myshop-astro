@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api:
+    image: ghcr.io/${GHCR_REPO:-huynth1801/myshop-api}:latest
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: myshop-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://*.pages.dev,http://localhost:4321}
+      - COOKIE_SECURE=${COOKIE_SECURE:-true}
+      - COOKIE_SAME_SITE=${COOKIE_SAME_SITE:-None}
+      - TELEGRAM_ENABLED=${TELEGRAM_ENABLED:-true}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - VIETQR_BANK_ID=${VIETQR_BANK_ID:-MB}
+      - VIETQR_ACCOUNT_NO=${VIETQR_ACCOUNT_NO:-0987654321}
+      - VIETQR_ACCOUNT_NAME=${VIETQR_ACCOUNT_NAME:-THUY SHOP BOUTIQUE}
+      - JAVA_OPTS=-Xms256m -Xmx450m -XX:+UseG1GC
+    deploy:
+      resources:
+        limits:
+          memory: 650M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
