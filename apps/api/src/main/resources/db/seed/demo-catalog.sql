@@ -676,7 +676,7 @@ LƯU Ý KHI SỬ DỤNG CÁC SẢN PHẨM CỦA SHOP
 - Đối vơi sản phẩm cao cấp, sang chảnh, đa dạng về chất liệu, kiểu dáng, cách bảo quản sản phẩm tốt nhất là giặt tay với bột (nước) giặt nhẹ để giữ được độ bền của vải, tránh bị phai màu từ các loại quần áo khác.
 
 - Nên phơi sản phẩm ở nơi thoáng mát, tránh để ẩm ướt kéo dài gây mốc, nên làm khô quần áo bằng cách phơi ở những điểm đón gió sẽ giữ được màu vải tốt hơn.', 'Quần Lót Nữ - Quần lót Đúc Su Tim Thun Lạnh Viền Sóng Gợi Cảm Đính Trái Tim Nhỏ Dễ Thương', 'ACTIVE', '11111111-1111-1111-1111-111111111103', now() - interval '4 days'),
-  ('66666666-6666-6666-6666-000000000026', 'Quần lót su cạp cao năng mỏng gen', 'quan-lot-su-cap-cao', 'Quần Lót Nữ Su Cạp Cao - Nâng Mông - Gen Nịt Bụng - Giảm Mỡ Bụng HANABI
+  ('66666666-6666-6666-6666-000000000026', 'Quần lót su cạp cao nâng mông gen', 'quan-lot-su-cap-cao', 'Quần Lót Nữ Su Cạp Cao - Nâng Mông - Gen Nịt Bụng - Giảm Mỡ Bụng HANABI
 
 2️⃣ Hỗ trợ đổi trả khi không vừa, hàng lỗi
 
@@ -1062,8 +1062,8 @@ INSERT INTO product_images (id, product_id, url, alt, position) VALUES
   ('88888888-8888-8888-8888-000000000048', '66666666-6666-6666-6666-000000000024', '/images/products/quan-lot-hanabi-su-lua-2.jpg', 'Quần lót Hanabi su lụa cao cấp — ảnh 2', 1),
   ('88888888-8888-8888-8888-000000000049', '66666666-6666-6666-6666-000000000025', '/images/products/quan-lot-duc-su-tim-1.jpg', 'Quần lót đúc su tím thun lụa — ảnh 1', 0),
   ('88888888-8888-8888-8888-000000000050', '66666666-6666-6666-6666-000000000025', '/images/products/quan-lot-duc-su-tim-2.jpg', 'Quần lót đúc su tím thun lụa — ảnh 2', 1),
-  ('88888888-8888-8888-8888-000000000051', '66666666-6666-6666-6666-000000000026', '/images/products/quan-lot-su-cap-cao-1.jpg', 'Quần lót su cạp cao năng mỏng gen — ảnh 1', 0),
-  ('88888888-8888-8888-8888-000000000052', '66666666-6666-6666-6666-000000000026', '/images/products/quan-lot-su-cap-cao-2.jpg', 'Quần lót su cạp cao năng mỏng gen — ảnh 2', 1),
+  ('88888888-8888-8888-8888-000000000051', '66666666-6666-6666-6666-000000000026', '/images/products/quan-lot-su-cap-cao-1.jpg', 'Quần lót su cạp cao nâng mông gen — ảnh 1', 0),
+  ('88888888-8888-8888-8888-000000000052', '66666666-6666-6666-6666-000000000026', '/images/products/quan-lot-su-cap-cao-2.jpg', 'Quần lót su cạp cao nâng mông gen — ảnh 2', 1),
   ('88888888-8888-8888-8888-000000000053', '66666666-6666-6666-6666-000000000027', '/images/products/set-4-quan-lot-hop-qua-1.jpg', 'Set 4 quần lót su full hộp quà gấu Cookie — ảnh 1', 0),
   ('88888888-8888-8888-8888-000000000054', '66666666-6666-6666-6666-000000000027', '/images/products/set-4-quan-lot-hop-qua-2.jpg', 'Set 4 quần lót su full hộp quà gấu Cookie — ảnh 2', 1),
   ('88888888-8888-8888-8888-000000000055', '66666666-6666-6666-6666-000000000028', '/images/products/set-6-quan-chip-1.jpg', 'Set 6 quần chip su thạch tan — ảnh 1', 0),

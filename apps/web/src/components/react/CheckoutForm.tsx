@@ -174,7 +174,7 @@ export default function CheckoutForm() {
     );
   }
 
-  const FREE_SHIPPING_THRESHOLD_CENTS = 50_000_000; // 500.000₫
+  const FREE_SHIPPING_THRESHOLD_CENTS = cartData.freeShippingThresholdCents ?? 9_900_000; // 99.000₫
   const STANDARD_SHIPPING_CENTS = 3_000_000; // 30.000₫
   const isFreeShipping = cartData.subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS;
   const shippingCents = isFreeShipping ? 0 : STANDARD_SHIPPING_CENTS;
@@ -645,7 +645,7 @@ export default function CheckoutForm() {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Hỗ trợ đổi trả trong vòng 30 ngày</span>
+              <span>Hỗ trợ đổi trả trong vòng 14 ngày</span>
             </div>
           </div>
         </div>

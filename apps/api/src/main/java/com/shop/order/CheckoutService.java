@@ -28,7 +28,7 @@ public class CheckoutService {
 
     private static final Logger log = LoggerFactory.getLogger(CheckoutService.class);
 
-    public static final long FREE_SHIPPING_THRESHOLD_CENTS = 50_000_000L; // 500,000 VND
+    public static final long FREE_SHIPPING_THRESHOLD_CENTS = 9_900_000L; // 99,000 VND
     public static final long STANDARD_SHIPPING_CENTS = 3_000_000L; // 30,000 VND
 
     private final CartRepository cartRepository;

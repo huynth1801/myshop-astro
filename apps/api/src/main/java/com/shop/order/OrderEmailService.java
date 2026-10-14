@@ -65,7 +65,7 @@ public class OrderEmailService {
             @Autowired(required = false) JavaMailSender mailSender,
             VietQrService vietQrService,
             @Value("${app.mail.enabled:false}") boolean mailEnabled,
-            @Value("${app.mail.from:myshop <noreply@myshop.vn>}") String mailFrom,
+            @Value("${app.mail.from:Thuy Shop <noreply@thuyshop.vn>}") String mailFrom,
             @Value("${shop.storefront-url:http://localhost:4321}") String storefrontUrl
     ) {
         this.mailSender = mailSender;
@@ -103,7 +103,7 @@ public class OrderEmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
             helper.setFrom(mailFrom);
             helper.setTo(recipientEmail);
-            helper.setSubject("myshop Boutique: Xác nhận đơn hàng #" + order.getOrderCode() + " của bạn");
+            helper.setSubject("Thuy Shop: Xác nhận đơn hàng #" + order.getOrderCode() + " của bạn");
             helper.setText(payload.html(), true);
 
             // Attach local files as inline CID resources
@@ -228,7 +228,7 @@ public class OrderEmailService {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>myshop Boutique - Đơn hàng #%s</title>
+                <title>Thuy Shop - Đơn hàng #%s</title>
             </head>
             <body style="margin: 0; padding: 0; background-color: #f9f8f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #292524; line-height: 1.6;">
                 <table width="100%%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f9f8f6; padding: 32px 12px;">
@@ -240,7 +240,7 @@ public class OrderEmailService {
                                 <tr>
                                     <td style="background-color: #ffffff; padding: 28px 24px 20px 24px; text-align: center; border-bottom: 1px solid #f0ede6;">
                                         <div style="font-family: 'Playfair Display', Georgia, -apple-system, sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.16em; color: #292524; text-transform: uppercase;">
-                                            myshop boutique
+                                            Thuy Shop
                                         </div>
                                         <div style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #a8a29e; margin-top: 4px;">
                                             Thời trang & Đồ lót cao cấp
@@ -255,7 +255,7 @@ public class OrderEmailService {
                                             Chào %s,
                                         </p>
                                         <p style="font-size: 14px; line-height: 1.6; color: #57534e; margin: 0 0 8px 0;">
-                                            Cảm ơn bạn đã lựa chọn mua sắm tại <strong>myshop Boutique</strong>! Tụi mình đã nhận được đơn hàng và đang tiến hành kiểm tra, đóng gói cẩn thận để gửi đến bạn sớm nhất.
+                                            Cảm ơn bạn đã lựa chọn mua sắm tại <strong>Thuy Shop</strong>! Tụi mình đã nhận được đơn hàng và đang tiến hành kiểm tra, đóng gói cẩn thận để gửi đến bạn sớm nhất.
                                         </p>
                                     </td>
                                 </tr>
@@ -352,10 +352,10 @@ public class OrderEmailService {
                                             <p style="margin: 0 0 8px 0;">
                                                 Nếu bạn cần thay đổi địa chỉ nhận hàng, đổi size hoặc có bất kỳ câu hỏi nào về sản phẩm, đừng ngần ngại <strong>trả lời trực tiếp vào email này</strong> hoặc nhắn qua Zalo/Hotline bên dưới nhé. Tụi mình luôn sẵn sàng hỗ trợ bạn.
                                             </p>
-                                            <p style="margin: 0 0 12px 0;">Chúc bạn luôn rạng rỡ và có trải nghiệm thật tuyệt vời cùng myshop!</p>
+                                             <p style="margin: 0 0 12px 0;">Chúc bạn luôn rạng rỡ và có trải nghiệm thật tuyệt vời cùng Thuy Shop!</p>
                                             <div style="color: #292524; font-weight: 600;">
                                                 Thân mến,<br/>
-                                                <span style="font-weight: 400; color: #78716c;">Đội ngũ myshop Boutique</span>
+                                                <span style="font-weight: 400; color: #78716c;">Đội ngũ Thuy Shop</span>
                                             </div>
                                         </div>
                                     </td>
@@ -365,12 +365,12 @@ public class OrderEmailService {
                                 <tr>
                                     <td style="background-color: #faf9f6; padding: 22px 24px; text-align: center; border-top: 1px solid #ede9e2; font-size: 11px; color: #78716c; line-height: 1.6;">
                                         <div style="font-weight: 700; color: #292524; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">
-                                            myshop boutique
+                                            Thuy Shop
                                         </div>
                                         <div>Hotline / Zalo hỗ trợ: <strong>0987 654 321</strong> (8:30 - 21:30 hàng ngày)</div>
-                                        <div>Email hỗ trợ: <strong>cskh@myshop.vn</strong></div>
+                                        <div>Email hỗ trợ: <strong>cskh@thuyshop.vn</strong></div>
                                         <div style="margin-top: 8px; color: #a8a29e; font-size: 10px;">
-                                            Email này được gửi tự động để cập nhật trạng thái đơn hàng #%s của bạn tại myshop Boutique.
+                                            Email này được gửi tự động để cập nhật trạng thái đơn hàng #%s của bạn tại Thuy Shop.
                                         </div>
                                     </td>
                                 </tr>
@@ -514,7 +514,7 @@ public class OrderEmailService {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(urlString))
                     .timeout(Duration.ofSeconds(3))
-                    .header("User-Agent", "myshop-email-service")
+                    .header("User-Agent", "thuyshop-email-service")
                     .GET()
                     .build();
             HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());

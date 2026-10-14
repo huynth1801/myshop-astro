@@ -193,7 +193,7 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
         <p className="mt-2 text-sm text-muted-foreground">
           {isCancelled
             ? 'Đơn hàng đã bị hủy (quá thời hạn thanh toán 24h hoặc theo yêu cầu). Sản phẩm đã được hoàn lại kho.'
-            : 'Cảm ơn bạn đã tin chọn myshop. Đơn hàng của bạn đã được ghi nhận vào hệ thống.'}
+            : 'Cảm ơn bạn đã tin chọn Thuy Shop. Đơn hàng của bạn đã được ghi nhận vào hệ thống.'}
         </p>
         {!isCancelled && order.shippingAddress?.email && (
           <p className="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
