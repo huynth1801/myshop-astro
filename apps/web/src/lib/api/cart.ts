@@ -27,6 +27,7 @@ const cartItemSchema = z.object({
   priceAtAddCents: z.number().int(),
   priceCents: z.number().int(),
   lineTotalCents: z.number().int(),
+  imageUrl: z.string().nullable().optional(),
 });
 
 export const cartSchema = z.object({

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ShoppingBag, Sparkles, X } from 'lucide-react';
+import { Package, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { ApiError } from '../../lib/api/cart';
+import { resolveImageUrl } from '../../lib/api/urls';
 import { formatCents } from '../../lib/money';
 import {
   applyCouponCode,
@@ -32,9 +33,9 @@ export default function CartWidget() {
   const [couponBusy, setCouponBusy] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  // Fetch the cart on first open (not on page load — bots would mint carts)
+  // Fetch/refresh the cart when drawer opens
   useEffect(() => {
-    if (open && cart.get() === null) {
+    if (open) {
       refreshCart().catch(() => {
         /* drawer shows an error via empty state */
       });
@@ -123,16 +124,39 @@ export default function CartWidget() {
               {data && data.items.length === 0 && (
                 <p className="py-8 text-center text-sm text-muted-foreground">Giỏ hàng của bạn đang trống.</p>
               )}
-              {data?.items.map((item) => (
-                <div key={item.id} className="flex gap-3 border-b border-border/60 py-4 last:border-0">
-                  <div className="min-w-0 flex-1">
-                    <a
-                      href={`/products/${item.productSlug}/`}
-                      onClick={() => cartOpen.set(false)}
-                      className="font-medium underline-offset-4 hover:underline"
-                    >
-                      {item.productName}
-                    </a>
+              {data?.items.map((item) => {
+                const imageSrc = resolveImageUrl(item.imageUrl);
+                return (
+                  <div key={item.id} className="flex gap-3 border-b border-border/60 py-4 last:border-0">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted/40">
+                      {imageSrc ? (
+                        <img
+                          src={imageSrc}
+                          alt={item.productName}
+                          className="h-full w-full object-cover object-center"
+                          loading="lazy"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`absolute inset-0 flex items-center justify-center text-muted-foreground/50 ${
+                          imageSrc ? '-z-10' : ''
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <Package className="h-6 w-6" />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <a
+                        href={`/products/${item.productSlug}/`}
+                        onClick={() => cartOpen.set(false)}
+                        className="line-clamp-2 text-sm font-medium leading-snug underline-offset-4 hover:underline"
+                      >
+                        {item.productName}
+                      </a>
                     <p className="mt-0.5 text-xs uppercase tracking-wide text-muted-foreground">{item.sku}</p>
                     <div className="mt-2 flex items-center gap-3">
                       <button
@@ -165,7 +189,8 @@ export default function CartWidget() {
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
 
             {data && data.items.length > 0 && (
@@ -243,14 +268,13 @@ export default function CartWidget() {
                     </div>
                   )}
                 </div>
-                <button
-                  type="button"
-                  disabled
-                  title="Thanh toán sẽ mở cùng Stripe"
-                  className="mt-3 w-full cursor-not-allowed rounded-full bg-muted px-6 py-3 font-semibold text-muted-foreground"
+                <a
+                  href="/checkout"
+                  onClick={() => cartOpen.set(false)}
+                  className="mt-3 flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-sm transition hover:opacity-90"
                 >
-                  Thanh toán — sắp mở
-                </button>
+                  Tiến hành thanh toán
+                </a>
               </div>
             )}
           </aside>

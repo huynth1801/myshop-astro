@@ -68,3 +68,19 @@ Commits pending review. Auto-managed:
 - 438c4d5 (2026-10-13) feat(blog): fetch all catalog products and add live search with filter tabs in post editor
 - f1e9c1d (2026-10-13) fix(blog): constrain related products list height with scroll and add global spacing tokens
 - 3913a74 (2026-10-13) fix(catalog): separate product title and price onto dedicated rows in ProductCard
+- 71ab662 (2026-10-13) feat: implement checkout with COD, VietQR and admin order management
+- efe36a2 (2026-10-13) feat(checkout): auto-fill saved shipping address and phone for returning customers
+- 56d58f2 (2026-10-13) fix(auth): hydrate AuthButton with client:load and make login triggers accessible
+- aaae41d (2026-10-13) fix(auth): remove createPortal in AuthButton and use store.listen in useStore
+- 775191a (2026-10-14) feat(checkout): add searchable cascading address selectors with Vietnam official administrative API
+- 46cd91f (2026-10-14) feat(checkout): fix transparent dropdown blur, remove district select box and add multi-token ward search
+- 5520f52 (2026-10-14) fix(locations): upgrade Vietnam administrative API to v2 (34 provinces & new wards without district level)
+- f4847a2 (2026-10-14) chore: sync review queue
+- c5c83c2 (2026-10-14) feat(orders): add customer order tracking portal and recent orders navigation
+- 0d252ab (2026-10-14) feat(orders): auto-cancel unpaid orders after 24h with inventory restoration and VietQR env support
+- b6f4fef (2026-10-14) feat(orders): support order confirmation emails and admin carrier handover action
+- bdeafda (2026-10-14) feat(email): enhance confirmation email design and embed product images via CID inline attachments
+- 9571785 (2026-10-14) fix(admin): streamline orders table actions to eliminate horizontal scroll and improve confirmation toasts
+- ef7e562 (2026-10-14) docs: update review queue
+- 93df6e6 (2026-10-14) feat(admin): support both quick in-table and modal order confirmation without horizontal scroll
+- 89d73f9 (2026-10-14) fix(metrics): exclude shipping fee from total revenue calculation

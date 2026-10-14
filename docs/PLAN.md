@@ -70,6 +70,24 @@ Stripe test-mode keys.
   add + price/stock update, category create. Spec in `docs/api-spec.yaml` (Admin tag).
   Admin UI (web) is the follow-up PR. Promote an admin locally with
   `update users set role='ADMIN' where email='…';`.
+- 2026-10-13 — **Checkout with COD & VietQR + Admin Orders:** ADR 0008 implemented with
+  dynamic VietQR generation, human-friendly order codes (`MS-XXXX`), full server-side
+  recalculation, and admin order lifecycle management (`/admin/orders`).
+- 2026-10-14 — **Automated Bank Transfer Webhook planned (SePay.vn / Casso.vn):** While manual
+  bank transfer verification via Admin Orders (`/admin/orders`) is currently operational,
+  an automated webhook handler (`POST /api/v1/webhooks/sepay`) is planned for future implementation
+  to listen for real-time bank notifications, match order codes in transfer descriptions
+  (`THANH TOAN MS-XXXX`), and transition orders to `CONFIRMED` without manual admin intervention.
+- 2026-10-14 — **Revenue Analytics & Reporting planned (Daily & Monthly):** Currently, the admin
+  dashboard displays lifetime aggregate revenue (`SUM(total_cents - shipping_cents)` for non-cancelled
+  orders). Planned for future release: daily and monthly aggregated revenue reports, date-range
+  filtering, and visual charts for the admin dashboard.
+- 2026-10-14 — **Product View Tracking (Hướng 1 - First-Party Counter) planned:**
+  Track product clicks / detail views to measure customer interest and show metrics directly on Admin:
+  - **Database:** Flyway migration adding `views_count BIGINT NOT NULL DEFAULT 0` column to `products` table and an index on `products(views_count DESC)`.
+  - **API Backend:** Lightweight endpoint `POST /api/v1/products/{slug}/view` (unauthenticated, atomic `UPDATE products SET views_count = views_count + 1 WHERE slug = :slug`).
+  - **Storefront (PDP):** Non-blocking beacon request via `navigator.sendBeacon('/api/v1/products/' + slug + '/view')` (or `fetch(..., { keepalive: true })`) on product page load, with client-side 30-minute debounce (`localStorage` key `viewed_${slug}`) to avoid counting repeated F5 refreshes as duplicate views.
+  - **Admin UI:** Add "Lượt xem" (Views) column in the Admin Products table (`/admin/products`) with ability to sort by popularity.
 
 ## 4. Data Model (core tables)
 
@@ -463,6 +481,12 @@ well-indexed monolith scales a small store for years.
   client's numbers are display-only.
 - Stripe webhook signature verification; order status transitions driven by webhooks, not the
   browser redirect.
+- **VietQR Automated Bank Reconciliation (Planned — SePay.vn / Casso.vn):**
+  - Webhook endpoint `POST /api/v1/webhooks/sepay` secured with API token header validation.
+  - Regex pattern matching for order code in transfer content: `THANH TOAN (MS-\d{6}-[A-Z0-9]+)`.
+  - Amount validation: verify received payment matches order `total_cents / 100`.
+  - Idempotency & state progression: transition matching order from `PENDING` to `CONFIRMED` / `PAID`.
+  - Customer feedback: Server-Sent Events (SSE) or polling on `/order-success` to update UI immediately upon receipt.
 - Argon2/bcrypt passwords; JWT access 15 min + refresh token in httpOnly, Secure,
   SameSite=Lax cookie.
 - Security headers via middleware: HSTS, X-Content-Type-Options, CSP, X-Frame-Options: DENY.
@@ -520,6 +544,9 @@ Env handling: each app keeps a committed `.env.example`; real `.env` files are g
 
 - [ ] Checkout E2E passes in staging with Stripe live keys (test a real $1 product)
 - [ ] Stripe webhook verified + retry-safe order fulfillment
+- [ ] (Optional) Automated Bank Transfer Webhook (SePay.vn / Casso.vn) for instant VietQR order confirmation
+- [ ] (Optional) Product view counter (Hướng 1: first-party `views_count` on products + beacon tracking)
+- [ ] (Optional) Daily and monthly revenue reporting & sales charts in Admin dashboard
 - [ ] Sitemap, robots, canonical URLs, JSON-LD validated in Google Rich Results Test
 - [ ] Lighthouse ≥ 90 on product/category/home
 - [ ] Sentry receiving errors from both apps; uptime monitoring on `/api/health` and homepage

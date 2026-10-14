@@ -38,7 +38,8 @@ public class SecurityConfig {
             .sessionManagement(sessions -> sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/api/v1/products/**", "/api/v1/categories/**",
-                        "/api/v1/cart/**", "/api/v1/auth/**", "/api/v1/files/**", "/api/v1/posts/**").permitAll()
+                        "/api/v1/cart/**", "/api/v1/auth/**", "/api/v1/files/**", "/api/v1/posts/**",
+                        "/api/v1/checkout/**", "/api/v1/orders/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .exceptionHandling(handling -> handling

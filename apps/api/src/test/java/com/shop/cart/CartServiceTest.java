@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 
 import com.shop.cart.dto.CartResponse;
 import com.shop.catalog.Product;
+import com.shop.catalog.ProductImageRepository;
+import com.shop.catalog.ProductStatus;
 import com.shop.catalog.ProductVariant;
 import com.shop.catalog.ProductVariantRepository;
 import java.time.Instant;
@@ -39,6 +41,9 @@ class CartServiceTest {
 
     @Mock
     private CouponRepository coupons;
+
+    @Mock
+    private ProductImageRepository images;
 
     @InjectMocks
     private CartService cartService;

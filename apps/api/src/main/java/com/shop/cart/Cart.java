@@ -35,7 +35,7 @@ public class Cart {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    static Cart newCart(String token, Instant expiresAt) {
+    public static Cart newCart(String token, Instant expiresAt) {
         Cart cart = new Cart();
         cart.cartToken = token;
         cart.expiresAt = expiresAt;
@@ -47,11 +47,11 @@ public class Cart {
         this.userId = userId;
     }
 
-    void applyCoupon(UUID couponId) {
+    public void applyCoupon(UUID couponId) {
         this.couponId = couponId;
     }
 
-    void removeCoupon() {
+    public void removeCoupon() {
         this.couponId = null;
     }
 

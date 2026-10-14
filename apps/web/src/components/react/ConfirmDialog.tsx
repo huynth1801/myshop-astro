@@ -6,6 +6,9 @@ export interface ConfirmDialogProps {
   title: string;
   description?: React.ReactNode;
   itemName?: string;
+  note?: React.ReactNode;
+  icon?: React.ReactNode;
+  confirmIcon?: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: 'danger' | 'warning' | 'info';
@@ -20,6 +23,9 @@ export default function ConfirmDialog({
   title,
   description,
   itemName,
+  note,
+  icon,
+  confirmIcon,
   confirmLabel = 'Xác nhận xóa',
   cancelLabel = 'Hủy',
   variant = 'danger',
@@ -80,7 +86,9 @@ export default function ConfirmDialog({
                   : 'border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400'
               }`}
             >
-              {isDanger ? (
+              {icon ? (
+                icon
+              ) : isDanger ? (
                 <Trash2 className="h-5 w-5" aria-hidden="true" />
               ) : (
                 <AlertTriangle className="h-5 w-5" aria-hidden="true" />
@@ -123,11 +131,19 @@ export default function ConfirmDialog({
             </div>
           )}
 
-          <p className="text-[11px] font-medium leading-relaxed text-red-600/90 dark:text-red-400/90">
-            {isDanger
-              ? 'Hành động này sẽ xóa dữ liệu vĩnh viễn và không thể hoàn tác.'
-              : 'Vui lòng kiểm tra kỹ trước khi xác nhận thực hiện.'}
-          </p>
+          {note !== undefined ? (
+            note ? (
+              <p className="text-[11px] font-medium leading-relaxed text-red-600/90 dark:text-red-400/90">
+                {note}
+              </p>
+            ) : null
+          ) : (
+            <p className="text-[11px] font-medium leading-relaxed text-red-600/90 dark:text-red-400/90">
+              {isDanger
+                ? 'Hành động này sẽ xóa dữ liệu vĩnh viễn và không thể hoàn tác.'
+                : 'Vui lòng kiểm tra kỹ trước khi xác nhận thực hiện.'}
+            </p>
+          )}
 
           {errorMessage && (
             <div className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
@@ -166,7 +182,11 @@ export default function ConfirmDialog({
               </>
             ) : (
               <>
-                {isDanger && <Trash2 className="h-3.5 w-3.5 text-white" />}
+                {confirmIcon !== undefined ? (
+                  confirmIcon
+                ) : (
+                  isDanger && <Trash2 className="h-3.5 w-3.5 text-white" />
+                )}
                 <span>{confirmLabel}</span>
               </>
             )}

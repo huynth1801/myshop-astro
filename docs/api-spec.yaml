@@ -295,41 +295,63 @@ paths:
   /api/v1/checkout:
     post:
       tags: [Checkout]
-      summary: Create a Stripe Checkout Session (Phase 1)
+      summary: Place order and start checkout (COD, VietQR, or Stripe)
       description: |
         The server recalculates prices, discounts and shipping from the database —
         client-supplied numbers are never trusted. Idempotent per Idempotency-Key.
+        Supports COD, VietQR bank transfer, and Stripe.
       parameters:
         - in: header
           name: Idempotency-Key
-          required: true
-          schema: { type: string, format: uuid }
+          required: false
+          schema: { type: string }
           description: Retrying with the same key never creates a duplicate order
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [email, shippingAddress]
-              properties:
-                email: { type: string, format: email }
-                shippingAddress: { $ref: '#/components/schemas/Address' }
+            schema: { $ref: '#/components/schemas/CheckoutRequest' }
       responses:
         '201':
-          description: Session created — redirect the browser to url
+          description: Order placed successfully
           content:
             application/json:
-              schema:
-                type: object
-                required: [orderId, url]
-                properties:
-                  orderId: { type: string, format: uuid }
-                  url:
-                    type: string
-                    description: Stripe Checkout hosted page URL
+              schema: { $ref: '#/components/schemas/CheckoutResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/BusinessRule' }
+
+  /api/v1/orders/{id}:
+    get:
+      tags: [Checkout, Orders]
+      summary: Get order details by ID or order code
+      description: Public lookup for order confirmation receipt and tracking.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/orders/{id}/cancel:
+    post:
+      tags: [Checkout, Orders]
+      summary: Cancel order by customer
+      description: Allows a customer to cancel an order that is pending or confirmed before fulfillment. Restores inventory stock.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Cancelled order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 
   /api/v1/webhooks/stripe:
     post:
@@ -1065,6 +1087,86 @@ paths:
               schema: { $ref: '#/components/schemas/RssScanResultResponse' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /api/v1/admin/orders:
+    get:
+      tags: [Orders, Admin]
+      summary: List orders with filters (status, search, pagination)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, schema: { type: integer, default: 0 } }
+        - { in: query, name: size, schema: { type: integer, default: 20 } }
+        - { in: query, name: status, schema: { type: string, enum: [ALL, PENDING, CONFIRMED, PAID, SHIPPING, FULFILLED, CANCELLED] } }
+        - { in: query, name: search, schema: { type: string }, description: Search by code, customer name, or phone }
+      responses:
+        '200':
+          description: Paged list of orders
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedAdminOrders' }
+
+  /api/v1/admin/orders/metrics:
+    get:
+      tags: [Orders, Admin]
+      summary: Get order overview metrics (counts by status, revenue)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Order stats metrics
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminOrderMetrics' }
+
+  /api/v1/admin/orders/{id}:
+    get:
+      tags: [Orders, Admin]
+      summary: Get full order details for admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/orders/{id}/status:
+    patch:
+      tags: [Orders, Admin]
+      summary: Update order fulfillment / payment status
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateOrderStatusRequest' }
+      responses:
+        '200':
+          description: Updated order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/orders/{id}/cancel:
+    post:
+      tags: [Orders, Admin]
+      summary: Cancel order and restore stock
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Cancelled order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
 components:
   parameters:
     Slug:
@@ -1562,4 +1664,141 @@ components:
       required: [count]
       properties:
         count: { type: integer }
+
+    CustomerAddress:
+      type: object
+      required: [fullName, phone, line1, city]
+      properties:
+        fullName: { type: string }
+        phone: { type: string }
+        email: { type: string, format: email, nullable: true }
+        line1: { type: string }
+        city: { type: string }
+        district: { type: string, nullable: true }
+        ward: { type: string, nullable: true }
+        postalCode: { type: string, nullable: true }
+        countryCode: { type: string, default: 'VN' }
+
+    CheckoutRequest:
+      type: object
+      required: [shippingAddress, paymentMethod]
+      properties:
+        cartToken: { type: string, description: Optional if passed via cookie }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string }
+        shippingAddress: { $ref: '#/components/schemas/CustomerAddress' }
+        paymentMethod:
+          type: string
+          enum: [COD, VIETQR, STRIPE]
+          default: COD
+        customerNote: { type: string, nullable: true }
+
+    BankInfo:
+      type: object
+      required: [bankName, bankAccount, accountHolder, transferContent, amountVnd]
+      properties:
+        bankName: { type: string }
+        bankAccount: { type: string }
+        accountHolder: { type: string }
+        transferContent: { type: string }
+        amountVnd: { type: integer }
+
+    CheckoutResponse:
+      type: object
+      required: [orderId, orderCode, status, subtotalCents, discountCents, shippingCents, totalCents, paymentMethod]
+      properties:
+        orderId: { type: string, format: uuid }
+        orderCode: { type: string }
+        status: { type: string }
+        subtotalCents: { type: integer, format: int64 }
+        discountCents: { type: integer, format: int64 }
+        shippingCents: { type: integer, format: int64 }
+        totalCents: { type: integer, format: int64 }
+        paymentMethod: { type: string, enum: [COD, VIETQR, STRIPE] }
+        vietQrUrl: { type: string, nullable: true }
+        bankInfo: { $ref: '#/components/schemas/BankInfo', nullable: true }
+        stripeUrl: { type: string, nullable: true }
+
+    OrderItemResponse:
+      type: object
+      required: [id, productName, sku, unitPriceCents, qty, totalPriceCents]
+      properties:
+        id: { type: string, format: uuid }
+        productName: { type: string }
+        sku: { type: string }
+        unitPriceCents: { type: integer, format: int64 }
+        qty: { type: integer }
+        totalPriceCents: { type: integer, format: int64 }
+        imageUrl: { type: string, nullable: true }
+
+    OrderDetailResponse:
+      type: object
+      required: [id, orderCode, status, subtotalCents, discountCents, shippingCents, totalCents, paymentMethod, shippingAddress, items, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderCode: { type: string }
+        status: { type: string }
+        subtotalCents: { type: integer, format: int64 }
+        discountCents: { type: integer, format: int64 }
+        shippingCents: { type: integer, format: int64 }
+        totalCents: { type: integer, format: int64 }
+        paymentMethod: { type: string }
+        shippingAddress: { $ref: '#/components/schemas/CustomerAddress' }
+        customerNote: { type: string, nullable: true }
+        vietQrUrl: { type: string, nullable: true }
+        bankInfo: { $ref: '#/components/schemas/BankInfo', nullable: true }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemResponse' }
+        createdAt: { type: string, format: date-time }
+
+    AdminOrderSummary:
+      type: object
+      required: [id, orderCode, status, customerName, customerPhone, totalCents, itemCount, paymentMethod, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderCode: { type: string }
+        status: { type: string }
+        customerName: { type: string }
+        customerPhone: { type: string }
+        customerCity: { type: string, nullable: true }
+        totalCents: { type: integer, format: int64 }
+        itemCount: { type: integer }
+        paymentMethod: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemResponse' }
+        createdAt: { type: string, format: date-time }
+
+    PagedAdminOrders:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AdminOrderSummary' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+
+    AdminOrderMetrics:
+      type: object
+      required: [totalOrders, pendingCount, confirmedCount, shippingCount, fulfilledCount, cancelledCount, totalRevenueCents]
+      properties:
+        totalOrders: { type: integer }
+        pendingCount: { type: integer }
+        confirmedCount: { type: integer }
+        shippingCount: { type: integer }
+        fulfilledCount: { type: integer }
+        cancelledCount: { type: integer }
+        totalRevenueCents: { type: integer, format: int64 }
+
+    UpdateOrderStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, PAID, SHIPPING, FULFILLED, CANCELLED]
 

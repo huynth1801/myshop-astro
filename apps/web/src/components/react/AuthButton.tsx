@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 import { AuthError } from '../../lib/api/auth';
 import { login, register } from '../../lib/api/auth';
 import { authOpen, authUser, bootstrapAuth, setUser, signOut } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 
 /**
- * Header auth island: silent session restore on mount, sign-in/register modal,
- * greeting + sign-out when logged in. Hydrates client:idle (not above-the-fold
- * critical like the cart).
+ * Header auth island: session restore on mount, sign-in/register modal,
+ * greeting + sign-out when logged in. Hydrates client:load.
  */
 export default function AuthButton() {
   const user = useStore(authUser);
   const open = useStore(authOpen);
+  const [localOpen, setLocalOpen] = useState(false);
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,18 +20,31 @@ export default function AuthButton() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isModalOpen = open || localOpen;
+
+  const handleOpen = () => {
+    setLocalOpen(true);
+    authOpen.set(true);
+  };
+
+  const handleClose = () => {
+    setLocalOpen(false);
+    authOpen.set(false);
+    setError(null);
+  };
+
   useEffect(() => {
     void bootstrapAuth();
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!isModalOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') authOpen.set(false);
+      if (event.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, [isModalOpen]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -42,7 +55,7 @@ export default function AuthButton() {
       const authUser =
         mode === 'login' ? await login(email, password) : await register(email, password, name);
       setUser(authUser);
-      authOpen.set(false);
+      handleClose();
       setPassword('');
     } catch (e) {
       if (e instanceof AuthError && e.code === 'EMAIL_TAKEN') {
@@ -66,6 +79,14 @@ export default function AuthButton() {
           <span className="hidden text-muted-foreground sm:inline">
             Chào, <strong>{user.name}</strong>
           </span>
+          {user.role === 'ADMIN' && (
+            <a
+              href="/admin"
+              className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition hover:bg-primary/20"
+            >
+              Quản trị
+            </a>
+          )}
           <button
             type="button"
             onClick={() => void signOut()}
@@ -77,109 +98,114 @@ export default function AuthButton() {
       ) : (
         <button
           type="button"
-          onClick={() => authOpen.set(true)}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          onClick={handleOpen}
+          className="rounded-full px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
         >
           Đăng nhập
         </button>
       )}
 
-      {open &&
-        createPortal(
-        <div className="fixed inset-0 z-50">
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             aria-hidden="true"
-            onClick={() => authOpen.set(false)}
+            onClick={handleClose}
           />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label={mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
-              className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl"
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+            className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+          >
+            <button
+              type="button"
+              onClick={handleClose}
+              className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Đóng"
             >
-              <div className="mb-4 flex gap-4 border-b border-border text-sm">
-                {(['login', 'register'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => {
-                      setMode(tab);
-                      setError(null);
-                    }}
-                    aria-pressed={mode === tab}
-                    className={[
-                      '-mb-px border-b-2 pb-2 transition',
-                      mode === tab
-                        ? 'border-foreground font-medium text-foreground'
-                        : 'border-transparent text-muted-foreground hover:text-foreground',
-                    ].join(' ')}
-                  >
-                    {tab === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
-                  </button>
-                ))}
-              </div>
+              <X className="h-4 w-4" />
+            </button>
 
-              <form onSubmit={(event) => void handleSubmit(event)} className="space-y-3">
-                {mode === 'register' && (
-                  <label className="block text-sm">
-                    <span className="text-muted-foreground">Name</span>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      required
-                      autoComplete="name"
-                      className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
-                    />
-                  </label>
-                )}
-                <label className="block text-sm">
-                  <span className="text-muted-foreground">Email</span>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                    autoComplete="email"
-                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
-                  />
-                </label>
-                <label className="block text-sm">
-                  <span className="text-muted-foreground">Password</span>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                    minLength={mode === 'register' ? 12 : undefined}
-                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
-                  />
-                  {mode === 'register' && (
-                    <span className="mt-1 block text-xs text-muted-foreground">Tối thiểu 12 ký tự</span>
-                  )}
-                </label>
-
-                {error && (
-                  <p className="text-sm text-accent" role="alert">
-                    {error}
-                  </p>
-                )}
-
+            <div className="mb-4 flex gap-4 border-b border-border text-sm">
+              {(['login', 'register'] as const).map((tab) => (
                 <button
-                  type="submit"
-                  disabled={busy}
-                  className="w-full rounded-full bg-primary px-6 py-2.5 font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                  key={tab}
+                  type="button"
+                  onClick={() => {
+                    setMode(tab);
+                    setError(null);
+                  }}
+                  aria-pressed={mode === tab}
+                  className={[
+                    '-mb-px border-b-2 pb-2 transition',
+                    mode === tab
+                      ? 'border-foreground font-medium text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground',
+                  ].join(' ')}
                 >
-                  {busy ? 'Vui lòng đợi…' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+                  {tab === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
                 </button>
-              </form>
+              ))}
             </div>
+
+            <form onSubmit={(event) => void handleSubmit(event)} className="space-y-3">
+              {mode === 'register' && (
+                <label className="block text-sm">
+                  <span className="text-muted-foreground">Name</span>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    required
+                    autoComplete="name"
+                    className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
+                  />
+                </label>
+              )}
+              <label className="block text-sm">
+                <span className="text-muted-foreground">Email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                  autoComplete="email"
+                  className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-muted-foreground">Password</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  minLength={mode === 'register' ? 12 : undefined}
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 outline-none focus:border-foreground"
+                />
+                {mode === 'register' && (
+                  <span className="mt-1 block text-xs text-muted-foreground">Tối thiểu 12 ký tự</span>
+                )}
+              </label>
+
+              {error && (
+                <p className="text-sm text-accent" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="w-full rounded-full bg-primary px-6 py-2.5 font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+              >
+                {busy ? 'Vui lòng đợi…' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+              </button>
+            </form>
           </div>
-        </div>,
-        document.body,
+        </div>
       )}
     </>
   );
