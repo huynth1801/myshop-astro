@@ -88,3 +88,4 @@ Commits pending review. Auto-managed:
 - 260d431 (2026-10-14) fix(chat): map metadata jsonb via JdbcTypeCode for PostgreSQL compatibility
 - 0b33e86 (2026-10-14) feat(chat): dispatch Telegram notifications asynchronously with higher network timeout
 - 3ddd8f0 (2026-10-14) fix(chat): remove unencoded allowed_updates param from telegram getUpdates URL
+- 26ae7c2 (2026-10-14) fix(web): switch heading balance to text-pretty to improve title wrapping
