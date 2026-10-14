@@ -87,3 +87,4 @@ Commits pending review. Auto-managed:
 - 102f6a6 (2026-10-14) feat(chat): implement storefront live chat backed by Telegram Bot API
 - 260d431 (2026-10-14) fix(chat): map metadata jsonb via JdbcTypeCode for PostgreSQL compatibility
 - 0b33e86 (2026-10-14) feat(chat): dispatch Telegram notifications asynchronously with higher network timeout
+- 3ddd8f0 (2026-10-14) fix(chat): remove unencoded allowed_updates param from telegram getUpdates URL
