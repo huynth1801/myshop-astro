@@ -79,3 +79,4 @@ Commits pending review. Auto-managed:
 - c5c83c2 (2026-10-14) feat(orders): add customer order tracking portal and recent orders navigation
 - 0d252ab (2026-10-14) feat(orders): auto-cancel unpaid orders after 24h with inventory restoration and VietQR env support
 - b6f4fef (2026-10-14) feat(orders): support order confirmation emails and admin carrier handover action
+- bdeafda (2026-10-14) feat(email): enhance confirmation email design and embed product images via CID inline attachments
