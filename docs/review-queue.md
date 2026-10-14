@@ -91,3 +91,4 @@ Commits pending review. Auto-managed:
 - 26ae7c2 (2026-10-14) fix(web): switch heading balance to text-pretty to improve title wrapping
 - 2a21b2f (2026-10-14) fix(cart): do not auto-open cart drawer on add to cart and show toast feedback
 - dae98df (2026-10-14) feat(brand): update storefront branding to Thuy Shop and adjust free shipping threshold to 99k
+- 44c2085 (2026-10-14) docs: update review queue and brand title for admin blog edit page
