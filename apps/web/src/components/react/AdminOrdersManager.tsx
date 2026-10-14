@@ -6,6 +6,7 @@ import {
   Clock,
   Eye,
   Loader2,
+  Package,
   PackageCheck,
   QrCode,
   RefreshCw,
@@ -55,6 +56,7 @@ export default function AdminOrdersManager() {
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   // Selected Order / Drawer
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export default function AdminOrdersManager() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   // Cancel Confirmation Dialog
-  const [cancelDialogOrder, setCancelDialogOrder] = useState<OrderDetail | null>(null);
+  const [cancelDialogOrder, setCancelDialogOrder] = useState<{ id: string; orderCode: string } | null>(null);
   const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
@@ -149,13 +151,22 @@ export default function AdminOrdersManager() {
   };
 
   const handleQuickStatusChange = async (orderId: string, nextStatus: OrderStatus, orderCode: string) => {
+    setUpdatingOrderId(orderId);
     try {
       await updateAdminOrderStatus(orderId, nextStatus);
-      toast.success(`Đã cập nhật đơn ${orderCode} sang ${nextStatus}`);
-      void loadOrders(page);
+      const statusLabels: Record<string, string> = {
+        CONFIRMED: 'Đã xác nhận',
+        SHIPPING: 'Đang giao hàng',
+        FULFILLED: 'Hoàn thành',
+        CANCELLED: 'Đã hủy',
+      };
+      toast.success(`Đã chuyển đơn #${orderCode} sang "${statusLabels[nextStatus] || nextStatus}"!`);
+      await loadOrders(page);
       void loadMetrics();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Cập nhật trạng thái thất bại.');
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -373,14 +384,14 @@ export default function AdminOrdersManager() {
           <table className="w-full text-left text-xs">
             <thead className="border-b border-border bg-muted/40 font-semibold text-muted-foreground">
               <tr>
-                <th className="px-4 py-3">Mã đơn</th>
-                <th className="px-4 py-3">Ngày tạo</th>
-                <th className="px-4 py-3">Khách hàng</th>
-                <th className="px-4 py-3">Thanh toán</th>
-                <th className="px-4 py-3">Số lượng</th>
-                <th className="px-4 py-3">Tổng tiền</th>
-                <th className="px-4 py-3">Trạng thái</th>
-                <th className="px-4 py-3 text-right">Thao tác</th>
+                <th className="px-4 py-3 whitespace-nowrap min-w-[130px]">Mã đơn</th>
+                <th className="px-4 py-3 whitespace-nowrap min-w-[110px]">Ngày tạo</th>
+                <th className="px-4 py-3 min-w-[260px] max-w-[340px]">Sản phẩm</th>
+                <th className="px-4 py-3 min-w-[160px]">Khách hàng</th>
+                <th className="px-4 py-3 whitespace-nowrap">Thanh toán</th>
+                <th className="px-4 py-3 whitespace-nowrap">Tổng tiền</th>
+                <th className="px-4 py-3 whitespace-nowrap">Trạng thái</th>
+                <th className="px-4 py-3 text-right whitespace-nowrap min-w-[190px]">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
@@ -403,19 +414,110 @@ export default function AdminOrdersManager() {
 
               {orders?.map((ord) => (
                 <tr key={ord.id} className="transition hover:bg-muted/30">
-                  <td className="px-4 py-3 font-mono font-bold text-foreground">
-                    {ord.orderCode}
+                  <td className="px-4 py-3 font-mono font-bold text-foreground whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => void openOrderDetail(ord.id)}
+                      className="text-left font-mono font-bold text-foreground transition hover:text-primary hover:underline"
+                      title="Bấm để mở chi tiết đơn hàng"
+                    >
+                      #{ord.orderCode}
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                     {formatDate(ord.createdAt)}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 min-w-[260px] max-w-[340px]">
+                    {ord.items && ord.items.length > 0 ? (
+                      ord.items.length === 1 ? (
+                        <div
+                          onClick={() => void openOrderDetail(ord.id)}
+                          className="group flex cursor-pointer items-center gap-3 py-1"
+                          title="Bấm để xem chi tiết sản phẩm và đơn hàng"
+                        >
+                          {ord.items[0].imageUrl ? (
+                            <img
+                              src={ord.items[0].imageUrl}
+                              alt={ord.items[0].productName}
+                              className="h-12 w-12 shrink-0 rounded-lg border border-border bg-muted/40 object-cover transition group-hover:opacity-90"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 text-muted-foreground">
+                              <Package className="h-5 w-5" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-2 text-xs font-medium text-foreground leading-snug transition group-hover:text-primary">
+                              {ord.items[0].productName}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">
+                              <span className="font-mono text-[10px] text-muted-foreground/80">{ord.items[0].sku}</span>
+                              <span className="mx-1.5">·</span>
+                              <span className="font-semibold text-foreground">SL: x{ord.items[0].qty}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => void openOrderDetail(ord.id)}
+                          className="group cursor-pointer space-y-1.5 py-1"
+                          title="Bấm để xem tất cả sản phẩm trong đơn"
+                        >
+                          {/* Thumbnails row */}
+                          <div className="flex items-center gap-1.5">
+                            {ord.items.slice(0, 3).map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/40"
+                                title={`${item.productName} (x${item.qty})`}
+                              >
+                                {item.imageUrl ? (
+                                  <img
+                                    src={item.imageUrl}
+                                    alt={item.productName}
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                    <Package className="h-4 w-4" />
+                                  </div>
+                                )}
+                                <span className="absolute bottom-0 right-0 rounded-tl bg-background/90 px-1 text-[9px] font-bold text-foreground backdrop-blur-xs">
+                                  x{item.qty}
+                                </span>
+                              </div>
+                            ))}
+                            {ord.items.length > 3 && (
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 text-[10px] font-bold text-muted-foreground">
+                                +{ord.items.length - 3}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Products names summary */}
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-medium text-foreground transition group-hover:text-primary">
+                              {ord.items[0].productName}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              và {ord.items.length - 1} sản phẩm khác ({ord.itemCount} món)
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    ) : (
+                      <span className="text-muted-foreground">{ord.itemCount} món</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 min-w-[160px]">
                     <p className="font-medium text-foreground">{ord.customerName}</p>
                     <p className="text-[11px] text-muted-foreground">
                       {ord.customerPhone} {ord.customerCity ? `· ${ord.customerCity}` : ''}
                     </p>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     {ord.paymentMethod === 'VIETQR' ? (
                       <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
                         <QrCode className="h-3 w-3" />
@@ -428,70 +530,108 @@ export default function AdminOrdersManager() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 font-medium text-muted-foreground">
-                    {ord.itemCount} món
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-foreground">
+                  <td className="px-4 py-3 whitespace-nowrap font-semibold text-foreground">
                     {formatCents(ord.totalCents)}
                   </td>
-                  <td className="px-4 py-3">{renderStatusBadge(ord.status)}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 whitespace-nowrap">{renderStatusBadge(ord.status)}</td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-1.5">
-                      {ord.status === 'PENDING' && (
+                      {updatingOrderId === ord.id ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                          <span>Đang lưu...</span>
+                        </span>
+                      ) : (
                         <>
+                          {ord.status === 'PENDING' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => void handleQuickStatusChange(ord.id, 'CONFIRMED', ord.orderCode)}
+                                className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-blue-700 active:scale-95"
+                                title="Xác nhận đơn hàng"
+                              >
+                                <Check className="h-3.5 w-3.5" />
+                                <span>Xác nhận</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
+                                className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                                title="Chuyển sang đang giao cho ĐVVC"
+                              >
+                                <Truck className="h-3.5 w-3.5" />
+                                <span>Giao ĐVVC</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCancelDialogOrder(ord)}
+                                className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2 py-1 text-[11px] font-semibold text-destructive transition hover:bg-destructive/10 active:scale-95"
+                                title="Hủy đơn hàng và hoàn tồn kho"
+                              >
+                                <Ban className="h-3.5 w-3.5" />
+                                <span>Hủy</span>
+                              </button>
+                            </>
+                          )}
+
+                          {ord.status === 'CONFIRMED' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
+                                className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-indigo-700 active:scale-95"
+                                title="Giao cho đơn vị vận chuyển"
+                              >
+                                <Truck className="h-3.5 w-3.5" />
+                                <span>Giao ĐVVC</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCancelDialogOrder(ord)}
+                                className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2 py-1 text-[11px] font-semibold text-destructive transition hover:bg-destructive/10 active:scale-95"
+                                title="Hủy đơn hàng và hoàn tồn kho"
+                              >
+                                <Ban className="h-3.5 w-3.5" />
+                                <span>Hủy</span>
+                              </button>
+                            </>
+                          )}
+
+                          {ord.status === 'SHIPPING' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => void handleQuickStatusChange(ord.id, 'FULFILLED', ord.orderCode)}
+                                className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
+                                title="Xác nhận giao thành công / hoàn tất đơn hàng"
+                              >
+                                <PackageCheck className="h-3.5 w-3.5" />
+                                <span>Hoàn tất</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCancelDialogOrder(ord)}
+                                className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2 py-1 text-[11px] font-semibold text-destructive transition hover:bg-destructive/10 active:scale-95"
+                                title="Hủy đơn hàng và hoàn tồn kho"
+                              >
+                                <Ban className="h-3.5 w-3.5" />
+                                <span>Hủy</span>
+                              </button>
+                            </>
+                          )}
+
                           <button
                             type="button"
-                            onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
-                            className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-indigo-700"
-                            title="Xác nhận & Giao cho đơn vị vận chuyển"
+                            onClick={() => void openOrderDetail(ord.id)}
+                            className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-foreground transition hover:bg-muted active:scale-95"
+                            title="Xem chi tiết đầy đủ trong pop-up"
                           >
-                            <Truck className="h-3 w-3" />
-                            <span>Giao ĐVVC</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void handleQuickStatusChange(ord.id, 'CONFIRMED', ord.orderCode)}
-                            className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-blue-700"
-                            title="Xác nhận đơn hàng"
-                          >
-                            <Check className="h-3 w-3" />
-                            <span>Xác nhận</span>
+                            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>Xem</span>
                           </button>
                         </>
                       )}
-
-                      {ord.status === 'CONFIRMED' && (
-                        <button
-                          type="button"
-                          onClick={() => void handleQuickStatusChange(ord.id, 'SHIPPING', ord.orderCode)}
-                          className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-indigo-700"
-                          title="Giao cho đơn vị vận chuyển"
-                        >
-                          <Truck className="h-3 w-3" />
-                          <span>Giao ĐVVC</span>
-                        </button>
-                      )}
-
-                      {ord.status === 'SHIPPING' && (
-                        <button
-                          type="button"
-                          onClick={() => void handleQuickStatusChange(ord.id, 'FULFILLED', ord.orderCode)}
-                          className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-xs transition hover:bg-emerald-700"
-                          title="Hoàn thành đơn hàng"
-                        >
-                          <PackageCheck className="h-3 w-3" />
-                          <span>Hoàn thành</span>
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => void openOrderDetail(ord.id)}
-                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>Xem</span>
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -746,6 +886,9 @@ export default function AdminOrdersManager() {
             </>
           ) : undefined
         }
+        note="Thao tác này sẽ hủy đơn hàng và không thể hoàn tác."
+        icon={<Ban className="h-5 w-5 text-destructive" />}
+        confirmIcon={<Ban className="h-3.5 w-3.5 text-white" />}
         confirmLabel="Hủy đơn & Hoàn tồn kho"
         cancelLabel="Đóng"
         variant="danger"

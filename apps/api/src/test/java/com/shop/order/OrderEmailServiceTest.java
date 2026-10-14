@@ -157,4 +157,48 @@ class OrderEmailServiceTest {
 
         verify(mailSender, never()).send(any(MimeMessage.class));
     }
+
+    @Test
+    void buildOrderEmailPayload_withLocalProductImage_embedsCidInlineFile() {
+        OrderEmailService service = new OrderEmailService(
+                mailSender, vietQrService, false, "myshop <noreply@myshop.vn>", "http://localhost:4321"
+        );
+        Order order = Order.create(
+                "MS-IMG-TEST", UUID.randomUUID(), PaymentMethod.COD, 89_000_00L, 0L, 0L, 89_000_00L,
+                sampleAddress().toMap(), null
+        );
+        OrderItem item = OrderItem.create(
+                "Set túi 3 quần lót su đúc", "SET3QU-01", 89_000_00L, 1,
+                "/images/products/set-3-quan-lot-mat-lanh-1.jpg"
+        );
+        order.addItem(item);
+
+        OrderEmailService.EmailPayload payload = service.buildOrderEmailPayload(order, sampleAddress());
+
+        assertThat(payload.inlineFiles()).containsKey("prod_img_0");
+        assertThat(payload.html()).contains("src=\"cid:prod_img_0\"");
+        assertThat(payload.html()).doesNotContain("alt=\"thumb\"");
+    }
+
+    @Test
+    void buildOrderEmailPayload_withMissingImage_rendersPlaceholderEmoji() {
+        OrderEmailService service = new OrderEmailService(
+                mailSender, vietQrService, false, "myshop <noreply@myshop.vn>", "http://localhost:4321"
+        );
+        Order order = Order.create(
+                "MS-NO-IMG", UUID.randomUUID(), PaymentMethod.COD, 50_000_00L, 0L, 0L, 50_000_00L,
+                sampleAddress().toMap(), null
+        );
+        OrderItem item = OrderItem.create(
+                "Sản phẩm không có ảnh", "NO-IMG-01", 50_000_00L, 1, null
+        );
+        order.addItem(item);
+
+        OrderEmailService.EmailPayload payload = service.buildOrderEmailPayload(order, sampleAddress());
+
+        assertThat(payload.inlineFiles()).isEmpty();
+        assertThat(payload.html()).contains("🛍️");
+        assertThat(payload.html()).doesNotContain("alt=\"thumb\"");
+    }
 }
+

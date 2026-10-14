@@ -2,6 +2,7 @@ package com.shop.order.dto;
 
 import com.shop.order.PaymentMethod;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record AdminOrderSummaryResponse(
@@ -14,5 +15,6 @@ public record AdminOrderSummaryResponse(
         long totalCents,
         int itemCount,
         PaymentMethod paymentMethod,
+        List<OrderItemResponse> items,
         Instant createdAt
 ) {}

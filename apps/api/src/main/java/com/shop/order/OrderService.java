@@ -297,6 +297,18 @@ public class OrderService {
 
         int itemCount = order.getItems().stream().mapToInt(OrderItem::getQty).sum();
 
+        List<OrderItemResponse> itemResponses = order.getItems().stream()
+                .map(item -> new OrderItemResponse(
+                        item.getId(),
+                        item.getProductName(),
+                        item.getSku(),
+                        item.getUnitPriceCents(),
+                        item.getQty(),
+                        item.getUnitPriceCents() * item.getQty(),
+                        item.getImageUrl()
+                ))
+                .toList();
+
         return new AdminOrderSummaryResponse(
                 order.getId(),
                 order.getOrderCode(),
@@ -307,6 +319,7 @@ public class OrderService {
                 order.getTotalCents(),
                 itemCount,
                 order.getPaymentMethod(),
+                itemResponses,
                 order.getCreatedAt()
         );
     }

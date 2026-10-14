@@ -265,4 +265,19 @@ class OrderServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Đơn hàng đã được hủy trước đó");
     }
+
+    @Test
+    void toAdminSummaryResponse_includes_item_details() {
+        Order order = createSampleOrder("MS-261014-SUMMARY", OrderStatus.CONFIRMED);
+
+        com.shop.order.dto.AdminOrderSummaryResponse summary = orderService.toAdminSummaryResponse(order);
+
+        assertThat(summary.orderCode()).isEqualTo("MS-261014-SUMMARY");
+        assertThat(summary.status()).isEqualTo("CONFIRMED");
+        assertThat(summary.items()).hasSize(1);
+        assertThat(summary.items().get(0).productName()).isEqualTo("Quần lót su");
+        assertThat(summary.items().get(0).sku()).isEqualTo("QL-SU-M");
+        assertThat(summary.items().get(0).qty()).isEqualTo(2);
+        assertThat(summary.items().get(0).imageUrl()).isEqualTo("http://img/1.jpg");
+    }
 }

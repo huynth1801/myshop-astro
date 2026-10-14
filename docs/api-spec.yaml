@@ -1765,6 +1765,9 @@ components:
         totalCents: { type: integer, format: int64 }
         itemCount: { type: integer }
         paymentMethod: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemResponse' }
         createdAt: { type: string, format: date-time }
 
     PagedAdminOrders:

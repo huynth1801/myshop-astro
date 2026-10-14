@@ -78,3 +78,4 @@ Commits pending review. Auto-managed:
 - f4847a2 (2026-10-14) chore: sync review queue
 - c5c83c2 (2026-10-14) feat(orders): add customer order tracking portal and recent orders navigation
 - 0d252ab (2026-10-14) feat(orders): auto-cancel unpaid orders after 24h with inventory restoration and VietQR env support
+- b6f4fef (2026-10-14) feat(orders): support order confirmation emails and admin carrier handover action

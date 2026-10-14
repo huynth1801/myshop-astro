@@ -104,6 +104,7 @@ export const adminOrderSummarySchema = z.object({
   totalCents: z.number(),
   itemCount: z.number(),
   paymentMethod: z.string(),
+  items: z.array(orderItemSchema).optional().default([]),
   createdAt: z.string(),
 });
 
