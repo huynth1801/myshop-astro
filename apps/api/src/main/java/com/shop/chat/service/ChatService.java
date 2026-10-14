@@ -108,18 +108,28 @@ public class ChatService {
             metaMap.put("productSku", request.productSku().trim());
         }
 
-        // Format and send to Telegram
-        String telegramHtml = buildTelegramMessageHtml(conversation, request.content(), metaMap);
-        Long telegramMessageId = telegramClient.sendMessage(telegramHtml, null);
-
         ChatMessage message = new ChatMessage(
                 conversation,
                 SenderType.CUSTOMER,
                 request.content().trim(),
                 metaMap.isEmpty() ? null : metaMap,
-                telegramMessageId
+                null
         );
         ChatMessage saved = messageRepository.save(message);
+
+        // Format and send to Telegram asynchronously so customer web request is never blocked
+        String telegramHtml = buildTelegramMessageHtml(conversation, request.content(), metaMap);
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                Long telegramMessageId = telegramClient.sendMessage(telegramHtml, null);
+                if (telegramMessageId != null) {
+                    saved.setTelegramMessageId(telegramMessageId);
+                    messageRepository.save(saved);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to dispatch Telegram message: {}", e.getMessage());
+            }
+        });
 
         return ChatMessageResponse.from(saved, token, metaMap);
     }

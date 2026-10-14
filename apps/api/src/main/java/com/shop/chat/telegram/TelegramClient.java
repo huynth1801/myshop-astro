@@ -40,7 +40,7 @@ public class TelegramClient {
         this.chatId = chatId != null ? chatId.trim() : "";
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
+                .connectTimeout(Duration.ofSeconds(15))
                 .build();
     }
 
@@ -50,7 +50,7 @@ public class TelegramClient {
 
     public Long sendMessage(String htmlText, Long replyToMessageId) {
         if (!isConfigured()) {
-            log.debug("Telegram notifications skipped (enabled={}, hasToken={}, hasChatId={})",
+            log.info("Telegram notifications skipped (enabled={}, hasToken={}, hasChatId={})",
                     enabled, !botToken.isBlank(), !chatId.isBlank());
             return null;
         }
@@ -70,7 +70,7 @@ public class TelegramClient {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/json")
-                    .timeout(Duration.ofSeconds(6))
+                    .timeout(Duration.ofSeconds(20))
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
