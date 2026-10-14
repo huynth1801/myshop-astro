@@ -78,6 +78,13 @@ Stripe test-mode keys.
   an automated webhook handler (`POST /api/v1/webhooks/sepay`) is planned for future implementation
   to listen for real-time bank notifications, match order codes in transfer descriptions
   (`THANH TOAN MS-XXXX`), and transition orders to `CONFIRMED` without manual admin intervention.
+- 2026-10-14 — **Revenue Analytics & Reporting planned (Daily & Monthly):** Currently, the admin
+  dashboard displays lifetime aggregate revenue (`SUM(total_cents - shipping_cents)` for non-cancelled
+  orders). Planned for future release: daily and monthly aggregated revenue reports, date-range
+  filtering, and visual charts for the admin dashboard.
+- 2026-10-14 — **Product View & Click Tracking planned:** Track product view impressions and user clicks
+  to measure product interest and conversion rates. Options evaluated: lightweight first-party
+  `views_count` counter in DB via beacon API, or privacy-first web analytics (Plausible / PostHog).
 
 ## 4. Data Model (core tables)
 
