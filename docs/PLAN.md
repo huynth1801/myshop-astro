@@ -88,6 +88,9 @@ Stripe test-mode keys.
   - **API Backend:** Lightweight endpoint `POST /api/v1/products/{slug}/view` (unauthenticated, atomic `UPDATE products SET views_count = views_count + 1 WHERE slug = :slug`).
   - **Storefront (PDP):** Non-blocking beacon request via `navigator.sendBeacon('/api/v1/products/' + slug + '/view')` (or `fetch(..., { keepalive: true })`) on product page load, with client-side 30-minute debounce (`localStorage` key `viewed_${slug}`) to avoid counting repeated F5 refreshes as duplicate views.
   - **Admin UI:** Add "Lượt xem" (Views) column in the Admin Products table (`/admin/products`) with ability to sort by popularity.
+- 2026-10-14 — **Telegram-Powered Customer Live Chat (ADR 0009):** In-house storefront chat widget
+  interfaced with Telegram Bot API. Customers chat on web; inquiries forward to shop owner's Telegram
+  with customer info and PDP link; shop owner replies directly in Telegram; replies sync back to web widget.
 
 ## 4. Data Model (core tables)
 

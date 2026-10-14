@@ -6,6 +6,7 @@ import BaseHead from './BaseHead.astro';
 import Header from '../components/astro/Header.astro';
 import { CartBridge } from '../components/react/CartBridge';
 import ToastContainer from '../components/react/ToastContainer';
+import { ChatWidget } from '../components/react/ChatWidget';
 
 interface Props {
   title: string;
@@ -43,5 +44,6 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
     </footer>
     <CartBridge client:idle />
     <ToastContainer client:idle />
+    <ChatWidget client:idle />
   </body>
 </html>

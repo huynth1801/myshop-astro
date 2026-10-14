@@ -72,4 +72,11 @@ app:
   order:
     unpaid-expiration-hours: ${ORDER_UNPAID_EXPIRATION_HOURS:24}
     auto-cancel-interval-ms: ${ORDER_AUTO_CANCEL_INTERVAL_MS:900000}
+  telegram:
+    enabled: ${TELEGRAM_ENABLED:false}
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    chat-id: ${TELEGRAM_CHAT_ID:}
+    polling-enabled: ${TELEGRAM_POLLING_ENABLED:false}
+    webhook-url: ${TELEGRAM_WEBHOOK_URL:}
+    secret-token: ${TELEGRAM_SECRET_TOKEN:}
 

@@ -33,6 +33,7 @@ tags:
   - name: Auth
   - name: Admin
   - name: Blog
+  - name: Chat
 
 paths:
   /api/health:
@@ -1167,6 +1168,68 @@ paths:
               schema: { $ref: '#/components/schemas/OrderDetailResponse' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /api/v1/chat/messages:
+    get:
+      tags: [Chat]
+      summary: Get chat conversation and message history
+      parameters:
+        - in: query
+          name: sessionToken
+          required: true
+          schema: { type: string }
+          description: Unique session token identifying customer chat
+        - in: query
+          name: after
+          required: false
+          schema: { type: string, format: date-time }
+          description: Filter messages created after this timestamp
+      responses:
+        '200':
+          description: Conversation message history
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatConversationResponse' }
+
+    post:
+      tags: [Chat]
+      summary: Send a message from storefront to Telegram support
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendChatMessageRequest' }
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatMessageResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/webhooks/telegram:
+    post:
+      tags: [Webhooks, Chat]
+      summary: Telegram webhook receiver for admin replies
+      parameters:
+        - in: header
+          name: X-Telegram-Bot-Api-Secret-Token
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: Webhook received successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+
 components:
   parameters:
     Slug:
@@ -1801,4 +1864,38 @@ components:
         status:
           type: string
           enum: [PENDING, CONFIRMED, PAID, SHIPPING, FULFILLED, CANCELLED]
+
+    SendChatMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        sessionToken: { type: string }
+        content: { type: string, minLength: 1, maxLength: 2000 }
+        customerName: { type: string, maxLength: 150 }
+        customerPhone: { type: string, maxLength: 50 }
+        currentUrl: { type: string }
+        productTitle: { type: string }
+        productSku: { type: string }
+
+    ChatMessageResponse:
+      type: object
+      required: [id, senderType, content, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        sessionToken: { type: string }
+        senderType: { type: string, enum: [CUSTOMER, ADMIN] }
+        content: { type: string }
+        metadata: { type: object }
+        createdAt: { type: string, format: date-time }
+
+    ChatConversationResponse:
+      type: object
+      required: [sessionToken, messages]
+      properties:
+        sessionToken: { type: string }
+        customerName: { type: string }
+        customerPhone: { type: string }
+        messages:
+          type: array
+          items: { $ref: '#/components/schemas/ChatMessageResponse' }
 
