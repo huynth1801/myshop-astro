@@ -43,4 +43,18 @@ class TelegramClientTest {
         TelegramClient client = new TelegramClient(false, "", "", objectMapper);
         assertThat(client.getUpdates(0, 0)).isEmpty();
     }
+
+    @Test
+    void parseUpdatesJson_successfullyDeserializesReply() throws Exception {
+        String json = """
+        [{"update_id":337752747,"message":{"message_id":6,"text":"Dạ có","chat":{"id":1845466828},"reply_to_message":{"message_id":5,"text":"Tin nhắn cũ"}}}]
+        """;
+        java.util.List<com.shop.chat.telegram.TelegramUpdate> updates = objectMapper.readValue(
+                json, new tools.jackson.core.type.TypeReference<java.util.List<com.shop.chat.telegram.TelegramUpdate>>() {}
+        );
+        assertThat(updates).hasSize(1);
+        assertThat(updates.get(0).updateId()).isEqualTo(337752747L);
+        assertThat(updates.get(0).message().text()).isEqualTo("Dạ có");
+        assertThat(updates.get(0).message().replyToMessage().messageId()).isEqualTo(5L);
+    }
 }

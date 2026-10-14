@@ -84,3 +84,6 @@ Commits pending review. Auto-managed:
 - ef7e562 (2026-10-14) docs: update review queue
 - 93df6e6 (2026-10-14) feat(admin): support both quick in-table and modal order confirmation without horizontal scroll
 - 89d73f9 (2026-10-14) fix(metrics): exclude shipping fee from total revenue calculation
+- 102f6a6 (2026-10-14) feat(chat): implement storefront live chat backed by Telegram Bot API
+- 260d431 (2026-10-14) fix(chat): map metadata jsonb via JdbcTypeCode for PostgreSQL compatibility
+- 0b33e86 (2026-10-14) feat(chat): dispatch Telegram notifications asynchronously with higher network timeout

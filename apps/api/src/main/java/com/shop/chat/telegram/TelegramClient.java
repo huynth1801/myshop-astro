@@ -97,7 +97,7 @@ public class TelegramClient {
         }
 
         try {
-            String url = String.format("%s%s/getUpdates?offset=%d&timeout=%d&allowed_updates=[\"message\"]",
+            String url = String.format("%s%s/getUpdates?offset=%d&timeout=%d",
                     TELEGRAM_API_BASE, botToken, offset, timeoutSeconds);
 
             HttpRequest request = HttpRequest.newBuilder()
