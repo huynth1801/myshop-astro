@@ -331,6 +331,7 @@ export default function AdminOrdersManager() {
             <p className="mt-1 text-lg font-bold tracking-tight text-primary">
               {formatCents(metrics.totalRevenueCents)}
             </p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground">Tiền hàng (không gồm phí ship)</p>
           </div>
         </div>
       )}

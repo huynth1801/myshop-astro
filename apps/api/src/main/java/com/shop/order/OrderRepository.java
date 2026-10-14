@@ -21,6 +21,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
 
     Page<Order> findByStatusAndCreatedAtBefore(OrderStatus status, Instant cutoffTime, Pageable pageable);
 
-    @Query("SELECT COALESCE(SUM(o.totalCents), 0) FROM Order o WHERE o.status NOT IN (com.shop.order.OrderStatus.CANCELLED, com.shop.order.OrderStatus.REFUNDED)")
+    @Query("SELECT COALESCE(SUM(o.totalCents - o.shippingCents), 0) FROM Order o WHERE o.status NOT IN (com.shop.order.OrderStatus.CANCELLED, com.shop.order.OrderStatus.REFUNDED)")
     long calculateTotalRevenueCents();
 }
