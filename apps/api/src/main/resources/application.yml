@@ -1,6 +1,11 @@
 spring:
   application:
     name: shop-api
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:apps/api/.env[.properties]
+      - optional:file:../.env[.properties]
   servlet:
     multipart:
       max-file-size: 6MB # app rule is 5MB; slack for multipart overhead
@@ -43,6 +48,10 @@ shop:
 app:
   payment:
     vietqr:
-      bank-id: ${VIETQR_BANK_ID:MB}
-      account-no: ${VIETQR_ACCOUNT_NO:0987654321}
-      account-name: ${VIETQR_ACCOUNT_NAME:MYSHOP BOUTIQUE}
+      bank-id: ${VIETQR_BANK_ID}
+      account-no: ${VIETQR_ACCOUNT_NO}
+      account-name: ${VIETQR_ACCOUNT_NAME}
+  order:
+    unpaid-expiration-hours: ${ORDER_UNPAID_EXPIRATION_HOURS:24}
+    auto-cancel-interval-ms: ${ORDER_AUTO_CANCEL_INTERVAL_MS:900000}
+

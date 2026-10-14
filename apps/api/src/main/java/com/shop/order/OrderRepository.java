@@ -1,5 +1,6 @@
 package com.shop.order;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     Page<Order> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     long countByStatus(OrderStatus status);
+
+    Page<Order> findByStatusAndCreatedAtBefore(OrderStatus status, Instant cutoffTime, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(o.totalCents), 0) FROM Order o WHERE o.status NOT IN (com.shop.order.OrderStatus.CANCELLED, com.shop.order.OrderStatus.REFUNDED)")
     long calculateTotalRevenueCents();

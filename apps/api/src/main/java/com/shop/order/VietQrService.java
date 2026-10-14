@@ -14,9 +14,9 @@ public class VietQrService {
     private final String accountName;
 
     public VietQrService(
-            @Value("${app.payment.vietqr.bank-id:MB}") String bankId,
-            @Value("${app.payment.vietqr.account-no:0987654321}") String accountNo,
-            @Value("${app.payment.vietqr.account-name:MYSHOP BOUTIQUE}") String accountName
+            @Value("${app.payment.vietqr.bank-id}") String bankId,
+            @Value("${app.payment.vietqr.account-no}") String accountNo,
+            @Value("${app.payment.vietqr.account-name}") String accountName
     ) {
         this.bankId = bankId;
         this.accountNo = accountNo;

@@ -75,3 +75,5 @@ Commits pending review. Auto-managed:
 - 775191a (2026-10-14) feat(checkout): add searchable cascading address selectors with Vietnam official administrative API
 - 46cd91f (2026-10-14) feat(checkout): fix transparent dropdown blur, remove district select box and add multi-token ward search
 - 5520f52 (2026-10-14) fix(locations): upgrade Vietnam administrative API to v2 (34 provinces & new wards without district level)
+- f4847a2 (2026-10-14) chore: sync review queue
+- c5c83c2 (2026-10-14) feat(orders): add customer order tracking portal and recent orders navigation

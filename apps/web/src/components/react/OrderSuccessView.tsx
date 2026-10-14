@@ -6,13 +6,16 @@ import {
   CheckCircle2,
   Clock,
   Copy,
+  Package,
   PackageCheck,
   Printer,
   QrCode,
+  Share2,
   Truck,
 } from 'lucide-react';
 import { formatCents } from '../../lib/money';
 import { getOrder, type OrderDetail } from '../../lib/api/orders';
+import { addRecentOrderCode } from '../../lib/stores/recent-orders';
 import { toast } from '../../lib/stores/toast';
 
 interface Props {
@@ -39,6 +42,7 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
       getOrder(code)
         .then((data) => {
           setOrder(data);
+          addRecentOrderCode(data.orderCode);
           setError(null);
         })
         .catch((err) => {
@@ -47,6 +51,8 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
         .finally(() => {
           setLoading(false);
         });
+    } else {
+      addRecentOrderCode(order.orderCode);
     }
   }, [initialCode]);
 
@@ -95,6 +101,7 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
 
   const isVietQr = order.paymentMethod === 'VIETQR';
   const isCod = order.paymentMethod === 'COD';
+  const isCancelled = order.status === 'CANCELLED';
 
   function renderStatusBadge(status: string) {
     switch (status) {
@@ -145,15 +152,29 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
   return (
     <div className="space-y-8">
       {/* Header Banner */}
-      <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center sm:p-8">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-          <CheckCircle2 className="h-8 w-8" />
+      <div
+        className={`rounded-2xl border p-6 text-center sm:p-8 ${
+          isCancelled
+            ? 'border-destructive/20 bg-destructive/5'
+            : 'border-emerald-500/20 bg-emerald-500/5'
+        }`}
+      >
+        <div
+          className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
+            isCancelled
+              ? 'bg-destructive/20 text-destructive'
+              : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+          }`}
+        >
+          {isCancelled ? <AlertCircle className="h-8 w-8" /> : <CheckCircle2 className="h-8 w-8" />}
         </div>
         <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Đặt hàng thành công!
+          {isCancelled ? 'Đơn hàng đã bị hủy' : 'Đặt hàng thành công!'}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Cảm ơn bạn đã tin chọn myshop. Đơn hàng của bạn đã được ghi nhận vào hệ thống.
+          {isCancelled
+            ? 'Đơn hàng đã bị hủy (quá thời hạn thanh toán 24h hoặc theo yêu cầu). Sản phẩm đã được hoàn lại kho.'
+            : 'Cảm ơn bạn đã tin chọn myshop. Đơn hàng của bạn đã được ghi nhận vào hệ thống.'}
         </p>
 
         <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-3 rounded-xl border border-border bg-card px-4 py-2.5 shadow-xs">
@@ -182,7 +203,28 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Payment Guide Column */}
         <div className="lg:col-span-6 space-y-6">
-          {isVietQr && order.bankInfo && (
+          {isCancelled && (
+            <div className="rounded-2xl border border-destructive/20 bg-card p-6 shadow-xs">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="h-5 w-5" />
+                <h2 className="text-base font-semibold">Đơn hàng không còn hiệu lực</h2>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                Đơn hàng đã hết hạn thanh toán (24 giờ) hoặc đã bị hủy. Hệ thống không thể tiếp nhận thanh toán cho đơn hàng này nữa. Số lượng sản phẩm đã được tự động hoàn lại tồn kho cho người mua khác.
+              </p>
+              <div className="mt-5">
+                <a
+                  href="/products"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span>Tiếp tục mua sắm</span>
+                </a>
+              </div>
+            </div>
+          )}
+
+          {!isCancelled && isVietQr && order.bankInfo && (
             <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
               <div className="flex items-center gap-2">
                 <QrCode className="h-5 w-5 text-primary" />
@@ -301,16 +343,19 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300">
+              <div className="mt-4 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300 space-y-1">
                 <p className="font-medium">Lưu ý quan trọng:</p>
                 <p className="mt-0.5">
                   Vui lòng giữ nguyên nội dung chuyển khoản <strong>{order.bankInfo.transferContent}</strong> để hệ thống đối soát tự động xử lý đơn nhanh nhất.
+                </p>
+                <p className="mt-0.5 text-amber-700 dark:text-amber-400">
+                  ⏱️ Đơn hàng sẽ tự động hủy nếu không hoàn tất thanh toán trong vòng <strong>24 giờ</strong> kể từ lúc tạo đơn.
                 </p>
               </div>
             </div>
           )}
 
-          {isCod && (
+          {!isCancelled && isCod && (
             <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
               <div className="flex items-center gap-2">
                 <Truck className="h-5 w-5 text-primary" />
@@ -417,22 +462,56 @@ export default function OrderSuccessView({ initialCode, initialOrder }: Props) {
             </div>
           </div>
 
+          {/* Helpful reminder for pending VietQR */}
+          {isVietQr && order.status === 'PENDING' && (
+            <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-blue-900 dark:text-blue-200">
+              <p className="font-semibold flex items-center gap-1.5">
+                <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span>Đơn hàng đã được lưu vào mục <strong>"Đơn mua"</strong></span>
+              </p>
+              <p className="mt-1 text-muted-foreground leading-relaxed">
+                Nếu bạn vô tình chuyển trang hoặc rời đi trước khi thanh toán xong, bạn có thể bấm vào mục <strong>"Đơn mua"</strong> trên thanh menu bất kỳ lúc nào để lấy lại mã QR và thanh toán tiếp.
+              </p>
+            </div>
+          )}
+
           {/* Quick Actions */}
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-xs font-semibold text-foreground transition hover:bg-muted"
+              onClick={() => copyToClipboard(typeof window !== 'undefined' ? window.location.href : '', 'orderUrl', 'Link thanh toán')}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-semibold text-foreground transition hover:bg-muted"
             >
-              <Printer className="h-4 w-4" />
+              {copiedKey === 'orderUrl' ? (
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+              ) : (
+                <Share2 className="h-3.5 w-3.5" />
+              )}
+              <span>Sao chép link</span>
+            </button>
+
+            <a
+              href="/orders"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-semibold text-foreground transition hover:bg-muted"
+            >
+              <Package className="h-3.5 w-3.5 text-primary" />
+              <span>Xem đơn mua</span>
+            </a>
+
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-semibold text-foreground transition hover:bg-muted"
+            >
+              <Printer className="h-3.5 w-3.5" />
               <span>In đơn hàng</span>
             </button>
 
             <a
               href="/"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-semibold text-primary-foreground shadow-xs transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-xs transition hover:opacity-90"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5" />
               <span>Tiếp tục mua sắm</span>
             </a>
           </div>

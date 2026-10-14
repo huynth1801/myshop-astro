@@ -167,4 +167,64 @@ class OrderServiceTest {
         assertThat(metrics.cancelledCount()).isEqualTo(2L);
         assertThat(metrics.totalRevenueCents()).isEqualTo(50_000_000_00L);
     }
+
+    @Test
+    void getOrderDetail_autoCancels_when_expired_past_24h() {
+        Order order = createSampleOrder("MS-261013-EXPIRED", OrderStatus.PENDING);
+        order.setCreatedAt(java.time.Instant.now().minus(25, java.time.temporal.ChronoUnit.HOURS));
+
+        Product p = Product.newProduct("Quần lót su", "quan-lot-su", "Desc", "Short", com.shop.catalog.ProductStatus.ACTIVE, null);
+        ProductVariant variant = ProductVariant.newVariant(p, "QL-SU-M", 150_000_00L, null, 5, Map.of());
+
+        when(orderRepository.findByOrderCode("MS-261013-EXPIRED")).thenReturn(Optional.of(order));
+        when(productVariantRepository.findBySku("QL-SU-M")).thenReturn(Optional.of(variant));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        OrderDetailResponse response = orderService.getOrderDetail("MS-261013-EXPIRED");
+
+        assertThat(response.status()).isEqualTo("CANCELLED");
+        assertThat(variant.getStock()).isEqualTo(7); // 5 + 2 restored
+        verify(productVariantRepository).save(variant);
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void getOrderDetail_doesNotCancel_when_created_within_24h() {
+        Order order = createSampleOrder("MS-261013-FRESH", OrderStatus.PENDING);
+        order.setCreatedAt(java.time.Instant.now().minus(2, java.time.temporal.ChronoUnit.HOURS));
+
+        when(orderRepository.findByOrderCode("MS-261013-FRESH")).thenReturn(Optional.of(order));
+
+        OrderDetailResponse response = orderService.getOrderDetail("MS-261013-FRESH");
+
+        assertThat(response.status()).isEqualTo("PENDING");
+    }
+
+    @Test
+    void cancelUnpaidOrdersOlderThan_cancels_and_restores_stock() {
+        Order order1 = createSampleOrder("MS-ORDER-1", OrderStatus.PENDING);
+        order1.setCreatedAt(java.time.Instant.now().minus(30, java.time.temporal.ChronoUnit.HOURS));
+
+        Product p = Product.newProduct("Quần lót su", "quan-lot-su", "Desc", "Short", com.shop.catalog.ProductStatus.ACTIVE, null);
+        ProductVariant variant = ProductVariant.newVariant(p, "QL-SU-M", 150_000_00L, null, 10, Map.of());
+
+        when(orderRepository.findByStatusAndCreatedAtBefore(
+                org.mockito.ArgumentMatchers.eq(OrderStatus.PENDING),
+                any(java.time.Instant.class),
+                any(PageRequest.class)
+        )).thenReturn(
+                new PageImpl<>(List.of(order1), PageRequest.of(0, 50), 1),
+                new PageImpl<>(List.of(), PageRequest.of(0, 50), 0)
+        );
+        when(productVariantRepository.findBySku("QL-SU-M")).thenReturn(Optional.of(variant));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        int cancelled = orderService.cancelUnpaidOrdersOlderThan(java.time.Duration.ofHours(24));
+
+        assertThat(cancelled).isEqualTo(1);
+        assertThat(order1.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(variant.getStock()).isEqualTo(12);
+        verify(productVariantRepository).save(variant);
+        verify(orderRepository).save(order1);
+    }
 }

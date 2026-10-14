@@ -10,6 +10,9 @@ import com.shop.order.dto.OrderDetailResponse;
 import com.shop.order.dto.OrderItemResponse;
 import com.shop.order.dto.PagedAdminOrdersResponse;
 import jakarta.persistence.criteria.Predicate;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +20,10 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -31,21 +37,40 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductVariantRepository productVariantRepository;
     private final VietQrService vietQrService;
+    private final long unpaidExpirationHours;
+
+    @Autowired
+    public OrderService(
+            OrderRepository orderRepository,
+            ProductVariantRepository productVariantRepository,
+            VietQrService vietQrService,
+            @Value("${app.order.unpaid-expiration-hours:24}") long unpaidExpirationHours
+    ) {
+        this.orderRepository = orderRepository;
+        this.productVariantRepository = productVariantRepository;
+        this.vietQrService = vietQrService;
+        this.unpaidExpirationHours = unpaidExpirationHours;
+    }
 
     public OrderService(
             OrderRepository orderRepository,
             ProductVariantRepository productVariantRepository,
             VietQrService vietQrService
     ) {
-        this.orderRepository = orderRepository;
-        this.productVariantRepository = productVariantRepository;
-        this.vietQrService = vietQrService;
+        this(orderRepository, productVariantRepository, vietQrService, 24);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public OrderDetailResponse getOrderDetail(String identifier) {
         Order order = findByIdentifier(identifier)
                 .orElseThrow(() -> new OrderNotFoundException(identifier));
+
+        if (order.getStatus() == OrderStatus.PENDING && isOrderExpired(order)) {
+            log.info("Order {} is older than {}h and unpaid. Auto-cancelling on access.",
+                    order.getOrderCode(), unpaidExpirationHours);
+            cancelOrderInternal(order);
+        }
+
         return toDetailResponse(order);
     }
 
@@ -92,15 +117,7 @@ public class OrderService {
 
         // If cancelling order, return items back to inventory stock
         if (newStatus == OrderStatus.CANCELLED) {
-            log.info("Restoring stock for cancelled order {}", order.getOrderCode());
-            for (OrderItem item : order.getItems()) {
-                Optional<ProductVariant> variantOpt = productVariantRepository.findBySku(item.getSku());
-                variantOpt.ifPresent(variant -> {
-                    variant.incrementStock(item.getQty());
-                    productVariantRepository.save(variant);
-                    log.info("Restored {} items to stock for SKU {}", item.getQty(), item.getSku());
-                });
-            }
+            restoreStockForOrder(order);
         }
 
         order.updateStatus(newStatus);
@@ -112,6 +129,68 @@ public class OrderService {
     @Transactional
     public OrderDetailResponse cancelOrder(UUID id) {
         return updateOrderStatus(id, OrderStatus.CANCELLED);
+    }
+
+    @Transactional
+    public int cancelUnpaidOrdersOlderThan(Duration duration) {
+        Instant cutoff = Instant.now().minus(duration);
+        int totalCancelled = 0;
+        int pageSize = 50;
+
+        while (true) {
+            // Because cancelling changes status from PENDING to CANCELLED,
+            // query page 0 repeatedly until empty.
+            Page<Order> pendingExpiredPage = orderRepository.findByStatusAndCreatedAtBefore(
+                    OrderStatus.PENDING,
+                    cutoff,
+                    PageRequest.of(0, pageSize)
+            );
+
+            if (pendingExpiredPage.isEmpty()) {
+                break;
+            }
+
+            for (Order order : pendingExpiredPage.getContent()) {
+                cancelOrderInternal(order);
+                totalCancelled++;
+            }
+
+            if (!pendingExpiredPage.hasNext()) {
+                break;
+            }
+        }
+
+        return totalCancelled;
+    }
+
+    public boolean isOrderExpired(Order order) {
+        if (order == null || order.getStatus() != OrderStatus.PENDING) {
+            return false;
+        }
+        if (order.getCreatedAt() == null) {
+            return false;
+        }
+        Instant cutoff = Instant.now().minus(Math.max(1, unpaidExpirationHours), ChronoUnit.HOURS);
+        return order.getCreatedAt().isBefore(cutoff);
+    }
+
+    private void restoreStockForOrder(Order order) {
+        log.info("Restoring stock for cancelled order {}", order.getOrderCode());
+        for (OrderItem item : order.getItems()) {
+            Optional<ProductVariant> variantOpt = productVariantRepository.findBySku(item.getSku());
+            variantOpt.ifPresent(variant -> {
+                variant.incrementStock(item.getQty());
+                productVariantRepository.save(variant);
+                log.info("Restored {} items to stock for SKU {}", item.getQty(), item.getSku());
+            });
+        }
+    }
+
+    private void cancelOrderInternal(Order order) {
+        restoreStockForOrder(order);
+        order.updateStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+        log.info("Order {} cancelled due to unpaid expiration", order.getOrderCode());
     }
 
     @Transactional(readOnly = true)
@@ -164,7 +243,7 @@ public class OrderService {
         String vietQrUrl = null;
         BankInfoDto bankInfo = null;
 
-        if (order.getPaymentMethod() == PaymentMethod.VIETQR) {
+        if (order.getPaymentMethod() == PaymentMethod.VIETQR && order.getStatus() == OrderStatus.PENDING) {
             vietQrUrl = vietQrService.generateQrUrl(order.getTotalCents(), order.getOrderCode());
             bankInfo = vietQrService.getBankInfo(order.getTotalCents(), order.getOrderCode());
         }
