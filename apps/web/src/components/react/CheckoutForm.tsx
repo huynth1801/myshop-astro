@@ -140,16 +140,7 @@ export default function CheckoutForm() {
 
   // Ward selection handler
   function handleWardChange(val: string, item?: LocationItem) {
-    const wardItem = item as WardOption | undefined;
-    if (wardItem?.wardName) {
-      setWard(wardItem.wardName);
-      setDistrict(wardItem.districtName || '');
-    } else {
-      setWard(val);
-      if (!val) {
-        setDistrict('');
-      }
-    }
+    setWard(item?.name || val);
   }
 
   if (loadingCart) {
@@ -188,7 +179,7 @@ export default function CheckoutForm() {
   const shippingCents = isFreeShipping ? 0 : STANDARD_SHIPPING_CENTS;
   const totalCents = Math.max(0, cartData.subtotalCents - cartData.discountCents + shippingCents);
   const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD_CENTS - cartData.subtotalCents);
-  const wardSelectValue = district && ward && !ward.includes('(') ? `${ward} (${district})` : ward;
+  const wardSelectValue = ward;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -389,13 +380,12 @@ export default function CheckoutForm() {
                   label="Phường / Xã"
                   required
                   placeholder={city ? 'Chọn Phường / Xã' : 'Chọn Tỉnh / TP trước'}
-                  searchPlaceholder="Tìm Phường / Xã hoặc Quận / Huyện (VD: Tân Bình, P10)…"
+                  searchPlaceholder="Tìm Phường / Xã (VD: Bến Thành, Ba Đình, Sài Gòn)…"
                   value={wardSelectValue}
                   items={wards}
                   loading={loadingWards}
                   disabled={!city || loadingWards}
                   onChange={handleWardChange}
-                  helperText={district ? `Khu vực: ${district}` : undefined}
                 />
               </div>
 

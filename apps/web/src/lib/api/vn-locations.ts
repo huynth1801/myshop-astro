@@ -5,7 +5,13 @@ export interface LocationItem {
   codename?: string;
 }
 
-const API_BASE = 'https://provinces.open-api.vn/api/v1';
+export interface WardOption extends LocationItem {
+  wardName?: string;
+  districtName?: string;
+}
+
+// Vietnam Administrative Divisions Open API v2 (34 Tỉnh/Thành phố & Phường/Xã mới bãi bỏ cấp quận/huyện)
+const API_BASE = 'https://provinces.open-api.vn/api/v2';
 
 // In-memory runtime cache
 const memoryCache = new Map<string, LocationItem[]>();
@@ -50,7 +56,7 @@ export function matchesLocationQuery(item: LocationItem, query: string): boolean
     return normalizedName.includes('can tho');
   }
 
-  // Multi-word token matching (e.g. "10 tan binh", "p10 tan binh", "binh thanh 15")
+  // Multi-word token matching (e.g. "ben thanh", "sai gon", "thu duc", "phuong 10")
   const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
   if (tokens.length > 1) {
     const allMatch = tokens.every((token) => {
@@ -59,29 +65,9 @@ export function matchesLocationQuery(item: LocationItem, query: string): boolean
         const num = token.replace(/\D/g, '');
         return normalizedName.includes(`phuong ${num}`) || normalizedName.includes(`p. ${num}`);
       }
-      if (/^q\s*\.?\s*\d+/.test(token)) {
-        const num = token.replace(/\D/g, '');
-        return normalizedName.includes(`quan ${num}`) || normalizedName.includes(`q. ${num}`);
-      }
       return false;
     });
     if (allMatch) return true;
-  }
-
-  // "q1", "q2", "q.tan binh" -> "quan 1", "quan tan binh"
-  if (/^q\s*\.?\s*\d+/.test(normalizedQuery)) {
-    const num = normalizedQuery.replace(/\D/g, '');
-    if (normalizedName.includes(`quan ${num}`) || normalizedName.includes(`q. ${num}`)) {
-      return true;
-    }
-  }
-
-  // "p1", "p10", "p.10" -> "phuong 10"
-  if (/^p\s*\.?\s*\d+/.test(normalizedQuery)) {
-    const num = normalizedQuery.replace(/\D/g, '');
-    if (normalizedName.includes(`phuong ${num}`) || normalizedName.includes(`p. ${num}`)) {
-      return true;
-    }
   }
 
   return false;
@@ -91,7 +77,7 @@ export function matchesLocationQuery(item: LocationItem, query: string): boolean
 function getFromStorage(key: string): LocationItem[] | null {
   if (typeof window === 'undefined') return null;
   try {
-    const val = sessionStorage.getItem(`myshop_vn_${key}`);
+    const val = sessionStorage.getItem(`myshop_vn_v2_${key}`);
     return val ? (JSON.parse(val) as LocationItem[]) : null;
   } catch {
     return null;
@@ -101,14 +87,14 @@ function getFromStorage(key: string): LocationItem[] | null {
 function setToStorage(key: string, data: LocationItem[]): void {
   if (typeof window === 'undefined') return;
   try {
-    sessionStorage.setItem(`myshop_vn_${key}`, JSON.stringify(data));
+    sessionStorage.setItem(`myshop_vn_v2_${key}`, JSON.stringify(data));
   } catch {
     // Ignore storage quota errors
   }
 }
 
 /**
- * Fetch 63 provinces/cities of Vietnam.
+ * Fetch 34 official provinces/cities of Vietnam (API v2).
  */
 export async function fetchProvinces(): Promise<LocationItem[]> {
   const cacheKey = 'provinces';
@@ -141,7 +127,7 @@ export async function fetchProvinces(): Promise<LocationItem[]> {
       return items;
     }
   } catch (err) {
-    console.warn('Failed to fetch provinces from open-api.vn, using fallback list', err);
+    console.warn('Failed to fetch provinces from open-api.vn v2, using fallback list', err);
   }
 
   // Fallback initial provinces if API is blocked or offline
@@ -149,99 +135,12 @@ export async function fetchProvinces(): Promise<LocationItem[]> {
 }
 
 /**
- * Fetch districts for a given province code.
- */
-export async function fetchDistricts(provinceCode: number | string): Promise<LocationItem[]> {
-  if (!provinceCode) return [];
-  const cacheKey = `districts_${provinceCode}`;
-  if (memoryCache.has(cacheKey)) {
-    return memoryCache.get(cacheKey)!;
-  }
-
-  const stored = getFromStorage(cacheKey);
-  if (stored && stored.length > 0) {
-    memoryCache.set(cacheKey, stored);
-    return stored;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/p/${provinceCode}?depth=2`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const districts = data?.districts || [];
-    const items: LocationItem[] = districts.map(
-      (d: { code: number; name: string; division_type?: string; codename?: string }) => ({
-        code: d.code,
-        name: d.name,
-        divisionType: d.division_type,
-        codename: d.codename,
-      })
-    );
-
-    if (items.length > 0) {
-      memoryCache.set(cacheKey, items);
-      setToStorage(cacheKey, items);
-    }
-    return items;
-  } catch (err) {
-    console.warn(`Failed to fetch districts for province ${provinceCode}`, err);
-    return [];
-  }
-}
-
-/**
- * Fetch wards for a given district code.
- */
-export async function fetchWards(districtCode: number | string): Promise<LocationItem[]> {
-  if (!districtCode) return [];
-  const cacheKey = `wards_${districtCode}`;
-  if (memoryCache.has(cacheKey)) {
-    return memoryCache.get(cacheKey)!;
-  }
-
-  const stored = getFromStorage(cacheKey);
-  if (stored && stored.length > 0) {
-    memoryCache.set(cacheKey, stored);
-    return stored;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/d/${districtCode}?depth=2`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const wards = data?.wards || [];
-    const items: LocationItem[] = wards.map(
-      (w: { code: number; name: string; division_type?: string; codename?: string }) => ({
-        code: w.code,
-        name: w.name,
-        divisionType: w.division_type,
-        codename: w.codename,
-      })
-    );
-
-    if (items.length > 0) {
-      memoryCache.set(cacheKey, items);
-      setToStorage(cacheKey, items);
-    }
-    return items;
-  } catch (err) {
-    console.warn(`Failed to fetch wards for district ${districtCode}`, err);
-    return [];
-  }
-}
-
-export interface WardOption extends LocationItem {
-  wardName: string;
-  districtName: string;
-}
-
-/**
- * Fetch all wards in a province (flattened across all districts), with district name included.
- * Endpoint: /p/{provinceCode}?depth=3
+ * Fetch all new wards/communes in a province (API v2 - 2-tier administrative model).
+ * Endpoint: /api/v2/p/{provinceCode}?depth=2
  */
 export async function fetchProvinceWards(provinceCode: number | string): Promise<WardOption[]> {
   if (!provinceCode) return [];
-  const cacheKey = `province_all_wards_${provinceCode}`;
+  const cacheKey = `province_wards_${provinceCode}`;
   if (memoryCache.has(cacheKey)) {
     return memoryCache.get(cacheKey)! as WardOption[];
   }
@@ -253,101 +152,78 @@ export async function fetchProvinceWards(provinceCode: number | string): Promise
   }
 
   try {
-    const res = await fetch(`${API_BASE}/p/${provinceCode}?depth=3`);
+    const res = await fetch(`${API_BASE}/p/${provinceCode}?depth=2`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const districts = data?.districts || [];
-    const allWards: WardOption[] = [];
+    const rawWards = data?.wards || [];
+    const items: WardOption[] = rawWards.map(
+      (w: { code: number; name: string; division_type?: string; codename?: string }) => ({
+        code: w.code,
+        name: w.name,
+        wardName: w.name,
+        districtName: '',
+        divisionType: w.division_type,
+        codename: w.codename,
+      })
+    );
 
-    for (const d of districts) {
-      const dName = d.name || '';
-      const wards = d.wards || [];
-      for (const w of wards) {
-        allWards.push({
-          code: w.code,
-          name: `${w.name} (${dName})`,
-          wardName: w.name,
-          districtName: dName,
-          divisionType: w.division_type,
-          codename: w.codename,
-        });
-      }
+    if (items.length > 0) {
+      memoryCache.set(cacheKey, items);
+      setToStorage(cacheKey, items);
+      return items;
     }
-
-    if (allWards.length > 0) {
-      memoryCache.set(cacheKey, allWards);
-      setToStorage(cacheKey, allWards);
-    }
-    return allWards;
   } catch (err) {
-    console.warn(`Failed to fetch all wards for province ${provinceCode}`, err);
-    return [];
+    console.warn(`Failed to fetch all wards for province ${provinceCode} from v2`, err);
   }
+
+  return [];
 }
 
-// 63 official provinces/cities as instant offline fallback
+/**
+ * Backwards-compatible stubs for legacy 3-tier calls
+ */
+export async function fetchDistricts(_provinceCode: number | string): Promise<LocationItem[]> {
+  return [];
+}
+
+export async function fetchWards(_districtCode: number | string): Promise<LocationItem[]> {
+  return [];
+}
+
+// 34 official new provinces/cities of Vietnam
 export const FALLBACK_PROVINCES: LocationItem[] = [
-  { code: 79, name: 'Thành phố Hồ Chí Minh' },
   { code: 1, name: 'Thành phố Hà Nội' },
-  { code: 48, name: 'Thành phố Đà Nẵng' },
-  { code: 31, name: 'Thành phố Hải Phòng' },
-  { code: 92, name: 'Thành phố Cần Thơ' },
-  { code: 89, name: 'Tỉnh An Giang' },
-  { code: 77, name: 'Tỉnh Bà Rịa - Vũng Tàu' },
-  { code: 24, name: 'Tỉnh Bắc Giang' },
-  { code: 6, name: 'Tỉnh Bắc Kạn' },
-  { code: 95, name: 'Tỉnh Bạc Liêu' },
-  { code: 27, name: 'Tỉnh Bắc Ninh' },
-  { code: 83, name: 'Tỉnh Bến Tre' },
-  { code: 52, name: 'Tỉnh Bình Định' },
-  { code: 74, name: 'Tỉnh Bình Dương' },
-  { code: 70, name: 'Tỉnh Bình Phước' },
-  { code: 60, name: 'Tỉnh Bình Thuận' },
-  { code: 96, name: 'Tỉnh Cà Mau' },
   { code: 4, name: 'Tỉnh Cao Bằng' },
-  { code: 66, name: 'Tỉnh Đắk Lắk' },
-  { code: 67, name: 'Tỉnh Đắk Nông' },
-  { code: 11, name: 'Tỉnh Điện Biên' },
-  { code: 75, name: 'Tỉnh Đồng Nai' },
-  { code: 87, name: 'Tỉnh Đồng Tháp' },
-  { code: 64, name: 'Tỉnh Gia Lai' },
-  { code: 2, name: 'Tỉnh Hà Giang' },
-  { code: 35, name: 'Tỉnh Hà Nam' },
-  { code: 42, name: 'Tỉnh Hà Tĩnh' },
-  { code: 30, name: 'Tỉnh Hải Dương' },
-  { code: 93, name: 'Tỉnh Hậu Giang' },
-  { code: 17, name: 'Tỉnh Hòa Bình' },
-  { code: 33, name: 'Tỉnh Hưng Yên' },
-  { code: 56, name: 'Tỉnh Khánh Hòa' },
-  { code: 91, name: 'Tỉnh Kiên Giang' },
-  { code: 62, name: 'Tỉnh Kon Tum' },
-  { code: 12, name: 'Tỉnh Lai Châu' },
-  { code: 68, name: 'Tỉnh Lâm Đồng' },
-  { code: 20, name: 'Tỉnh Lạng Sơn' },
-  { code: 10, name: 'Tỉnh Lào Cai' },
-  { code: 80, name: 'Tỉnh Long An' },
-  { code: 36, name: 'Tỉnh Nam Định' },
-  { code: 40, name: 'Tỉnh Nghệ An' },
-  { code: 37, name: 'Tỉnh Ninh Bình' },
-  { code: 58, name: 'Tỉnh Ninh Thuận' },
-  { code: 25, name: 'Tỉnh Phú Thọ' },
-  { code: 54, name: 'Tỉnh Phú Yên' },
-  { code: 44, name: 'Tỉnh Quảng Bình' },
-  { code: 49, name: 'Tỉnh Quảng Nam' },
-  { code: 51, name: 'Tỉnh Quảng Ngãi' },
-  { code: 22, name: 'Tỉnh Quảng Ninh' },
-  { code: 45, name: 'Tỉnh Quảng Trị' },
-  { code: 94, name: 'Tỉnh Sóc Trăng' },
-  { code: 14, name: 'Tỉnh Sơn La' },
-  { code: 72, name: 'Tỉnh Tây Ninh' },
-  { code: 34, name: 'Tỉnh Thái Bình' },
-  { code: 19, name: 'Tỉnh Thái Nguyên' },
-  { code: 38, name: 'Tỉnh Thanh Hóa' },
-  { code: 46, name: 'Tỉnh Thừa Thiên Huế' },
-  { code: 82, name: 'Tỉnh Tiền Giang' },
-  { code: 84, name: 'Tỉnh Trà Vinh' },
   { code: 8, name: 'Tỉnh Tuyên Quang' },
+  { code: 11, name: 'Tỉnh Điện Biên' },
+  { code: 12, name: 'Tỉnh Lai Châu' },
+  { code: 14, name: 'Tỉnh Sơn La' },
+  { code: 15, name: 'Tỉnh Lào Cai' },
+  { code: 19, name: 'Tỉnh Thái Nguyên' },
+  { code: 20, name: 'Tỉnh Lạng Sơn' },
+  { code: 22, name: 'Thành phố Quảng Ninh' },
+  { code: 24, name: 'Thành phố Bắc Ninh' },
+  { code: 25, name: 'Tỉnh Phú Thọ' },
+  { code: 31, name: 'Thành phố Hải Phòng' },
+  { code: 33, name: 'Tỉnh Hưng Yên' },
+  { code: 37, name: 'Tỉnh Ninh Bình' },
+  { code: 38, name: 'Tỉnh Thanh Hóa' },
+  { code: 40, name: 'Tỉnh Nghệ An' },
+  { code: 42, name: 'Tỉnh Hà Tĩnh' },
+  { code: 44, name: 'Tỉnh Quảng Trị' },
+  { code: 46, name: 'Thành phố Huế' },
+  { code: 48, name: 'Thành phố Đà Nẵng' },
+  { code: 51, name: 'Tỉnh Quảng Ngãi' },
+  { code: 52, name: 'Tỉnh Gia Lai' },
+  { code: 56, name: 'Tỉnh Khánh Hòa' },
+  { code: 66, name: 'Tỉnh Đắk Lắk' },
+  { code: 68, name: 'Tỉnh Lâm Đồng' },
+  { code: 75, name: 'Thành phố Đồng Nai' },
+  { code: 79, name: 'Thành phố Hồ Chí Minh' },
+  { code: 80, name: 'Tỉnh Tây Ninh' },
+  { code: 82, name: 'Tỉnh Đồng Tháp' },
   { code: 86, name: 'Tỉnh Vĩnh Long' },
-  { code: 26, name: 'Tỉnh Vĩnh Phúc' },
-  { code: 15, name: 'Tỉnh Yên Bái' },
+  { code: 91, name: 'Tỉnh An Giang' },
+  { code: 92, name: 'Thành phố Cần Thơ' },
+  { code: 96, name: 'Tỉnh Cà Mau' },
 ];
