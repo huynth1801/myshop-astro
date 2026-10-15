@@ -25,7 +25,7 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
 <article class="group relative flex flex-col">
   <!-- 1. Studio Mat Cutout Container -->
   <div class="relative aspect-[4/5] w-full overflow-hidden rounded-md border border-border bg-muted">
-    <a href={`/products/${product.slug}/`} aria-label={product.name} class="block h-full w-full">
+    <a href={`/products/${product.slug}/`} data-astro-reload aria-label={product.name} class="block h-full w-full">
       {primarySrc && product.image ? (
         <img
           src={primarySrc}
@@ -79,12 +79,12 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
 
     <!-- Quick Add Slide-Up Pill Button -->
     {quickAddVariant && (
-      <div class="absolute inset-x-3 bottom-3 z-20 hidden justify-center md:flex">
+      <div class="pointer-events-none absolute inset-x-3 bottom-3 z-20 hidden justify-center md:flex">
         <button
           type="button"
           data-quick-add={quickAddVariant}
           data-product-title={product.name}
-          class="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-foreground px-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-background transition-all duration-200 ease-out translate-y-2 opacity-0 hover:bg-neutral-800 active:scale-95 group-hover:translate-y-0 group-hover:opacity-100"
+          class="pointer-events-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-foreground px-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-background transition-all duration-200 ease-out translate-y-2 opacity-0 hover:bg-neutral-800 active:scale-95 group-hover:translate-y-0 group-hover:opacity-100"
         >
           <span>Thêm nhanh</span>
           <Icon name="lucide:plus" class="h-3.5 w-3.5" />
@@ -99,11 +99,11 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
       {product.category.name}
     </p>
     <h3 class="text-sm font-medium leading-snug text-foreground line-clamp-2">
-      <a href={`/products/${product.slug}/`} class="transition-colors hover:text-foreground-secondary">
+      <a href={`/products/${product.slug}/`} data-astro-reload class="transition-colors hover:text-foreground-secondary">
         {product.name}
       </a>
     </h3>
-    <div class="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+    <a href={`/products/${product.slug}/`} data-astro-reload class="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 cursor-pointer">
       {product.priceFromCents != null ? (
         <>
           <span class="text-sm font-semibold tabular-nums tracking-tight text-foreground">
@@ -118,6 +118,6 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
       ) : (
         <span class="text-xs text-foreground-muted">Ngừng bán</span>
       )}
-    </div>
+    </a>
   </div>
 </article>
