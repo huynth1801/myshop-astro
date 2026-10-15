@@ -100,3 +100,4 @@ Commits pending review. Auto-managed:
 - 1b54982 (2026-10-15) feat(cors): allow *.workers.dev domain in CORS origins
 - 51b197d (2026-10-15) docs: sync review queue
 - aaec591 (2026-10-15) docs(env): document CORS_ALLOWED_ORIGINS and cookie options in .env.example
+- b29b7b6 (2026-10-15) fix(web): render catalog on demand so admin edits appear immediately (ADR 0011)
