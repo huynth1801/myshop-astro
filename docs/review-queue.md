@@ -106,3 +106,4 @@ Commits pending review. Auto-managed:
 - c238369 (2026-10-15) docs: sync review queue
 - 5bcbafa (2026-10-15) chore: review queue
 - 87a4b10 (2026-10-15) merge: resolve wrangler.jsonc conflict with origin/main
+- c4f8987 (2026-10-15) feat(web): add interactive product image gallery with thumbnail strip
