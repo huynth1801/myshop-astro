@@ -12,6 +12,6 @@ if (!id) {
 
 <Base title="Soạn thảo bài viết | Quản trị Thuy Shop" description="Soạn thảo và tinh chỉnh bài viết blog cho Thuy Shop">
   <section class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-    <AdminBlogEdit client:load postId={id} />
+    <AdminBlogEdit client:only="react" postId={id} />
   </section>
 </Base>

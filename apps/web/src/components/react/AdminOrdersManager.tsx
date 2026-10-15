@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { formatCents } from '../../lib/money';
-import { authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
+import { authLoading, authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
 import ConfirmDialog from './ConfirmDialog';
@@ -42,6 +42,7 @@ const STATUS_TABS: { key: string; label: string }[] = [
 
 export default function AdminOrdersManager() {
   const user = useStore(authUser);
+  const authBusy = useStore(authLoading);
 
   // Metrics
   const [metrics, setMetrics] = useState<AdminOrderMetrics | null>(null);
@@ -207,6 +208,14 @@ export default function AdminOrdersManager() {
       setCancelling(false);
     }
   };
+
+  if (authBusy && !user) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border bg-card p-12 text-sm text-muted-foreground animate-pulse">
+        Đang kiểm tra quyền quản trị…
+      </div>
+    );
+  }
 
   if (!user) {
     return (

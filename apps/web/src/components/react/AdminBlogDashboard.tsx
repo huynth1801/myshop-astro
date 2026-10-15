@@ -31,13 +31,14 @@ import {
   BlogApiError,
 } from '../../lib/api/blog';
 import { resolveImageUrl } from '../../lib/api/urls';
-import { authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
+import { authLoading, authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
 import ConfirmDialog from './ConfirmDialog';
 
 export default function AdminBlogDashboard() {
   const user = useStore(authUser);
+  const authBusy = useStore(authLoading);
   const [activeTab, setActiveTab] = useState<'posts' | 'rss'>('posts');
 
   // Posts State
@@ -359,6 +360,14 @@ export default function AdminBlogDashboard() {
       setScanningId(null);
     }
   };
+
+  if (authBusy && !user) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border bg-card p-12 text-sm text-muted-foreground animate-pulse">
+        Đang kiểm tra quyền quản trị…
+      </div>
+    );
+  }
 
   if (!user) {
     return (

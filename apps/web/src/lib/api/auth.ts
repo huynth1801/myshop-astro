@@ -64,9 +64,35 @@ async function authPost(path: string, body: unknown): Promise<z.infer<typeof tok
   return tokenResponseSchema.parse(await res.json());
 }
 
+function extractUserFromToken(token: string): AuthUser | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (!payload.email) return null;
+    return {
+      email: payload.email,
+      name: payload.name || payload.email.split('@')[0],
+      role: payload.role || 'CUSTOMER',
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function register(email: string, password: string, name: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/register', { email, password, name });
   accessToken = tokens.accessToken;
+  const decoded = extractUserFromToken(tokens.accessToken);
+  if (decoded) return decoded;
   try {
     return await me(); // full profile incl. role (the admin page needs it right away)
   } catch {
@@ -77,6 +103,8 @@ export async function register(email: string, password: string, name: string): P
 export async function login(email: string, password: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/login', { email, password });
   accessToken = tokens.accessToken;
+  const decoded = extractUserFromToken(tokens.accessToken);
+  if (decoded) return decoded;
   try {
     return await me(); // full profile incl. role (the admin page needs it right away)
   } catch {
@@ -152,6 +180,8 @@ export function authHeaders(): Record<string, string> {
  */
 export async function bootstrapSession(): Promise<AuthUser | null> {
   if (accessToken) {
+    const decoded = extractUserFromToken(accessToken);
+    if (decoded) return decoded;
     try {
       return await me();
     } catch {
@@ -160,6 +190,8 @@ export async function bootstrapSession(): Promise<AuthUser | null> {
   }
   const token = await refreshAccessToken();
   if (!token) return null;
+  const decoded = extractUserFromToken(token);
+  if (decoded) return decoded;
   try {
     return await me();
   } catch {

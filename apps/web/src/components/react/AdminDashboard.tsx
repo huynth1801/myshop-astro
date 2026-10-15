@@ -7,7 +7,7 @@ import {
   type AdminCategory,
   type AdminProduct,
 } from '../../lib/api/admin';
-import { authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
+import { authLoading, authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 import AdminNewProductForm from './AdminNewProductForm';
 import AdminStatsBar from './AdminStatsBar';
@@ -17,6 +17,7 @@ import AdminProductRow from './AdminProductRow';
 /** Admin product management dashboard with stats, variant matrix and quick controls. */
 export default function AdminDashboard() {
   const user = useStore(authUser);
+  const loading = useStore(authLoading);
   const [products, setProducts] = useState<AdminProduct[] | null>(null);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [q, setQ] = useState('');
@@ -77,6 +78,14 @@ export default function AdminDashboard() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  if (loading && !user) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border bg-card p-12 text-sm text-muted-foreground animate-pulse">
+        Đang kiểm tra quyền quản trị…
+      </div>
+    );
   }
 
   if (!user) {
