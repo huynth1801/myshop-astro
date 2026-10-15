@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { AuthError } from '../../lib/api/auth';
 import { login, register } from '../../lib/api/auth';
-import { authOpen, authUser, bootstrapAuth, setUser, signOut } from '../../lib/stores/auth';
+import { authLoading, authOpen, authUser, bootstrapAuth, setUser, signOut } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 
 /**
  * Header auth island: session restore on mount, sign-in/register modal,
- * greeting + sign-out when logged in. Hydrates client:load.
+ * greeting + sign-out when logged in.
  */
 export default function AuthButton() {
   const user = useStore(authUser);
+  const loading = useStore(authLoading);
   const open = useStore(authOpen);
   const [localOpen, setLocalOpen] = useState(false);
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -95,6 +96,8 @@ export default function AuthButton() {
             Đăng xuất
           </button>
         </div>
+      ) : loading ? (
+        <div className="h-7 w-20" aria-hidden="true" />
       ) : (
         <button
           type="button"

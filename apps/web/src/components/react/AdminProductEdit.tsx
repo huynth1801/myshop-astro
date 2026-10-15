@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { AdminError, getProduct, updateProduct, type AdminProductDetail } from '../../lib/api/admin';
-import { authUser, bootstrapAuth } from '../../lib/stores/auth';
+import { authLoading, authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 import AdminBasicInfoForm from './AdminBasicInfoForm';
 import AdminImagesManager from './AdminImagesManager';
@@ -22,6 +22,7 @@ const STATUS_STYLES: Record<string, string> = {
 /** Shopee-style edit page: header + status sidebar, basic info / images / variants sections. */
 export default function AdminProductEdit({ id }: { id: string }) {
   const user = useStore(authUser);
+  const loading = useStore(authLoading);
   const [detail, setDetail] = useState<AdminProductDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -60,6 +61,14 @@ export default function AdminProductEdit({ id }: { id: string }) {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (loading && !user) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border bg-card p-12 text-sm text-muted-foreground animate-pulse">
+        Đang kiểm tra quyền quản trị…
+      </div>
+    );
   }
 
   if (!user) {
