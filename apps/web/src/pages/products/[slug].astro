@@ -22,8 +22,15 @@ if (!slug) {
 }
 
 let product: ProductDetail;
+let crossSells: ProductSummary[] = [];
+
 try {
-  product = await getProduct(slug);
+  const [productData, crossSellData] = await Promise.all([
+    getProduct(slug),
+    getRecommendations(slug, 'CROSS_SELL', 4).catch(() => [] as ProductSummary[]),
+  ]);
+  product = productData;
+  crossSells = crossSellData;
 } catch {
   return new Response('Sản phẩm không tồn tại', { status: 404 });
 }
@@ -47,13 +54,6 @@ const variantOptions = product.variants.map((variant) => ({
   stock: variant.stock,
   attributes: variant.attributes,
 }));
-// Cross-sell là mục tùy chọn — API chết/treo lúc render không được phép gục cả trang
-let crossSells: ProductSummary[] = [];
-try {
-  crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
-} catch {
-  // trang vẫn render, chỉ bỏ qua mục "Thường mua cùng"
-}
 
 const galleryImages = product.images.map((img) => ({
   url: resolveImageUrl(img.url) || '',

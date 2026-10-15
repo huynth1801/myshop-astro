@@ -43,5 +43,31 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
     <CartBridge client:idle />
     <ToastContainer client:idle />
     <ChatWidget client:idle />
+
+    <!-- Instant hover/touch prefetch for catalog links (0ms perceived navigation) -->
+    <script is:inline>
+      (() => {
+        const prefetched = new Set();
+        function prefetch(url) {
+          if (!url || prefetched.has(url)) return;
+          prefetched.add(url);
+          const link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = url;
+          link.as = 'document';
+          document.head.appendChild(link);
+        }
+
+        function onPointerOver(e) {
+          const a = e.target && e.target.closest ? e.target.closest('a[href^="/products/"], a[href^="/categories/"]') : null;
+          if (a && a.href && a.origin === window.location.origin) {
+            prefetch(a.href);
+          }
+        }
+
+        document.addEventListener('mouseover', onPointerOver, { passive: true });
+        document.addEventListener('touchstart', onPointerOver, { passive: true });
+      })();
+    </script>
   </body>
 </html>
