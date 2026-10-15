@@ -43,6 +43,7 @@ export const checkoutRequestSchema = z.object({
   shippingAddress: customerAddressSchema,
   paymentMethod: z.enum(['COD', 'VIETQR', 'STRIPE']),
   customerNote: z.string().optional(),
+  honeypot: z.string().optional(),
 });
 
 export type CheckoutRequest = z.infer<typeof checkoutRequestSchema>;

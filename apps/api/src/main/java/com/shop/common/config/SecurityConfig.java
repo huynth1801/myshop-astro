@@ -1,6 +1,7 @@
 package com.shop.common.config;
 
 import com.shop.auth.JwtAuthFilter;
+import com.shop.common.security.RateLimitingFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,8 +31,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter)
-            throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter,
+            RateLimitingFilter rateLimitingFilter) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
@@ -49,6 +50,7 @@ public class SecurityConfig {
                 .accessDeniedHandler((request, response, ex) ->
                         writeProblem(response, 403, "FORBIDDEN",
                                 "You cannot access this resource")))
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

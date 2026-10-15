@@ -365,4 +365,23 @@ class CheckoutServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.subtotalCents()).isEqualTo(200_000_00L);
     }
+
+    @Test
+    void checkout_rejectsBotWhenHoneypotIsFilled() {
+        CheckoutRequest request = new CheckoutRequest(
+                "cart-123",
+                "bot@example.com",
+                "0912345678",
+                sampleAddress(),
+                PaymentMethod.COD,
+                null,
+                "spam-bot-tax-id" // filled honeypot
+        );
+
+        assertThatThrownBy(() -> checkoutService.checkout(request, null, null, null))
+                .isInstanceOf(com.shop.common.security.BotDetectedException.class)
+                .hasMessageContaining("Yêu cầu không hợp lệ");
+
+        verify(orderRepository, never()).save(any());
+    }
 }
