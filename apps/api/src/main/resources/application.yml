@@ -48,7 +48,7 @@ server:
 shop:
   cors:
     # 127.0.0.1 matters: devs often browse the dev server via 127.0.0.1:4321.
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4321,http://127.0.0.1:4321}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4321,http://127.0.0.1:4321,https://*.workers.dev,https://*.pages.dev}
   cookie:
     secure: ${COOKIE_SECURE:false} # true in staging/prod behind HTTPS
     same-site: ${COOKIE_SAME_SITE:Lax} # None for cross-site (e.g. *.pages.dev -> *.onrender.com)

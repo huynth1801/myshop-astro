@@ -5,8 +5,14 @@ import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
+import fs from 'node:fs';
 
-const isCloudflare = process.env.OUTPUT_ADAPTER === 'cloudflare' || Boolean(process.env.CF_PAGES);
+const isCloudflare =
+  process.env.OUTPUT_ADAPTER === 'cloudflare' ||
+  Boolean(process.env.CF_PAGES) ||
+  Boolean(process.env.CF_WORKER) ||
+  Boolean(process.env.WORKERS_CI) ||
+  fs.existsSync('/opt/buildhome');
 
 export default defineConfig({
   // Default to pages.dev, customizable via SITE_URL or custom domain
