@@ -10,6 +10,8 @@ const { title, description, canonical, ogImage } = Astro.props;
 const site = Astro.site ?? new URL('https://myshop.example.com');
 const canonicalUrl = new URL(canonical, site).href;
 const ogImageUrl = ogImage ? new URL(ogImage, site).href : undefined;
+const runtimeEnv = (Astro.locals as unknown as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
+const publicApiUrl = runtimeEnv?.PUBLIC_API_URL || import.meta.env.PUBLIC_API_URL || '';
 ---
 
 <title>{title} | Thuy Shop</title>
@@ -25,3 +27,8 @@ const ogImageUrl = ogImage ? new URL(ogImage, site).href : undefined;
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="sitemap" href="/sitemap.xml" />
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+{publicApiUrl && (
+  <script is:inline define:vars={{ publicApiUrl }}>
+    window.__PUBLIC_API_URL__ = publicApiUrl;
+  </script>
+)}

@@ -9,7 +9,28 @@ import { defineMiddleware } from 'astro:middleware';
  * ADR 0011: catalog pages are SSR — HTML must never be browser-cached, or
  * admin edits would look stale again (just from a different cache layer).
  */
-export const onRequest = defineMiddleware(async (_context, next) => {
+export const onRequest = defineMiddleware(async (context, next) => {
+  // Capture Cloudflare Workers runtime env so server-side fetches can read variables set in Cloudflare Dashboard
+  const runtimeEnv = (context.locals as unknown as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
+  if (runtimeEnv) {
+    const globalObj = globalThis as unknown as {
+      __API_BASE_URL__?: string;
+      __PUBLIC_API_URL__?: string;
+    };
+    if (runtimeEnv.API_BASE_URL) {
+      globalObj.__API_BASE_URL__ = runtimeEnv.API_BASE_URL;
+      if (typeof process !== 'undefined' && process.env) {
+        process.env.API_BASE_URL = runtimeEnv.API_BASE_URL;
+      }
+    }
+    if (runtimeEnv.PUBLIC_API_URL) {
+      globalObj.__PUBLIC_API_URL__ = runtimeEnv.PUBLIC_API_URL;
+      if (typeof process !== 'undefined' && process.env) {
+        process.env.PUBLIC_API_URL = runtimeEnv.PUBLIC_API_URL;
+      }
+    }
+  }
+
   const response = await next();
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');

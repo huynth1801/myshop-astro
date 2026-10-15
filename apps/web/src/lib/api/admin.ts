@@ -1,11 +1,6 @@
 import { z } from 'zod';
 import { authHeaders, getValidAccessToken, refreshAccessToken } from './auth';
-
-const BASE_URL = import.meta.env.PUBLIC_API_URL;
-
-if (!BASE_URL) {
-  throw new Error('PUBLIC_API_URL is not set — copy apps/web/.env.example to .env');
-}
+import { getApiBaseUrl } from './urls';
 
 /**
  * Client for the /api/v1/admin/** surface (Phase 2 admin CRUD). Every response
@@ -105,7 +100,7 @@ async function adminFetch<T>(path: string, init: RequestInit, schema: z.ZodType<
       ...(init.headers as Record<string, string> | undefined),
     };
 
-    return fetch(`${BASE_URL}${path}`, {
+    return fetch(`${getApiBaseUrl()}${path}`, {
       ...init,
       credentials: 'include',
       headers,
@@ -215,7 +210,7 @@ export async function uploadImage(
   const form = new FormData();
   form.append('file', file);
   if (alt) form.append('alt', alt);
-  const res = await fetch(`${BASE_URL}/api/v1/admin/products/${productId}/images/upload`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/admin/products/${productId}/images/upload`, {
     method: 'POST',
     credentials: 'include',
     headers: { accept: 'application/json', ...authHeaders() },
@@ -265,7 +260,7 @@ export async function replaceImageUpload(
   const form = new FormData();
   form.append('file', file, file instanceof File ? file.name : 'edited-image.webp');
   if (alt) form.append('alt', alt);
-  const res = await fetch(`${BASE_URL}/api/v1/admin/products/${productId}/images/${imageId}/upload`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/admin/products/${productId}/images/${imageId}/upload`, {
     method: 'POST',
     credentials: 'include',
     headers: { accept: 'application/json', ...authHeaders() },

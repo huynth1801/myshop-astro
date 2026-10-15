@@ -10,10 +10,21 @@ import { getCategories } from '../lib/api/categories';
 // ADR 0011: catalog renders on demand so admin edits show up immediately.
 export const prerender = false;
 
-const [categories, { content, totalElements }] = await Promise.all([
-  getCategories(),
-  getProducts(0, 60),
-]);
+let categories: import('../lib/api/categories').Category[] = [];
+let content: import('../lib/api/products').ProductSummary[] = [];
+let totalElements = 0;
+
+try {
+  const [cats, prods] = await Promise.all([
+    getCategories(),
+    getProducts(0, 60),
+  ]);
+  categories = cats;
+  content = prods.content;
+  totalElements = prods.totalElements;
+} catch (err) {
+  console.warn('SSR catalog fetch failed — rendering empty catalog fallback:', err);
+}
 ---
 
 <Base

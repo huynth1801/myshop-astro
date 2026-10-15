@@ -1,10 +1,8 @@
 import { z } from 'zod';
-
-const API_BASE_URL =
-  import.meta.env.API_BASE_URL || import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+import { getApiBaseUrl } from './urls';
 
 async function apiGet<T>(path: string, schema: z.ZodType<T>): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
     headers: { accept: 'application/json' },
   });
   if (!res.ok) {

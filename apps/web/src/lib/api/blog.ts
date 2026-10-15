@@ -1,9 +1,7 @@
 import { z } from 'zod';
 import { productSummarySchema } from './products';
-import { authHeaders, getValidAccessToken, refreshAccessToken } from './auth';
-
-const SERVER_BASE_URL = import.meta.env.API_BASE_URL || import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
-const CLIENT_BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+import { getValidAccessToken, refreshAccessToken } from './auth';
+import { getApiBaseUrl } from './urls';
 
 export const postStatusSchema = z.enum(['DRAFT', 'PUBLISHED']);
 export type PostStatus = z.infer<typeof postStatusSchema>;
@@ -140,7 +138,7 @@ export async function getPosts(params: {
   if (params.q) query.set('q', params.q);
 
   const qs = query.toString();
-  const url = `${SERVER_BASE_URL}/api/v1/posts${qs ? `?${qs}` : ''}`;
+  const url = `${getApiBaseUrl()}/api/v1/posts${qs ? `?${qs}` : ''}`;
   const res = await fetch(url, { headers: { accept: 'application/json' } });
 
   if (!res.ok) {
@@ -151,7 +149,7 @@ export async function getPosts(params: {
 }
 
 export async function getPost(slug: string): Promise<PostDetail> {
-  const url = `${SERVER_BASE_URL}/api/v1/posts/${encodeURIComponent(slug)}`;
+  const url = `${getApiBaseUrl()}/api/v1/posts/${encodeURIComponent(slug)}`;
   const res = await fetch(url, { headers: { accept: 'application/json' } });
 
   if (res.status === 404) {
@@ -182,7 +180,7 @@ async function adminBlogFetch<T>(
       ...(init.headers as Record<string, string> | undefined),
     };
 
-    return fetch(`${CLIENT_BASE_URL}${path}`, {
+    return fetch(`${getApiBaseUrl()}${path}`, {
       ...init,
       credentials: 'include',
       headers,

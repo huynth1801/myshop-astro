@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { getValidAccessToken } from './auth';
-
-const BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+import { getApiBaseUrl } from './urls';
 
 export const chatMessageSchema = z.object({
   id: z.string().uuid(),
@@ -47,7 +46,7 @@ export function getOrInitChatSession(): string {
 }
 
 export async function fetchConversation(sessionToken: string, after?: string): Promise<ChatConversation> {
-  const url = new URL(`${BASE_URL}/api/v1/chat/messages`);
+  const url = new URL(`${getApiBaseUrl()}/api/v1/chat/messages`);
   url.searchParams.set('sessionToken', sessionToken);
   if (after) {
     url.searchParams.set('after', after);
@@ -84,7 +83,7 @@ export async function sendChatMessage(input: SendChatMessageInput): Promise<Chat
     headers.authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BASE_URL}/api/v1/chat/messages`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/chat/messages`, {
     method: 'POST',
     headers,
     credentials: 'include',

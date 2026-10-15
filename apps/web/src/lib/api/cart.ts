@@ -1,10 +1,5 @@
 import { z } from 'zod';
-
-const BASE_URL = import.meta.env.PUBLIC_API_URL;
-
-if (!BASE_URL) {
-  throw new Error('PUBLIC_API_URL is not set — copy apps/web/.env.example to .env');
-}
+import { getApiBaseUrl } from './urls';
 
 export class ApiError extends Error {
   constructor(
@@ -45,7 +40,7 @@ export type CartItemData = z.infer<typeof cartItemSchema>;
 export type CartData = z.infer<typeof cartSchema>;
 
 async function cartRequest(path: string, init?: RequestInit): Promise<CartData> {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
     credentials: 'include', // cart_token cookie — same-site between :4321 and :8080
     headers: { 'content-type': 'application/json', accept: 'application/json' },
     ...init,
