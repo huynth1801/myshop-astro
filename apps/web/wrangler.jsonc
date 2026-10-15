@@ -10,6 +10,10 @@
     "directory": "./dist",
     "binding": "ASSETS"
   },
+  "vars": {
+    "API_BASE_URL": "https://strong-announcement-florist-minimal.trycloudflare.com",
+    "PUBLIC_API_URL": "https://strong-announcement-florist-minimal.trycloudflare.com"
+  },
   "observability": {
     "logs": {
       "enabled": true,

@@ -1,10 +1,5 @@
 import { z } from 'zod';
-
-const BASE_URL = import.meta.env.PUBLIC_API_URL;
-
-if (!BASE_URL) {
-  throw new Error('PUBLIC_API_URL is not set — copy apps/web/.env.example to .env');
-}
+import { getApiBaseUrl } from './urls';
 
 export interface AuthUser {
   email: string;
@@ -43,7 +38,7 @@ export class AuthError extends Error {
 }
 
 async function authPost(path: string, body: unknown): Promise<z.infer<typeof tokenResponseSchema>> {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
     method: 'POST',
     credentials: 'include', // send + receive the refresh cookie
     headers: { 'content-type': 'application/json', accept: 'application/json' },
@@ -114,7 +109,7 @@ export async function login(email: string, password: string): Promise<AuthUser> 
 
 export async function logout(): Promise<void> {
   accessToken = null;
-  await fetch(`${BASE_URL}/api/v1/auth/logout`, {
+  await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
     method: 'POST',
     credentials: 'include',
   }).catch(() => {
@@ -126,7 +121,7 @@ async function me(): Promise<AuthUser> {
   if (!accessToken) {
     throw new AuthError('No access token', 'UNAUTHENTICATED', 401);
   }
-  const res = await fetch(`${BASE_URL}/api/v1/auth/me`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/auth/me`, {
     headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' },
   });
   if (!res.ok) {

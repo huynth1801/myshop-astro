@@ -101,3 +101,8 @@ Commits pending review. Auto-managed:
 - 51b197d (2026-10-15) docs: sync review queue
 - aaec591 (2026-10-15) docs(env): document CORS_ALLOWED_ORIGINS and cookie options in .env.example
 - b29b7b6 (2026-10-15) fix(web): render catalog on demand so admin edits appear immediately (ADR 0011)
+- a993173 (2026-10-15) chore: review queue
+- e29e679 (2026-10-15) fix(web): support dynamic Cloudflare Workers runtime env for API base URL
+- c238369 (2026-10-15) docs: sync review queue
+- 5bcbafa (2026-10-15) chore: review queue
+- 87a4b10 (2026-10-15) merge: resolve wrangler.jsonc conflict with origin/main

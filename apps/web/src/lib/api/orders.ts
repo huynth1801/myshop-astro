@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { getValidAccessToken } from './auth';
+import { getApiBaseUrl } from './urls';
 
 export type PaymentMethod = 'COD' | 'VIETQR' | 'STRIPE';
 
@@ -132,17 +133,6 @@ export const adminOrderMetricsSchema = z.object({
 });
 
 export type AdminOrderMetrics = z.infer<typeof adminOrderMetricsSchema>;
-
-function getApiBaseUrl(): string {
-  if (typeof window !== 'undefined') {
-    return (
-      (window as unknown as { __PUBLIC_API_URL__?: string }).__PUBLIC_API_URL__ ||
-      import.meta.env.PUBLIC_API_URL ||
-      'http://localhost:8080'
-    );
-  }
-  return import.meta.env.API_URL || import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
-}
 
 /**
  * Public checkout submission.

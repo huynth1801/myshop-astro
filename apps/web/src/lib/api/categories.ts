@@ -1,10 +1,5 @@
 import { z } from 'zod';
-
-const API_BASE_URL = import.meta.env.API_BASE_URL;
-
-if (!API_BASE_URL) {
-  throw new Error('API_BASE_URL is not set — copy apps/web/.env.example to .env');
-}
+import { getApiBaseUrl } from './urls';
 
 export const categorySchema = z.object({
   slug: z.string(),
@@ -15,7 +10,8 @@ export const categorySchema = z.object({
 export type Category = z.infer<typeof categorySchema>;
 
 export async function getCategories(): Promise<Category[]> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/categories`, {
+  const baseUrl = getApiBaseUrl();
+  const res = await fetch(`${baseUrl}/api/v1/categories`, {
     headers: { accept: 'application/json' },
   });
   if (!res.ok) {
