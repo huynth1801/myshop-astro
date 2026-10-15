@@ -9,8 +9,8 @@ These rules apply when working anywhere under `apps/web/`.
   itself — "which island needs this?"
 - Fetch data in page frontmatter (top-level `await`, runs on the server). Never fetch inside
   an island what the page can fetch and pass as props.
-- `export const prerender = true` (+ `getStaticPaths`) on catalog/product/category pages;
-  `getStaticPaths` throws if the API returns zero products (fail the build).
+- Catalog/product/category/blog pages render on demand (`prerender = false`, ADR 0011) —
+  admin edits must appear immediately; no build-time catalog fetching, no `getStaticPaths`.
 - `cart`, `checkout`, `account` pages stay SSR (`prerender = false`).
 
 ## Islands (React)
@@ -31,8 +31,10 @@ These rules apply when working anywhere under `apps/web/`.
 - TypeScript `strict: true`. No `any`, no `!` non-null assertions, no `@ts-ignore`.
 - Every Java API response is Zod-parsed before use (`lib/api/`).
 - One component per file, PascalCase, ≤ 200 lines, no business logic inside — extract to `lib/`.
-- Images: `astro:assets` `<Image>` with explicit dimensions + alt text. Only the LCP image
-  gets `loading="eager" fetchpriority="high"`; everything else lazy.
+- Images: `<img>` with explicit dimensions + alt text (product image URLs are opaque
+  strings from the API — uploads, external URLs — and can't go through `astro:assets`,
+  ADR 0011). Only the LCP image gets `loading="eager" fetchpriority="high"`; everything
+  else lazy.
 - Fonts: `@fontsource-variable/*` imports — no `<link>` to Google Fonts.
 - Tailwind: theme tokens only (`bg-primary`, `text-muted-foreground`) — no inline hex colors,
   no `!important`.
@@ -53,5 +55,7 @@ These rules apply when working anywhere under `apps/web/`.
 
 ## Revalidation
 
-Current strategy: Pattern A (prerender + rebuild webhook). Do not introduce CDN-purge
-(Pattern B) without an ADR — see `docs/PLAN.md` §10.
+Catalog pages are SSR (ADR 0011) — data is fetched per request, nothing to
+revalidate. HTML responses carry `Cache-Control: no-cache` (middleware). If
+traffic ever demands CDN caching, that is Pattern B in `docs/PLAN.md` §10 and
+needs an ADR. `/sitemap.xml` is generated live from the API.

@@ -12,9 +12,9 @@ architecture-level decision.
 ## 1. Architecture Overview
 
 ```
-Browser ──► Astro (static-first, React islands, Node adapter behind CDN)
+Browser ──► Astro (SSR catalog, React islands, Node adapter behind CDN)
                 │
-                ├── Static catalog pages (prerendered, ~0 KB JS) ──► Java REST API ──► PostgreSQL
+                ├── Catalog pages (SSR on demand, ~0 KB JS) ──► Java REST API ──► PostgreSQL
                 └── Islands: cart, checkout, auth ──► Java REST API
                               │
                               ├── Redis (cache, rate limits) — Phase 2+
@@ -24,7 +24,8 @@ Browser ──► Astro (static-first, React islands, Node adapter behind CDN)
 
 Core principles:
 
-- Catalog pages are static HTML whenever possible; interactivity is added as isolated React islands.
+- Catalog pages render on demand (ADR 0011) so admin edits are live instantly;
+  interactivity is added as isolated React islands.
 - The Java API is the single source of truth for prices, stock, and orders — never trust the frontend.
 - Money is stored as integer cents (`BIGINT`), never floats.
 - Stripe Checkout (hosted page) so raw card data never touches our servers — PCI SAQ-A, the lightest compliance level.
@@ -33,7 +34,7 @@ Core principles:
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | Astro 5 (hybrid rendering) | `output: 'server'` + `prerender = true` for catalog pages |
+| Frontend | Astro 5 (SSR, ADR 0011) | `output: 'server'`; catalog/blog/admin all on demand |
 | Islands / UI | React + shadcn/ui, Tailwind CSS v4 | shadcn CLI officially supports Astro |
 | Client state | nanostores (cart UI mirror only) | Cart data lives server-side, keyed by cookie |
 | Forms | react-hook-form + Zod | Zod validates every API response at the boundary |
@@ -203,9 +204,9 @@ export default defineConfig({
 { "compilerOptions": { "strict": true, "paths": { "@/*": ["./src/*"] } } }
 ```
 
-Rendering model: **hybrid.** Catalog/product/category pages set `export const prerender = true`
-(+ `getStaticPaths`) → static HTML, ~0 KB JS. Cart/checkout/account stay SSR. This is the
-Astro equivalent of the Next.js "Server Components by default" rule.
+Rendering model: **SSR (ADR 0011).** Catalog/product/category/blog pages render on
+demand (`prerender = false`) — admin edits show up immediately, no rebuild webhook.
+Cart/checkout/account are SSR too. `.astro` templates still ship ~0 KB JS.
 
 ## 6. Frontend Rules (Astro / shadcn / Tailwind)
 
@@ -269,14 +270,15 @@ Astro equivalent of the Next.js "Server Components by default" rule.
     import AddToCartButton from '../../components/react/AddToCartButton';
     import CrossSellCarousel from '../../components/react/CrossSellCarousel';
 
-    export const prerender = true;
-    export async function getStaticPaths() {
-      const products = await getProducts();          // calls the Java API at build time
-      if (products.length === 0) throw new Error('API down — fail the build');
-      return products.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
-    }
+    export const prerender = false;               // ADR 0011 — live data, no rebuild webhook
 
-    const { product } = Astro.props;
+    const { slug } = Astro.params;
+    let product;
+    try {
+      product = await getProduct(slug);           // calls the Java API per request
+    } catch {
+      return new Response('Sản phẩm không tồn tại', { status: 404 });
+    }
     const crossSells = await getRecommendations(product.slug, 'CROSS_SELL');
     ---
     <Base title={product.name} description={product.shortDescription}>
@@ -387,7 +389,10 @@ schema instead of 404ing.
 Astro has no built-in tag revalidation (`revalidateTag`). Two patterns, both achieving
 "static speed + fresh data":
 
-**Pattern A — Prerender + rebuild hook (start here):**
+**Pattern A — Prerender + rebuild hook (DROPPED, ADR 0011):**
+The catalog prerendered at build time and a `PRODUCT_UPDATED` webhook would trigger a
+rebuild. The webhook was never built, so admin edits never reached shoppers — catalog
+pages are now plain SSR. Kept here for history:
 1. The whole catalog prerenders at build time.
 2. Java API emits `PRODUCT_UPDATED` → triggers a GitHub Actions `repository_dispatch` →
    rebuild + redeploy (2–3 min).
@@ -439,8 +444,8 @@ PURGE request for Nginx/Varnish). Choose the host before writing it.
 **Bonus — Server Islands (experimental):** fully static page, price/stock in a
 `<Price server:defer>` island → cached HTML, always-fresh price per request.
 
-**Rule: start with Pattern A. Only move to B when the store actually changes price/stock
-multiple times a day.**
+**Current rule (ADR 0011): catalog is SSR, HTML sent with `Cache-Control: no-cache`.**
+Only add Pattern B (CDN cache + purge) when traffic measurements demand it — not before.
 
 **Core Web Vitals targets:** LCP < 2.5s · CLS < 0.1 · INP < 200ms · Lighthouse ≥ 90 on
 product pages — with Astro these are usually free because catalog pages ship ~0 KB JS.
@@ -450,7 +455,7 @@ product pages — with Astro these are usually free because catalog pages ship ~
 | Concept | Next.js | Astro |
 |---|---|---|
 | Server data fetch | RSC async component | top-level `await` in frontmatter |
-| Static page | `revalidate = 3600` (ISR) | `prerender = true` + Pattern A/B |
+| Static page | `revalidate = 3600` (ISR) | `prerender = false` (SSR, ADR 0011) |
 | On-demand revalidate | `revalidateTag()` | webhook → rebuild or CDN purge |
 | Client state | Zustand | nanostores |
 | Metadata | `generateMetadata()` | `BaseHead.astro` (direct meta tags) |

@@ -2,7 +2,6 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import node from '@astrojs/node';
 import cloudflare from '@astrojs/cloudflare';
-import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
 import fs from 'node:fs';
@@ -19,7 +18,9 @@ export default defineConfig({
   site: process.env.SITE_URL || 'https://myshop.pages.dev',
   output: 'server',
   adapter: isCloudflare ? cloudflare() : node({ mode: 'standalone' }),
-  integrations: [react(), sitemap(), icon()],
+  // Sitemap is served live from /sitemap.xml (ADR 0011) — catalog pages are SSR,
+  // so a build-time sitemap would only ever see the handful of static routes.
+  integrations: [react(), icon()],
   vite: {
     plugins: [tailwindcss()],
   },
