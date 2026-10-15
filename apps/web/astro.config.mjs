@@ -14,8 +14,8 @@ const isCloudflare =
   fs.existsSync('/opt/buildhome');
 
 export default defineConfig({
-  // Default to pages.dev, customizable via SITE_URL or custom domain
-  site: process.env.SITE_URL || 'https://myshop.pages.dev',
+  // Default to custom domain, customizable via SITE_URL
+  site: process.env.SITE_URL || 'https://thuyshop.store',
   output: 'server',
   adapter: isCloudflare ? cloudflare() : node({ mode: 'standalone' }),
   // Sitemap is served live from /sitemap.xml (ADR 0011) — catalog pages are SSR,

@@ -23,7 +23,7 @@ function xmlEscape(value: string): string {
 }
 
 export const GET: APIRoute = async ({ site }) => {
-  const origin = site ?? new URL('https://myshop.pages.dev');
+  const origin = site ?? new URL('https://thuyshop.store');
 
   let categories: Awaited<ReturnType<typeof getCategories>>;
   let productSlugs: string[] = [];

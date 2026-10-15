@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { title, description, canonical, ogImage } = Astro.props;
-const site = Astro.site ?? new URL('https://myshop.example.com');
+const site = Astro.site ?? new URL('https://thuyshop.store');
 const canonicalUrl = new URL(canonical, site).href;
 const ogImageUrl = ogImage ? new URL(ogImage, site).href : undefined;
 const runtimeEnv = (Astro.locals as unknown as { runtime?: { env?: Record<string, string> } })?.runtime?.env;
