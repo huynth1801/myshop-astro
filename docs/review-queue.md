@@ -104,3 +104,4 @@ Commits pending review. Auto-managed:
 - a993173 (2026-10-15) chore: review queue
 - e29e679 (2026-10-15) fix(web): support dynamic Cloudflare Workers runtime env for API base URL
 - c238369 (2026-10-15) docs: sync review queue
+- 5bcbafa (2026-10-15) chore: review queue

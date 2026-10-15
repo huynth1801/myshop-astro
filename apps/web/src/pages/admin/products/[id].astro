@@ -16,7 +16,7 @@ const { id } = Astro.params;
       <span>Danh sách sản phẩm</span>
     </a>
     <div class="mt-4">
-      {id ? <AdminProductEdit client:load id={id} /> : <p class="text-sm text-muted-foreground">Thiếu id sản phẩm.</p>}
+      {id ? <AdminProductEdit client:only="react" id={id} /> : <p class="text-sm text-muted-foreground">Thiếu id sản phẩm.</p>}
     </div>
   </section>
 </Base>

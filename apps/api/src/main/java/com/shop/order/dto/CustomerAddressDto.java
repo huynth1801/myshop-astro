@@ -2,19 +2,20 @@ package com.shop.order.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.HashMap;
 import java.util.Map;
 
 public record CustomerAddressDto(
-        @NotBlank(message = "Full name is required") String fullName,
-        @NotBlank(message = "Phone number is required") String phone,
-        @NotBlank(message = "Email is required") @Email(message = "Invalid email format") String email,
-        @NotBlank(message = "Address line is required") String line1,
-        @NotBlank(message = "City / Province is required") String city,
-        String district,
-        String ward,
-        String postalCode,
-        String countryCode
+        @NotBlank(message = "Full name is required") @Size(max = 255) String fullName,
+        @NotBlank(message = "Phone number is required") @Size(max = 32) String phone,
+        @NotBlank(message = "Email is required") @Email(message = "Invalid email format") @Size(max = 255) String email,
+        @NotBlank(message = "Address line is required") @Size(max = 255) String line1,
+        @NotBlank(message = "City / Province is required") @Size(max = 255) String city,
+        @Size(max = 255) String district,
+        @Size(max = 255) String ward,
+        @Size(max = 32) String postalCode,
+        @Size(max = 2) String countryCode
 ) {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();

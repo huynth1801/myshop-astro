@@ -64,17 +64,23 @@ export function getCart(): Promise<CartData> {
   return cartRequest('/api/v1/cart');
 }
 
+/** Mirror of the API's @Min/@Max(99) bounds — the server re-validates anyway. */
+function clampQty(qty: number, min: number): number {
+  if (!Number.isFinite(qty)) return min;
+  return Math.min(99, Math.max(min, Math.floor(qty)));
+}
+
 export function addToCart(variantId: string, qty = 1): Promise<CartData> {
   return cartRequest('/api/v1/cart/items', {
     method: 'POST',
-    body: JSON.stringify({ variantId, qty }),
+    body: JSON.stringify({ variantId, qty: clampQty(qty, 1) }),
   });
 }
 
 export function setItemQty(itemId: string, qty: number): Promise<CartData> {
   return cartRequest(`/api/v1/cart/items/${itemId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ qty }),
+    body: JSON.stringify({ qty: clampQty(qty, 0) }),
   });
 }
 

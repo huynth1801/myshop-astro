@@ -19,6 +19,10 @@ export default function AdminVariantTable({ productId, variants, onVariantUpdate
   const [busy, setBusy] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
+  // Only digits (plus dot/space thousand separators for VND) can ever be typed.
+  const sanitizeVnd = (input: string) => input.replace(/[^0-9.\s]/g, '');
+  const sanitizeInt = (input: string) => input.replace(/\D/g, '');
+
   function startEdit(variant: AdminVariant) {
     setEditingId(variant.id);
     setPriceInput(String(Math.round(variant.priceCents / 100)));
@@ -117,7 +121,7 @@ export default function AdminVariantTable({ productId, variants, onVariantUpdate
                       <input
                         type="text"
                         value={priceInput}
-                        onChange={(e) => setPriceInput(e.target.value)}
+                        onChange={(e) => setPriceInput(sanitizeVnd(e.target.value))}
                         placeholder="Giá đ"
                         aria-label="Giá biến thể"
                         className="w-24 rounded border border-border bg-card px-1.5 py-1 text-right text-xs outline-none focus:border-foreground"
@@ -141,7 +145,7 @@ export default function AdminVariantTable({ productId, variants, onVariantUpdate
                       type="number"
                       min="0"
                       value={stockInput}
-                      onChange={(e) => setStockInput(e.target.value)}
+                      onChange={(e) => setStockInput(sanitizeInt(e.target.value))}
                       placeholder="Số lượng"
                       aria-label="Tồn kho biến thể"
                       className="w-16 rounded border border-border bg-card px-1.5 py-1 text-right text-xs outline-none focus:border-foreground"

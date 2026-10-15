@@ -42,7 +42,7 @@ import OrdersNavButton from '../react/OrdersNavButton';
 
     <div class="flex items-center gap-2">
       <OrdersNavButton client:load />
-      <AuthButton client:load />
+      <AuthButton client:only="react" />
       <CartWidget client:load />
     </div>
   </div>
