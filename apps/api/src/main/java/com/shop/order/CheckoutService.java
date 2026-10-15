@@ -13,6 +13,7 @@ import com.shop.catalog.ProductVariant;
 import com.shop.order.dto.BankInfoDto;
 import com.shop.order.dto.CheckoutRequest;
 import com.shop.order.dto.CheckoutResponse;
+import com.shop.common.security.BotDetectedException;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -72,6 +73,12 @@ public class CheckoutService {
             String cartTokenCookie,
             UUID authenticatedUserId
     ) {
+        // 0. Bot protection: honeypot check
+        if (request.honeypot() != null && !request.honeypot().isBlank()) {
+            log.warn("Bot detected via honeypot field during checkout. Rejection triggered.");
+            throw new BotDetectedException("Yêu cầu không hợp lệ. Vui lòng thử lại.");
+        }
+
         // 1. Check idempotency key if provided
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
             Optional<Order> existing = orderRepository.findByPaymentIntentId(idempotencyKey);

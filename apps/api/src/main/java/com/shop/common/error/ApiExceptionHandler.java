@@ -38,6 +38,11 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.BAD_REQUEST, "EMPTY_CART", ex.getMessage());
     }
 
+    @ExceptionHandler(com.shop.common.security.BotDetectedException.class)
+    public ProblemDetail handleBotDetected(com.shop.common.security.BotDetectedException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "BOT_DETECTED", ex.getMessage());
+    }
+
     @ExceptionHandler(com.shop.blog.CrawlFailedException.class)
     public ProblemDetail handleCrawlFailed(com.shop.blog.CrawlFailedException ex) {
         return problem(HttpStatus.BAD_REQUEST, "CRAWL_FAILED", ex.getMessage());

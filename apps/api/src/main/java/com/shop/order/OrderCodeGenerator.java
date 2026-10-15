@@ -12,8 +12,8 @@ public class OrderCodeGenerator {
 
     public static String generate() {
         String datePart = LocalDate.now().format(DATE_FORMAT);
-        StringBuilder suffix = new StringBuilder(4);
-        for (int i = 0; i < 4; i++) {
+        StringBuilder suffix = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) {
             suffix.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
         }
         return "MS-" + datePart + "-" + suffix;

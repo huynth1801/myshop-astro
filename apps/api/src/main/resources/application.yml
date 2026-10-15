@@ -60,6 +60,9 @@ shop:
     jwt-secret: ${AUTH_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
     access-token-minutes: ${AUTH_ACCESS_TOKEN_MINUTES:15}
     refresh-token-days: ${AUTH_REFRESH_TOKEN_DAYS:7}
+  security:
+    rate-limiting-enabled: ${RATE_LIMITING_ENABLED:true}
+    turnstile-secret: ${TURNSTILE_SECRET:}
 
 app:
   mail:
@@ -71,8 +74,8 @@ app:
       account-no: ${VIETQR_ACCOUNT_NO:0987654321}
       account-name: ${VIETQR_ACCOUNT_NAME:THUY SHOP BOUTIQUE}
   order:
-    unpaid-expiration-hours: ${ORDER_UNPAID_EXPIRATION_HOURS:24}
-    auto-cancel-interval-ms: ${ORDER_AUTO_CANCEL_INTERVAL_MS:900000}
+    unpaid-expiration-hours: ${ORDER_UNPAID_EXPIRATION_HOURS:2}
+    auto-cancel-interval-ms: ${ORDER_AUTO_CANCEL_INTERVAL_MS:300000}
   telegram:
     enabled: ${TELEGRAM_ENABLED:false}
     bot-token: ${TELEGRAM_BOT_TOKEN:}
