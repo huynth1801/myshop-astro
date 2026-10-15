@@ -36,7 +36,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   if (response.headers.get('content-type')?.includes('text/html')) {
-    response.headers.set('Cache-Control', 'no-cache');
+    const pathname = context.url.pathname;
+    if (
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/checkout') ||
+      pathname.startsWith('/orders')
+    ) {
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    } else if (pathname.startsWith('/products/') || pathname.startsWith('/categories/')) {
+      // Short cache (30s browser, 60s CDN) enables instant hover prefetch & fast CDN edge delivery
+      response.headers.set(
+        'Cache-Control',
+        'public, max-age=30, s-maxage=60, stale-while-revalidate=120',
+      );
+    } else {
+      response.headers.set('Cache-Control', 'no-cache');
+    }
   }
   return response;
 });
