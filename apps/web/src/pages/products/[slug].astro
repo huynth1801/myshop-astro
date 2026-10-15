@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import JsonLd from '../../components/astro/JsonLd.astro';
 import ProductCard from '../../components/astro/ProductCard.astro';
 import AddToCartButton from '../../components/react/AddToCartButton';
+import ProductImageGallery from '../../components/react/ProductImageGallery';
 import {
   getProduct,
   getRecommendations,
@@ -53,6 +54,12 @@ try {
 } catch {
   // trang vẫn render, chỉ bỏ qua mục "Thường mua cùng"
 }
+
+const galleryImages = product.images.map((img) => ({
+  url: resolveImageUrl(img.url) || '',
+  alt: img.alt,
+  position: img.position,
+}));
 ---
 
 <Base
@@ -63,27 +70,7 @@ try {
 >
   <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:grid lg:grid-cols-2 lg:gap-12 lg:px-8">
     <div class="lg:sticky lg:top-24 lg:self-start">
-      <div class="space-y-4">
-        {product.images.map((image, index) => (
-          <div class="aspect-[4/5] overflow-hidden rounded-md border border-border bg-muted">
-            <img
-              src={resolveImageUrl(image.url)}
-              alt={image.alt}
-              width={900}
-              height={1125}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              fetchpriority={index === 0 ? 'high' : undefined}
-              decoding="async"
-              class="h-full w-full object-cover object-center"
-            />
-          </div>
-        ))}
-        {product.images.length === 0 && (
-          <div class="flex aspect-[4/5] items-center justify-center rounded-md border border-border bg-muted text-xs text-foreground-muted">
-            Chưa có hình ảnh
-          </div>
-        )}
-      </div>
+      <ProductImageGallery client:load images={galleryImages} productName={product.name} />
     </div>
 
     <div class="mt-8 lg:mt-0">
