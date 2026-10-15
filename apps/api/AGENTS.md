@@ -15,9 +15,11 @@ working anywhere under `apps/api/`.
 
 - Money is `long` cents (or the `Money` value object in `common`). `double`/`float` for money
   in new code = reject.
-- Bean Validation on every request DTO (`@NotBlank`, `@Positive`, `@Size`).
-- No N+1 queries — use `JOIN FETCH` or `@EntityGraph` for lists with images/variants.
-- Global error handling via `@RestControllerAdvice` → Problem Details
+- No N+1 queries:
+  - For list and paged endpoints, eagerly load associations via `JOIN FETCH` or `@EntityGraph`.
+  - When using `JpaSpecificationExecutor<T>`, overriding `findAll(Pageable)` does NOT apply to `findAll(Specification<T>, Pageable)` — you MUST explicitly override and annotate both with `@EntityGraph`.
+  - For `@OneToMany` collections inside paged entities (where `JOIN FETCH` breaks database pagination / causes in-memory limit evaluation), use Hibernate `@BatchSize(size = 30)` on the collection or separate batched `WHERE parent_id IN (...)` queries.
+  - Never access uninitialized lazy getters (`entity.getRelated()`) in `.map()`, loops, or serializers.
   (`application/problem+json`) with `code`, `message`, `traceId`.
 - Flyway only for schema changes; `ddl-auto=validate` in every environment. Migrations are
   forward-only and backward-compatible (add columns; no immediate rename/drop).

@@ -18,6 +18,11 @@ Full architecture and roadmap: `docs/PLAN.md`.
 7. Never commit secrets. `.env` is git-ignored; keep `.env.example` current when env vars change.
 8. The Playwright E2E money path (browse → cart → coupon → checkout → confirmation) is never
    skipped, weakened, or deleted.
+9. NEVER allow N+1 queries — eagerly load associations (`@EntityGraph`, `JOIN FETCH`) or
+   batch-fetch them (`@BatchSize`, batched `IN` queries). When using Spring Data's
+   `JpaSpecificationExecutor`, overriding `findAll(Pageable)` does NOT affect
+   `findAll(Specification, Pageable)` — both must be overridden and annotated with
+   `@EntityGraph` whenever relations are mapped.
 
 ## When working in this repo
 
