@@ -114,3 +114,4 @@ Commits pending review. Auto-managed:
 - 23e5515 (2026-10-15) fix(web): remove ClientRouter to restore native browser navigation across all pages
 - 2eef9e2 (2026-10-15) chore: review queue
 - 5dc4bad (2026-10-15) perf(web): parallelize PDP fetches and add instant hover prefetching
+- 82e7c23 (2026-10-15) docs: add custom domain SEO and Google indexing checklist to PLAN.md
