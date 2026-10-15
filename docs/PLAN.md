@@ -92,6 +92,14 @@ Stripe test-mode keys.
 - 2026-10-14 — **Telegram-Powered Customer Live Chat (ADR 0009):** In-house storefront chat widget
   interfaced with Telegram Bot API. Customers chat on web; inquiries forward to shop owner's Telegram
   with customer info and PDP link; shop owner replies directly in Telegram; replies sync back to web widget.
+- 2026-10-15 — **Custom Domain SEO & Google Indexing Checklist planned (Post-Domain Purchase):**
+  Quy trình cấu hình kỹ thuật và khai báo Google Search Console để website và sản phẩm hiển thị trên Google Search:
+  1. **Domain & Biến môi trường:** Sau khi gắn Custom Domain (vd: `thuyshop.vn`) trên Cloudflare, cập nhật biến `SITE_URL=https://thuyshop.vn` trong `wrangler.jsonc` & Cloudflare Dashboard để `<link rel="canonical">`, Open Graph và `sitemap.xml` tự động sinh đúng URL chính thức (tránh bị Google de-index do trỏ về domain ảo/placeholder).
+  2. **robots.txt:** Bổ sung `Sitemap: https://thuyshop.vn/sitemap.xml` vào `apps/web/public/robots.txt` để crawler tự tìm thấy danh mục và sản phẩm.
+  3. **Google Search Console (GSC):** Xác minh quyền sở hữu domain (bằng bản ghi DNS TXT trong Cloudflare DNS).
+  4. **Khai báo Sitemap:** Submit `sitemap.xml` trong GSC để Googlebot lập lịch cào toàn bộ catalog.
+  5. **URL Inspection (Index cấp tốc):** Dùng tính năng Kiểm tra URL để gửi yêu cầu lập chỉ mục ("Request Indexing") cho các sản phẩm chủ lực (index trong 24h - 48h).
+  6. **Tối ưu Content/Title:** Tránh sao chép 100% tiêu đề sàn TMĐT (Shopee/TikTok); bổ sung nhận diện thương hiệu `| Thuy Shop` và mô tả độc nhất.
 
 ## 4. Data Model (core tables)
 
@@ -374,8 +382,9 @@ set:html={JSON.stringify(schema)} />`) with builders in `lib/seo.ts`: Product + 
 (name, image, price, priceCurrency, availability) on product pages, BreadcrumbList on all
 pages, Organization on the homepage.
 
-**Sitemap & robots:** `@astrojs/sitemap` generates `sitemap-index.xml` (requires `site` in
-config). `public/robots.txt` blocks `/cart`, `/checkout`, `/account`, `/api/`.
+**Sitemap & robots:** Dynamic SSR sitemap served at `/sitemap.xml` (ADR 0011, `src/pages/sitemap.xml.ts`)
+so on-demand catalog/blog additions appear immediately. `public/robots.txt` blocks non-public routes
+(`/cart`, `/checkout`, `/account`, `/admin`, `/api/`) and points crawlers to `Sitemap: https://<domain>/sitemap.xml`.
 
 **Title pattern:** `%s | YourBrand`. Unique meta description per product (from
 `shortDescription`, 150–160 chars). One `<h1>` per page; semantic HTML (`<nav>`, `<main>`,
@@ -555,6 +564,12 @@ Env handling: each app keeps a committed `.env.example`; real `.env` files are g
 - [ ] (Optional) Automated Bank Transfer Webhook (SePay.vn / Casso.vn) for instant VietQR order confirmation
 - [ ] (Optional) Product view counter (Hướng 1: first-party `views_count` on products + beacon tracking)
 - [ ] (Optional) Daily and monthly revenue reporting & sales charts in Admin dashboard
+- [ ] Custom domain DNS & SSL configured on Cloudflare (e.g. `thuyshop.vn`)
+- [ ] `SITE_URL` env set in Cloudflare Worker vars (`wrangler.jsonc`) to enable exact canonical URLs & sitemap origin
+- [ ] `robots.txt` updated with `Sitemap: https://<domain>/sitemap.xml`
+- [ ] Google Search Console: domain ownership verified via Cloudflare DNS TXT record
+- [ ] Google Search Console: `sitemap.xml` submitted and crawled
+- [ ] Google Search Console: Request Indexing executed for core catalog products via URL Inspection
 - [ ] Sitemap, robots, canonical URLs, JSON-LD validated in Google Rich Results Test
 - [ ] Lighthouse ≥ 90 on product/category/home
 - [ ] Sentry receiving errors from both apps; uptime monitoring on `/api/health` and homepage
