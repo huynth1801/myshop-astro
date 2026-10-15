@@ -47,6 +47,7 @@ export default function CheckoutForm() {
   const [customerNote, setCustomerNote] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('VIETQR');
   const [isAutoFilled, setIsAutoFilled] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
 
   // Location Cascading States (Province -> Direct Wards with District info)
   const [provinces, setProvinces] = useState<LocationItem[]>(FALLBACK_PROVINCES);
@@ -233,6 +234,7 @@ export default function CheckoutForm() {
           shippingAddress: address,
           paymentMethod,
           customerNote: customerNote.trim() || undefined,
+          honeypot: honeypot || undefined,
         },
         idempotencyKey
       );
@@ -274,6 +276,18 @@ export default function CheckoutForm() {
       {/* Checkout Form */}
       <div className="lg:col-span-7">
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Honeypot field for bot deterrence: completely hidden from humans */}
+          <div style={{ display: 'none', position: 'absolute', left: '-9999px' }} aria-hidden="true">
+            <input
+              type="text"
+              name="company_tax_id"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
           {error && (
             <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
               <AlertCircle className="h-5 w-5 shrink-0" />
