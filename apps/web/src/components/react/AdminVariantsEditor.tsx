@@ -19,6 +19,7 @@ import {
   updateVariant,
   type AdminProductDetail,
   type AdminVariant,
+  type VariantPatch,
 } from '../../lib/api/admin';
 import { formatCents } from '../../lib/money';
 
@@ -61,6 +62,39 @@ function parseVnd(input: string): number | null {
   if (cleaned === '') return null;
   const value = Number(cleaned);
   return Number.isFinite(value) && value >= 0 ? Math.round(value) : null;
+}
+
+/** Giá VND: chỉ nhận chữ số, dấu chấm và khoảng trắng phân cách nghìn — số âm không thể gõ vào. */
+function sanitizeVndInput(input: string): string {
+  return input.replace(/[^0-9.\s]/g, '');
+}
+
+/** Số lượng: chỉ nhận chữ số — số âm không thể gõ vào. */
+function sanitizeIntInput(input: string): string {
+  return input.replace(/\D/g, '');
+}
+
+/** Parses one row draft into a variant PATCH payload; null when price/stock is invalid. */
+function parseRow(draft: RowDraft): VariantPatch | null {
+  const priceVnd = parseVnd(draft.price);
+  const stockNum = Number(draft.stock);
+  if (priceVnd == null || !Number.isInteger(stockNum) || stockNum < 0) {
+    return null;
+  }
+  const compareVnd = parseVnd(draft.compareAt);
+  const attributesObj: Record<string, unknown> = {};
+  for (const item of draft.attrs) {
+    if (item.key.trim() && item.value.trim()) {
+      attributesObj[item.key.trim()] = item.value.trim();
+    }
+  }
+  return {
+    sku: draft.sku.trim() || undefined,
+    priceCents: priceVnd * 100,
+    compareAtPriceCents: compareVnd == null ? null : compareVnd * 100,
+    stock: stockNum,
+    attributes: attributesObj,
+  };
 }
 
 function initDrafts(variants: AdminVariant[]): Record<string, RowDraft> {
@@ -141,6 +175,12 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
   }
 
   function updateRowField(variantId: string, field: 'sku' | 'price' | 'compareAt' | 'stock', val: string) {
+    const cleaned =
+      field === 'stock'
+        ? sanitizeIntInput(val)
+        : field === 'price' || field === 'compareAt'
+          ? sanitizeVndInput(val)
+          : val;
     setDrafts((prev) => {
       const current = prev[variantId];
       if (!current) return prev;
@@ -148,7 +188,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
         ...prev,
         [variantId]: {
           ...current,
-          [field]: val,
+          [field]: cleaned,
           isDirty: true,
         },
       };
@@ -230,18 +270,10 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
   async function saveRow(variantId: string) {
     const draft = drafts[variantId];
     if (!draft) return;
-    const priceVnd = parseVnd(draft.price);
-    const stockNum = Number(draft.stock);
-    if (priceVnd == null || !Number.isInteger(stockNum) || stockNum < 0) {
+    const row = parseRow(draft);
+    if (row == null) {
       setError('Giá bán và tồn kho phải là số hợp lệ không âm.');
       return;
-    }
-    const compareVnd = parseVnd(draft.compareAt);
-    const attributesObj: Record<string, unknown> = {};
-    for (const item of draft.attrs) {
-      if (item.key.trim() && item.value.trim()) {
-        attributesObj[item.key.trim()] = item.value.trim();
-      }
     }
 
     setDrafts((prev) => ({
@@ -250,14 +282,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
     }));
 
     void run(
-      () =>
-        updateVariant(variantId, {
-          sku: draft.sku.trim() || undefined,
-          priceCents: priceVnd * 100,
-          compareAtPriceCents: compareVnd == null ? null : compareVnd * 100,
-          stock: stockNum,
-          attributes: attributesObj,
-        }),
+      () => updateVariant(variantId, row),
       () => {
         setSuccess(`Đã lưu thay đổi cho ${draft.sku.trim()}`);
       },
@@ -270,28 +295,31 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
     const dirtyIds = Object.keys(drafts).filter((id) => drafts[id]?.isDirty);
     if (dirtyIds.length === 0) return;
 
+    // Parse everything up front — fail fast instead of silently skipping rows
+    // the user believes were saved.
+    const parsedRows: { id: string; row: VariantPatch }[] = [];
+    let invalidCount = 0;
+    for (const id of dirtyIds) {
+      const draft = drafts[id];
+      const row = draft ? parseRow(draft) : null;
+      if (row == null) {
+        invalidCount += 1;
+        continue;
+      }
+      parsedRows.push({ id, row });
+    }
+    if (invalidCount > 0) {
+      setError(
+        `${invalidCount} phân loại có Giá bán / Tồn kho không hợp lệ (trống hoặc âm). ` +
+          'Vui lòng sửa trước khi lưu tất cả.',
+      );
+      return;
+    }
+
     void run(
       async () => {
-        for (const id of dirtyIds) {
-          const draft = drafts[id];
-          if (!draft) continue;
-          const priceVnd = parseVnd(draft.price);
-          const stockNum = Number(draft.stock);
-          if (priceVnd == null || !Number.isInteger(stockNum) || stockNum < 0) continue;
-          const compareVnd = parseVnd(draft.compareAt);
-          const attributesObj: Record<string, unknown> = {};
-          for (const item of draft.attrs) {
-            if (item.key.trim() && item.value.trim()) {
-              attributesObj[item.key.trim()] = item.value.trim();
-            }
-          }
-          await updateVariant(id, {
-            sku: draft.sku.trim() || undefined,
-            priceCents: priceVnd * 100,
-            compareAtPriceCents: compareVnd == null ? null : compareVnd * 100,
-            stock: stockNum,
-            attributes: attributesObj,
-          });
+        for (const { id, row } of parsedRows) {
+          await updateVariant(id, row);
         }
       },
       () => {
@@ -368,12 +396,27 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
   }
 
   async function applyBulkUpdate() {
-    const priceVnd = bulkPrice ? parseVnd(bulkPrice) : null;
-    const compareVnd = bulkCompareAt ? parseVnd(bulkCompareAt) : null;
-    const stockNum = bulkStock ? Number(bulkStock) : null;
+    const priceProvided = bulkPrice.trim() !== '';
+    const compareProvided = bulkCompareAt.trim() !== '';
+    const stockProvided = bulkStock.trim() !== '';
 
-    if (priceVnd == null && compareVnd == null && stockNum == null) {
+    if (!priceProvided && !compareProvided && !stockProvided) {
       setError('Vui lòng nhập ít nhất một thông số (Giá, Giá so sánh hoặc Tồn kho) để áp dụng hàng loạt.');
+      return;
+    }
+
+    const priceVnd = priceProvided ? parseVnd(bulkPrice) : null;
+    const compareVnd = compareProvided ? parseVnd(bulkCompareAt) : null;
+    const stockNum = stockProvided ? Number(bulkStock) : null;
+
+    // Fail fast — a provided value must be valid; silently dropping it would
+    // report success while leaving half the fields unchanged.
+    if (
+      (priceProvided && priceVnd == null) ||
+      (compareProvided && compareVnd == null) ||
+      (stockProvided && (!Number.isInteger(stockNum) || (stockNum ?? 0) < 0))
+    ) {
+      setError('Giá bán, Giá so sánh và Tồn kho phải là số hợp lệ không âm.');
       return;
     }
 
@@ -387,7 +430,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
           const patch: { priceCents?: number; compareAtPriceCents?: number | null; stock?: number } = {};
           if (priceVnd != null) patch.priceCents = priceVnd * 100;
           if (compareVnd != null) patch.compareAtPriceCents = compareVnd * 100;
-          if (stockNum != null && Number.isInteger(stockNum) && stockNum >= 0) patch.stock = stockNum;
+          if (stockNum != null) patch.stock = stockNum;
           await updateVariant(v.id, patch);
         }
       },
@@ -512,7 +555,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
               Giá bán đồng loạt (VND)
               <input
                 value={bulkPrice}
-                onChange={(e) => setBulkPrice(e.target.value)}
+                onChange={(e) => setBulkPrice(sanitizeVndInput(e.target.value))}
                 placeholder="vd: 129000"
                 inputMode="numeric"
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -522,7 +565,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
               Giá so sánh gốc (VND)
               <input
                 value={bulkCompareAt}
-                onChange={(e) => setBulkCompareAt(e.target.value)}
+                onChange={(e) => setBulkCompareAt(sanitizeVndInput(e.target.value))}
                 placeholder="vd: 159000"
                 inputMode="numeric"
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -532,7 +575,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
               Tồn kho đồng loạt
               <input
                 value={bulkStock}
-                onChange={(e) => setBulkStock(e.target.value)}
+                onChange={(e) => setBulkStock(sanitizeIntInput(e.target.value))}
                 placeholder="vd: 50"
                 inputMode="numeric"
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -665,7 +708,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
               Giá bán (VND) <span className="text-destructive">*</span>
               <input
                 value={newPrice}
-                onChange={(e) => setNewPrice(e.target.value)}
+                onChange={(e) => setNewPrice(sanitizeVndInput(e.target.value))}
                 required
                 placeholder="vd: 129000"
                 inputMode="numeric"
@@ -676,7 +719,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
               Giá so sánh gốc (VND)
               <input
                 value={newCompareAt}
-                onChange={(e) => setNewCompareAt(e.target.value)}
+                onChange={(e) => setNewCompareAt(sanitizeVndInput(e.target.value))}
                 placeholder="vd: 159000"
                 inputMode="numeric"
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
@@ -686,7 +729,7 @@ export default function AdminVariantsEditor({ detail, onChanged }: Props) {
               Tồn kho <span className="text-destructive">*</span>
               <input
                 value={newStock}
-                onChange={(e) => setNewStock(e.target.value)}
+                onChange={(e) => setNewStock(sanitizeIntInput(e.target.value))}
                 required
                 placeholder="vd: 50"
                 inputMode="numeric"
