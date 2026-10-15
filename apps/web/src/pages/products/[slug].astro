@@ -1,26 +1,31 @@
 ---
-import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import JsonLd from '../../components/astro/JsonLd.astro';
 import ProductCard from '../../components/astro/ProductCard.astro';
 import AddToCartButton from '../../components/react/AddToCartButton';
-import { getProducts, getProduct, getRecommendations } from '../../lib/api/products';
+import {
+  getProduct,
+  getRecommendations,
+  type ProductDetail,
+  type ProductSummary,
+} from '../../lib/api/products';
 import { resolveImageUrl } from '../../lib/api/urls';
 import { formatCents, centsToDecimalString } from '../../lib/money';
 
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const { content } = await getProducts(0, 100);
-  if (content.length === 0) throw new Error('API returned 0 products — failing the build');
-  return content.map((summary) => ({ params: { slug: summary.slug } }));
-}
+// ADR 0011: catalog renders on demand so admin edits show up immediately.
+export const prerender = false;
 
 const { slug } = Astro.params;
 if (!slug) {
-  throw new Error('Missing slug param — getStaticPaths always provides it');
+  return Astro.redirect('/');
 }
-const product = await getProduct(slug);
+
+let product: ProductDetail;
+try {
+  product = await getProduct(slug);
+} catch {
+  return new Response('Sản phẩm không tồn tại', { status: 404 });
+}
 const primaryImage = product.images[0];
 const prices = product.variants.map((v) => v.priceCents);
 const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
@@ -41,7 +46,13 @@ const variantOptions = product.variants.map((variant) => ({
   stock: variant.stock,
   attributes: variant.attributes,
 }));
-const crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
+// Cross-sell là mục tùy chọn — API chết/treo lúc render không được phép gục cả trang
+let crossSells: ProductSummary[] = [];
+try {
+  crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
+} catch {
+  // trang vẫn render, chỉ bỏ qua mục "Thường mua cùng"
+}
 ---
 
 <Base
@@ -55,13 +66,14 @@ const crossSells = await getRecommendations(slug, 'CROSS_SELL', 4);
       <div class="space-y-4">
         {product.images.map((image, index) => (
           <div class="aspect-[4/5] overflow-hidden rounded-md border border-border bg-muted">
-            <Image
+            <img
               src={resolveImageUrl(image.url)}
               alt={image.alt}
               width={900}
               height={1125}
               loading={index === 0 ? 'eager' : 'lazy'}
               fetchpriority={index === 0 ? 'high' : undefined}
+              decoding="async"
               class="h-full w-full object-cover object-center"
             />
           </div>

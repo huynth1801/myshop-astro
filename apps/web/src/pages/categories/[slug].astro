@@ -6,31 +6,21 @@ import JsonLd from '../../components/astro/JsonLd.astro';
 import { categoryDisplayName, getCategories } from '../../lib/api/categories';
 import { getCategoryProducts } from '../../lib/api/products';
 
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const categories = await getCategories();
-  if (categories.length === 0) {
-    throw new Error('API returned 0 categories — failing the build');
-  }
-  return categories.map((category) => ({ params: { slug: category.slug } }));
-}
+// ADR 0011: catalog renders on demand so admin edits show up immediately.
+export const prerender = false;
 
 const { slug } = Astro.params;
 if (!slug) {
-  throw new Error('Missing slug param — getStaticPaths always provides it');
+  return Astro.redirect('/');
 }
 
 const categories = await getCategories();
 const category = categories.find((c) => c.slug === slug);
 if (!category) {
-  throw new Error(`Category ${slug} vanished between getStaticPaths and render`);
+  return new Response('Danh mục không tồn tại', { status: 404 });
 }
 
 const { content, totalElements } = await getCategoryProducts(category.slug, 0, 60);
-if (content.length === 0 && totalElements > 0) {
-  throw new Error('Pagination inconsistency — totalElements > 0 but empty page');
-}
 const site = Astro.site ?? new URL('https://myshop.example.com');
 ---
 

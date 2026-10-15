@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
 import type { ProductSummary } from '../../lib/api/products';
 import { resolveImageUrl } from '../../lib/api/urls';
@@ -28,13 +27,14 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
   <div class="relative aspect-[4/5] w-full overflow-hidden rounded-md border border-border bg-muted">
     <a href={`/products/${product.slug}/`} aria-label={product.name} class="block h-full w-full">
       {primarySrc && product.image ? (
-        <Image
+        <img
           src={primarySrc}
           alt={product.image.alt}
           width={600}
           height={750}
           loading={eager ? 'eager' : 'lazy'}
           fetchpriority={eager ? 'high' : 'auto'}
+          decoding="async"
           class:list={[
             'h-full w-full object-cover object-center transition duration-300 ease-out',
             hoverSrc ? 'group-hover:opacity-0' : 'group-hover:scale-[1.02]',
@@ -46,13 +46,14 @@ const quickAddVariant = product.inStock ? product.defaultVariantId : null;
         </div>
       )}
       {hoverSrc && (
-        <Image
+        <img
           src={hoverSrc}
           alt=""
           aria-hidden="true"
           width={600}
           height={750}
           loading="lazy"
+          decoding="async"
           class="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
         />
       )}

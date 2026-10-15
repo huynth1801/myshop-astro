@@ -7,17 +7,13 @@ import HeroLookbookSlider from '../components/react/HeroLookbookSlider';
 import { getProducts } from '../lib/api/products';
 import { getCategories } from '../lib/api/categories';
 
-export const prerender = true;
+// ADR 0011: catalog renders on demand so admin edits show up immediately.
+export const prerender = false;
 
 const [categories, { content, totalElements }] = await Promise.all([
   getCategories(),
   getProducts(0, 60),
 ]);
-
-if (content.length === 0) {
-  // AGENTS.md: fail the build if the API has no products — never ship an empty catalog
-  throw new Error('API returned 0 products — failing the build');
-}
 ---
 
 <Base
