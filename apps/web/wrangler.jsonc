@@ -11,8 +11,9 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "API_BASE_URL": "https://strong-announcement-florist-minimal.trycloudflare.com",
-    "PUBLIC_API_URL": "https://strong-announcement-florist-minimal.trycloudflare.com"
+    "SITE_URL": "https://thuyshop.store",
+    "API_BASE_URL": "https://api.thuyshop.store",
+    "PUBLIC_API_URL": "https://api.thuyshop.store"
   },
   "observability": {
     "logs": {
