@@ -98,3 +98,5 @@ Commits pending review. Auto-managed:
 - 78065af (2026-10-14) feat(infra): prepare Cloudflare Pages adapter and multi-stage Docker build for zero-cost deployment
 - 8d3bcc2 (2026-10-14) feat(infra): add VPS docker compose, auto-deploy workflow and ADR 0010
 - 1b54982 (2026-10-15) feat(cors): allow *.workers.dev domain in CORS origins
+- 51b197d (2026-10-15) docs: sync review queue
+- aaec591 (2026-10-15) docs(env): document CORS_ALLOWED_ORIGINS and cookie options in .env.example
