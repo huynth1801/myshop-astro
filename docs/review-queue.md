@@ -110,3 +110,4 @@ Commits pending review. Auto-managed:
 - f92a85b (2026-10-15) chore: review queue
 - 988b154 (2026-10-15) chore: review queue
 - 110194e (2026-10-15) fix(web): allow reliable navigation to product detail from product cards
+- 681ad8a (2026-10-15) chore: review queue
