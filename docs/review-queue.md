@@ -97,3 +97,4 @@ Commits pending review. Auto-managed:
 - 540892f (2026-10-14) feat(brand): update Thuy Shop metadata description across remaining storefront pages
 - 78065af (2026-10-14) feat(infra): prepare Cloudflare Pages adapter and multi-stage Docker build for zero-cost deployment
 - 8d3bcc2 (2026-10-14) feat(infra): add VPS docker compose, auto-deploy workflow and ADR 0010
+- 1b54982 (2026-10-15) feat(cors): allow *.workers.dev domain in CORS origins
