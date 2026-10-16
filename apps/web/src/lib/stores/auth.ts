@@ -1,6 +1,5 @@
 import { atom } from 'nanostores';
 import { bootstrapSession, logout as apiLogout, type AuthUser } from '../api/auth';
-import { clearRecentOrders } from './recent-orders';
 
 const STORAGE_KEY = 'myshop_auth_user';
 
@@ -17,8 +16,8 @@ function getStoredUser(): AuthUser | null {
 /** Signed-in user, or null for guests. Hydrated from localStorage immediately, synced with session. */
 export const authUser = atom<AuthUser | null>(getStoredUser());
 export const authOpen = atom(false);
-/** True while bootstrapping / checking session with backend on page load. */
-export const authLoading = atom<boolean>(true);
+/** True while bootstrapping / checking session with backend on page load. Only true if stored user exists. */
+export const authLoading = atom<boolean>(typeof window !== 'undefined' ? !!getStoredUser() : false);
 
 let bootstrapped = false;
 let bootstrapPromise: Promise<AuthUser | null> | null = null;
@@ -76,7 +75,6 @@ export function setUser(user: AuthUser | null): void {
 
 export async function signOut(): Promise<void> {
   await apiLogout();
-  clearRecentOrders();
   setUser(null);
   authLoading.set(false);
 }

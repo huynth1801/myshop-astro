@@ -118,4 +118,6 @@ Commits pending review. Auto-managed:
 - bb64983 (2026-10-15) chore: update environment URLs and CORS to https://thuyshop.store and https://api.thuyshop.store
 - fef4b18 (2026-10-16) fix(web): only fetch orders on admin orders tab and add count badges
 - da4d009 (2026-10-16) fix(web): isolate orders per authenticated user and clear on sign out
+- 700d483 (2026-10-16) fix(web): break circular dependency between auth and recent-orders stores
+- ca757b2 (2026-10-16) chore: review queue
 - 7822781 (2026-10-16) feat(branding): add Google Search compliant favicon suite and logo
