@@ -29,6 +29,16 @@ export async function bootstrapAuth(): Promise<AuthUser | null> {
   }
   if (bootstrapPromise) return bootstrapPromise;
 
+  // No stored user ⇒ no session to restore: the user never signed in on this
+  // device, or signed out (which clears both the stored user and the refresh
+  // cookie). Skip the guaranteed-401 /refresh round-trip on every page load.
+  if (!getStoredUser()) {
+    bootstrapped = true;
+    setUser(null);
+    authLoading.set(false);
+    return null;
+  }
+
   bootstrapPromise = (async () => {
     try {
       const user = await bootstrapSession();

@@ -1,6 +1,18 @@
 import { z } from 'zod';
-import { getValidAccessToken } from './auth';
+import { authHeaders } from './auth';
+import { bootstrapAuth } from '../stores/auth';
 import { getApiBaseUrl } from './urls';
+
+/**
+ * Bearer headers when a signed-in session exists, empty for guests.
+ * Awaits the shared session bootstrap instead of calling getValidAccessToken()
+ * so the chat widget — mounted on every page — never triggers the /refresh
+ * round-trip by itself (bootstrap is a no-op network-wise for guests).
+ */
+async function chatAuthHeaders(): Promise<Record<string, string>> {
+  await bootstrapAuth();
+  return authHeaders();
+}
 
 export const chatMessageSchema = z.object({
   id: z.string().uuid(),
@@ -52,16 +64,11 @@ export async function fetchConversation(sessionToken: string, after?: string): P
     url.searchParams.set('after', after);
   }
 
-  const token = await getValidAccessToken();
-  const headers: Record<string, string> = {
-    accept: 'application/json',
-  };
-  if (token) {
-    headers.authorization = `Bearer ${token}`;
-  }
-
   const res = await fetch(url.toString(), {
-    headers,
+    headers: {
+      accept: 'application/json',
+      ...(await chatAuthHeaders()),
+    },
     credentials: 'include',
   });
 
@@ -74,18 +81,13 @@ export async function fetchConversation(sessionToken: string, after?: string): P
 }
 
 export async function sendChatMessage(input: SendChatMessageInput): Promise<ChatMessage> {
-  const token = await getValidAccessToken();
-  const headers: Record<string, string> = {
-    'content-type': 'application/json',
-    accept: 'application/json',
-  };
-  if (token) {
-    headers.authorization = `Bearer ${token}`;
-  }
-
   const res = await fetch(`${getApiBaseUrl()}/api/v1/chat/messages`, {
     method: 'POST',
-    headers,
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json',
+      ...(await chatAuthHeaders()),
+    },
     credentials: 'include',
     body: JSON.stringify(input),
   });
