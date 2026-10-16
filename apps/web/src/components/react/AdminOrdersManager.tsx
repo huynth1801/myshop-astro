@@ -18,6 +18,7 @@ import { formatCents } from '../../lib/money';
 import { authLoading, authOpen, authUser, bootstrapAuth } from '../../lib/stores/auth';
 import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
+import { setCachedAdminBadgeData } from '../../lib/stores/admin-badge';
 import ConfirmDialog from './ConfirmDialog';
 import {
   cancelAdminOrder,
@@ -85,6 +86,10 @@ export default function AdminOrdersManager() {
     try {
       const data = await getAdminOrderMetrics();
       setMetrics(data);
+      setCachedAdminBadgeData({
+        pendingCount: data.pendingCount,
+        totalOrders: data.totalOrders,
+      });
     } catch {
       // ignore metrics error
     }
@@ -349,28 +354,68 @@ export default function AdminOrdersManager() {
       <div className="space-y-4 rounded-xl border border-border bg-card p-4">
         {/* Status Tabs */}
         <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-3">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => {
-                setActiveTab(tab.key);
-                setPage(0);
-              }}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                activeTab === tab.key
-                  ? 'bg-foreground text-background font-semibold'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              {tab.label}
-              {metrics && tab.key === 'PENDING' && metrics.pendingCount > 0 && (
-                <span className="ml-1.5 rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[10px] text-amber-700 dark:text-amber-300">
-                  {metrics.pendingCount}
-                </span>
-              )}
-            </button>
-          ))}
+          {STATUS_TABS.map((tab) => {
+            const countForTab = (() => {
+              if (!metrics) return null;
+              switch (tab.key) {
+                case 'ALL':
+                  return metrics.totalOrders;
+                case 'PENDING':
+                  return metrics.pendingCount;
+                case 'CONFIRMED':
+                  return metrics.confirmedCount;
+                case 'SHIPPING':
+                  return metrics.shippingCount;
+                case 'FULFILLED':
+                  return metrics.fulfilledCount;
+                case 'CANCELLED':
+                  return metrics.cancelledCount;
+                default:
+                  return null;
+              }
+            })();
+
+            const badgeStyle = (() => {
+              if (activeTab === tab.key) {
+                return 'bg-background text-foreground font-bold';
+              }
+              switch (tab.key) {
+                case 'PENDING':
+                  return 'bg-amber-500/20 text-amber-700 dark:text-amber-300 font-semibold';
+                case 'CONFIRMED':
+                  return 'bg-blue-500/20 text-blue-700 dark:text-blue-300';
+                case 'SHIPPING':
+                  return 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-300';
+                case 'FULFILLED':
+                  return 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300';
+                default:
+                  return 'bg-muted text-muted-foreground';
+              }
+            })();
+
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setPage(0);
+                }}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  activeTab === tab.key
+                    ? 'bg-foreground text-background font-semibold'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                <span>{tab.label}</span>
+                {countForTab !== null && countForTab > 0 && (
+                  <span className={`rounded-full px-1.5 py-0.2 text-[10px] ${badgeStyle}`}>
+                    {countForTab}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Search & Actions */}
