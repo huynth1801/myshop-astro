@@ -39,7 +39,7 @@ function cleanOrMigrateLegacyStorage(): void {
   }
 }
 
-export function getRecentOrderCodes(): string[] {
+function readStorageCodes(): string[] {
   if (typeof window === 'undefined') return [];
   cleanOrMigrateLegacyStorage();
   try {
@@ -58,38 +58,51 @@ export function getRecentOrderCodes(): string[] {
   return [];
 }
 
+function ensureInitialized(): void {
+  if (initialized || typeof window === 'undefined') return;
+  initRecentOrders();
+}
+
+export function getRecentOrderCodes(): string[] {
+  ensureInitialized();
+  return readStorageCodes();
+}
+
 export function initRecentOrders(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || initialized) return;
+  initialized = true;
+
   cleanOrMigrateLegacyStorage();
-  const codes = getRecentOrderCodes();
+  const codes = readStorageCodes();
   recentOrderCodes.set(codes);
 
-  if (!initialized) {
-    initialized = true;
-
-    // Re-sync when user logs in or out
-    authUser.listen(() => {
+  // Re-sync when user logs in or out
+  authUser.listen((user) => {
+    if (!user) {
+      clearRecentOrders();
+    } else {
       cleanOrMigrateLegacyStorage();
-      const updated = getRecentOrderCodes();
+      const updated = readStorageCodes();
       recentOrderCodes.set(updated);
       window.dispatchEvent(new CustomEvent('recent-orders-changed', { detail: { userChanged: true } }));
-    });
+    }
+  });
 
-    window.addEventListener('storage', (e) => {
-      if (e.key === getStorageKey() || e.key === LEGACY_STORAGE_KEY) {
-        recentOrderCodes.set(getRecentOrderCodes());
-      }
-    });
-  }
+  window.addEventListener('storage', (e) => {
+    if (e.key === getStorageKey() || e.key === LEGACY_STORAGE_KEY) {
+      recentOrderCodes.set(readStorageCodes());
+    }
+  });
 }
 
 export function addRecentOrderCode(code: string): void {
   if (typeof window === 'undefined' || !code) return;
+  ensureInitialized();
   cleanOrMigrateLegacyStorage();
   const cleanCode = code.trim().toUpperCase();
   try {
     const key = getStorageKey();
-    const current = getRecentOrderCodes();
+    const current = readStorageCodes();
     const filtered = current.filter((c) => c !== cleanCode);
     const updated = [cleanCode, ...filtered].slice(0, 50); // Keep up to 50 recent orders
     localStorage.setItem(key, JSON.stringify(updated));
@@ -102,11 +115,12 @@ export function addRecentOrderCode(code: string): void {
 
 export function removeRecentOrderCode(code: string): void {
   if (typeof window === 'undefined' || !code) return;
+  ensureInitialized();
   cleanOrMigrateLegacyStorage();
   const cleanCode = code.trim().toUpperCase();
   try {
     const key = getStorageKey();
-    const current = getRecentOrderCodes();
+    const current = readStorageCodes();
     const updated = current.filter((c) => c !== cleanCode);
     localStorage.setItem(key, JSON.stringify(updated));
     recentOrderCodes.set(updated);
@@ -131,9 +145,4 @@ export function clearRecentOrders(): void {
   } catch {
     // Ignore storage errors
   }
-}
-
-// Auto-initialize on import in browser
-if (typeof window !== 'undefined') {
-  initRecentOrders();
 }
