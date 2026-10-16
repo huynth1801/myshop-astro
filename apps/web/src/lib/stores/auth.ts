@@ -1,5 +1,6 @@
 import { atom } from 'nanostores';
 import { bootstrapSession, logout as apiLogout, type AuthUser } from '../api/auth';
+import { clearRecentOrders } from './recent-orders';
 
 const STORAGE_KEY = 'myshop_auth_user';
 
@@ -75,6 +76,7 @@ export function setUser(user: AuthUser | null): void {
 
 export async function signOut(): Promise<void> {
   await apiLogout();
+  clearRecentOrders();
   setUser(null);
   authLoading.set(false);
 }

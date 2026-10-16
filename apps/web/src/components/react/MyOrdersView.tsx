@@ -23,6 +23,8 @@ import {
   addRecentOrderCode,
 } from '../../lib/stores/recent-orders';
 import { toast } from '../../lib/stores/toast';
+import { authOpen, authUser } from '../../lib/stores/auth';
+import { useStore } from '../../lib/stores/useStore';
 import ConfirmDialog from './ConfirmDialog';
 
 type TabKey = 'ALL' | 'PAY' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
@@ -36,6 +38,7 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 export default function MyOrdersView() {
+  const user = useStore(authUser);
   const [activeTab, setActiveTab] = useState<TabKey>('ALL');
   const [orders, setOrders] = useState<OrderDetail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +65,7 @@ export default function MyOrdersView() {
     }
   }
 
-  // Load all recent orders on mount
+  // Load all recent orders on mount and whenever user auth state changes
   useEffect(() => {
     loadOrders();
 
@@ -71,7 +74,7 @@ export default function MyOrdersView() {
     };
     window.addEventListener('recent-orders-changed', handleStorageChange);
     return () => window.removeEventListener('recent-orders-changed', handleStorageChange);
-  }, []);
+  }, [user]);
 
   async function loadOrders() {
     setLoading(true);
@@ -246,6 +249,25 @@ export default function MyOrdersView() {
 
   return (
     <div className="space-y-6">
+      {/* Login Prompt for guests */}
+      {!user && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 text-xs shadow-xs">
+          <div className="flex items-center gap-2.5 text-muted-foreground">
+            <AlertCircle className="h-4 w-4 shrink-0 text-primary" />
+            <span>
+              Bạn chưa đăng nhập. Đăng nhập để đồng bộ và xem tất cả đơn mua của tài khoản.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => authOpen.set(true)}
+            className="rounded-full bg-primary px-4 py-1.5 font-semibold text-primary-foreground shadow-xs transition hover:opacity-90 active:scale-95"
+          >
+            Đăng nhập ngay
+          </button>
+        </div>
+      )}
+
       {/* Shopee-style Status Tabs */}
       <div className="sticky top-16 z-20 -mx-4 border-b border-border bg-background/95 px-4 backdrop-blur-md sm:mx-0 sm:px-0">
         <div className="flex gap-2 overflow-x-auto no-scrollbar sm:gap-4">
