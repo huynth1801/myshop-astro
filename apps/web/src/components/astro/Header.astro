@@ -2,6 +2,8 @@
 import CartWidget from '../react/CartWidget';
 import AuthButton from '../react/AuthButton';
 import OrdersNavButton from '../react/OrdersNavButton';
+
+const isAdmin = Astro.url.pathname.startsWith('/admin');
 ---
 
 <header class="sticky top-0 z-50 border-b border-border bg-background">
@@ -41,9 +43,9 @@ import OrdersNavButton from '../react/OrdersNavButton';
     </div>
 
     <div class="flex items-center gap-2">
-      <OrdersNavButton client:load />
+      {!isAdmin && <OrdersNavButton client:load />}
       <AuthButton client:only="react" />
-      <CartWidget client:load />
+      {!isAdmin && <CartWidget client:load />}
     </div>
   </div>
 

@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import AdminOrdersManager from '../../components/react/AdminOrdersManager';
+import AdminNavTabs from '../../components/react/AdminNavTabs';
 import { Icon } from 'astro-icon/components';
 
 export const prerender = false;
@@ -28,26 +29,7 @@ export const prerender = false;
     </div>
 
     <!-- Navigation tabs between Products, Orders, and Blog -->
-    <div class="mb-6 flex border-b border-border">
-      <a
-        href="/admin"
-        class="border-b-2 border-transparent px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
-      >
-        Sản phẩm
-      </a>
-      <a
-        href="/admin/orders"
-        class="border-b-2 border-foreground px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-foreground"
-      >
-        Đơn hàng
-      </a>
-      <a
-        href="/admin/blog"
-        class="border-b-2 border-transparent px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
-      >
-        Bài viết & SEO Crawler
-      </a>
-    </div>
+    <AdminNavTabs client:load activeTab="orders" />
 
     <AdminOrdersManager client:only="react" />
   </section>
