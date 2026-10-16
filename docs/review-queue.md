@@ -119,3 +119,4 @@ Commits pending review. Auto-managed:
 - fef4b18 (2026-10-16) fix(web): only fetch orders on admin orders tab and add count badges
 - da4d009 (2026-10-16) fix(web): isolate orders per authenticated user and clear on sign out
 - 700d483 (2026-10-16) fix(web): break circular dependency between auth and recent-orders stores
+- ca757b2 (2026-10-16) chore: review queue
