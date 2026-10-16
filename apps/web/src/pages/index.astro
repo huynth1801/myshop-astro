@@ -200,7 +200,8 @@ try {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Thuy Shop',
-      url: (Astro.site ?? new URL('https://myshop.example.com')).toString(),
+      url: (Astro.site ?? new URL('https://thuyshop.store')).toString(),
+      logo: new URL('/logo.png', Astro.site ?? new URL('https://thuyshop.store')).toString(),
     }}
   />
   <JsonLd
@@ -208,7 +209,7 @@ try {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'Thuy Shop',
-      url: (Astro.site ?? new URL('https://myshop.example.com')).toString(),
+      url: (Astro.site ?? new URL('https://thuyshop.store')).toString(),
       inLanguage: 'vi',
     }}
   />
