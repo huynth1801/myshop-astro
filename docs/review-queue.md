@@ -116,3 +116,4 @@ Commits pending review. Auto-managed:
 - 5dc4bad (2026-10-15) perf(web): parallelize PDP fetches and add instant hover prefetching
 - 82e7c23 (2026-10-15) docs: add custom domain SEO and Google indexing checklist to PLAN.md
 - bb64983 (2026-10-15) chore: update environment URLs and CORS to https://thuyshop.store and https://api.thuyshop.store
+- 7822781 (2026-10-16) feat(branding): add Google Search compliant favicon suite and logo
