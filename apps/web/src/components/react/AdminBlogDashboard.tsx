@@ -48,6 +48,10 @@ export default function AdminBlogDashboard() {
   const [status, setStatus] = useState<string>('');
   const [q, setQ] = useState<string>('');
   const [page, setPage] = useState<number>(0);
+  // Mirror of `page` for loadPosts(): keeping `page` out of the useCallback
+  // deps stops the bootstrap effect from re-firing loadPosts(0) after
+  // setPage, which used to snap every pagination click back to page 1.
+  const pageRef = useRef(0);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalElements, setTotalElements] = useState<number>(0);
 
@@ -96,16 +100,17 @@ export default function AdminBlogDashboard() {
   }, []);
 
   const loadPosts = useCallback(
-    async (targetPage = page) => {
+    async (targetPage?: number) => {
       setLoading(true);
       setError(null);
       try {
         const paged = await adminListPosts({
-          page: targetPage,
+          page: targetPage ?? pageRef.current,
           size: 10,
           status: status ? (status as PostStatus) : undefined,
           q: q.trim() || undefined,
         });
+        pageRef.current = paged.page;
         setPosts(paged.content);
         setPage(paged.page);
         setTotalPages(paged.totalPages);
@@ -117,7 +122,7 @@ export default function AdminBlogDashboard() {
         setLoading(false);
       }
     },
-    [page, status, q],
+    [status, q],
   );
 
   const loadRssSources = useCallback(async () => {

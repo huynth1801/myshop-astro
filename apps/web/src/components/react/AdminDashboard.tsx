@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AdminError,
   listCategories,
@@ -25,6 +25,10 @@ export default function AdminDashboard() {
   const [status, setStatus] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [page, setPage] = useState(0);
+  // Mirror of `page` for reload(): keeping `page` out of the useCallback deps
+  // stops the [user, reload] effect from re-firing reload(0) after setPage,
+  // which used to snap every pagination click back to page 1.
+  const pageRef = useRef(0);
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -42,15 +46,16 @@ export default function AdminDashboard() {
   }, [q]);
 
   const reload = useCallback(
-    async (targetPage = page) => {
+    async (targetPage?: number) => {
       setError(null);
       try {
         const paged = await listProducts({
           q: debouncedQ,
           status: status === '' ? undefined : (status as 'DRAFT' | 'ACTIVE' | 'ARCHIVED'),
           categoryId: categoryId === '' ? undefined : categoryId,
-          page: targetPage,
+          page: targetPage ?? pageRef.current,
         });
+        pageRef.current = paged.page;
         setProducts(paged.content);
         setPage(paged.page);
         setTotalPages(paged.totalPages);
@@ -60,7 +65,7 @@ export default function AdminDashboard() {
         setError(e instanceof AdminError ? e.message : 'Không tải được danh sách sản phẩm.');
       }
     },
-    [debouncedQ, status, categoryId, page],
+    [debouncedQ, status, categoryId],
   );
 
   useEffect(() => {
