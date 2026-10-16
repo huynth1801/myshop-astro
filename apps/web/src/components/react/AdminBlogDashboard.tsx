@@ -36,14 +36,47 @@ import { useStore } from '../../lib/stores/useStore';
 import { toast } from '../../lib/stores/toast';
 import ConfirmDialog from './ConfirmDialog';
 
+const BLOG_DASHBOARD_CACHE_KEY = 'myshop_admin_blog_dashboard_cache';
+
+interface BlogDashboardCache {
+  posts: PostSummary[];
+  totalElements: number;
+  totalPages: number;
+}
+
+function getCachedBlogDashboard(): BlogDashboardCache | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(BLOG_DASHBOARD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed?.totalElements === 'number' && Array.isArray(parsed?.posts)) {
+      return parsed as BlogDashboardCache;
+    }
+  } catch {
+    // ignore parse error
+  }
+  return null;
+}
+
+function setCachedBlogDashboard(data: BlogDashboardCache): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(BLOG_DASHBOARD_CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // ignore
+  }
+}
+
 export default function AdminBlogDashboard() {
   const user = useStore(authUser);
   const authBusy = useStore(authLoading);
   const [activeTab, setActiveTab] = useState<'posts' | 'rss'>('posts');
 
-  // Posts State
-  const [posts, setPosts] = useState<PostSummary[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Posts State (SWR: Initialize from sessionStorage for 0ms instant paint)
+  const [cached] = useState<BlogDashboardCache | null>(() => getCachedBlogDashboard());
+  const [posts, setPosts] = useState<PostSummary[] | null>(cached?.posts ?? null);
+  const [loading, setLoading] = useState(cached ? false : true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>('');
   const [q, setQ] = useState<string>('');
@@ -52,8 +85,8 @@ export default function AdminBlogDashboard() {
   // deps stops the bootstrap effect from re-firing loadPosts(0) after
   // setPage, which used to snap every pagination click back to page 1.
   const pageRef = useRef(0);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [totalElements, setTotalElements] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(cached?.totalPages ?? 1);
+  const [totalElements, setTotalElements] = useState<number>(cached?.totalElements ?? 0);
 
   // Direct Quick Crawler Bar state
   const [crawlUrl, setCrawlUrl] = useState('');
@@ -115,6 +148,15 @@ export default function AdminBlogDashboard() {
         setPage(paged.page);
         setTotalPages(paged.totalPages);
         setTotalElements(paged.totalElements);
+
+        // Update SWR cache when on default view (page 0, no filters)
+        if (!status && !q.trim() && paged.page === 0) {
+          setCachedBlogDashboard({
+            posts: paged.content,
+            totalElements: paged.totalElements,
+            totalPages: paged.totalPages,
+          });
+        }
       } catch (err) {
         setError(err instanceof BlogApiError ? err.message : 'Không tải được danh sách bài viết.');
         setPosts([]);
