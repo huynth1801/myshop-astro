@@ -35,7 +35,10 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
       <div
         class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:flex-row sm:px-6 lg:px-8"
       >
-        <p class="font-semibold tracking-tighter text-foreground">Thuy shop<span class="text-accent">.</span></p>
+        <div class="flex items-center gap-2">
+          <img src="/favicon.svg" alt="Thuy Shop Logo" width="22" height="22" class="size-5.5 rounded-full" />
+          <p class="font-semibold tracking-tighter text-foreground">Thuy shop<span class="text-accent">.</span></p>
+        </div>
         <p>Chọn kỹ, dùng lâu — đồ tốt cho ngày thường.</p>
         <p>© {new Date().getFullYear()} Thuy Shop</p>
       </div>
