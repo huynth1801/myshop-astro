@@ -31,6 +31,89 @@ function slugifyHeading(text: string): string {
     .replace(/^-+|-+$/g, '') || 'muc';
 }
 
+const VOID_TAGS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+  'link', 'meta', 'source', 'track', 'wbr',
+]);
+
+// Start tags that implicitly close an open <p> (HTML5 "in body" rules).
+const P_CLOSING_TAGS = new Set([
+  'address', 'article', 'aside', 'blockquote', 'details', 'div', 'dl',
+  'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3',
+  'h4', 'h5', 'h6', 'header', 'hgroup', 'main', 'menu', 'nav', 'ol', 'p',
+  'pre', 'section', 'table', 'ul',
+]);
+
+/**
+ * Appends the missing end tags for containers left open by malformed crawler HTML.
+ * Without this, an unclosed <div> in stored content swallows the page sections that
+ * follow the article body (share bar, related products) into the .prose wrapper,
+ * which then applies editorial typography to product cards. Stray end tags with no
+ * matching opener are dropped, mirroring how browsers discard them.
+ */
+function repairUnbalancedTags(html: string): string {
+  // Scan a copy without comments/script/style so their contents cannot produce
+  // bogus tag tokens; the closers computed from the scan are appended to the
+  // original markup.
+  const scanTarget = html
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '');
+
+  const stack: string[] = [];
+  const tagPattern = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
+  let match: RegExpExecArray | null;
+
+  const closeOpen = (tag: string) => {
+    const idx = stack.lastIndexOf(tag);
+    if (idx !== -1) stack.length = idx;
+  };
+
+  while ((match = tagPattern.exec(scanTarget)) !== null) {
+    const isEnd = match[1] === '/';
+    const tag = match[2].toLowerCase();
+
+    if (VOID_TAGS.has(tag)) continue;
+
+    if (isEnd) {
+      if (stack[stack.length - 1] === tag) {
+        stack.pop();
+      } else if (stack.includes(tag)) {
+        closeOpen(tag);
+      }
+      continue;
+    }
+
+    // Implicit closes, mirroring the HTML5 tree builder for common cases.
+    if (tag === 'p') {
+      closeOpen('p');
+    } else if (P_CLOSING_TAGS.has(tag)) {
+      closeOpen('p');
+    }
+    if (tag === 'li') {
+      closeOpen('li');
+    }
+    if (/^h[1-6]$/.test(tag)) {
+      const top = stack[stack.length - 1];
+      if (top && /^h[1-6]$/.test(top)) stack.pop();
+    }
+    if (tag === 'td' || tag === 'th') {
+      closeOpen('td');
+      closeOpen('th');
+    }
+    if (tag === 'tr') {
+      closeOpen('tr');
+      closeOpen('td');
+      closeOpen('th');
+    }
+
+    stack.push(tag);
+  }
+
+  if (stack.length === 0) return html;
+  return html + stack.reverse().map((tag) => `</${tag}>`).join('');
+}
+
 /**
  * Enhances raw blog HTML with modern editorial typography, interactive TOC headings,
  * verified expert disclaimers, recommendation cards, and responsive media embeds.
@@ -47,7 +130,13 @@ export function enhanceBlogContent(rawHtml: string): EnhancedPostContent {
 
   let html = normalizeText(rawHtml);
 
-  // 1. Remove broken crawler TOC stubs (e.g. orphan ☰ Mục lục with empty containers)
+  // 1. Remove broken crawler TOC stubs (e.g. orphan ☰ Mục lục with empty containers).
+  //    The crawler emits three opening <div>s but only closes two of them; the first
+  //    pattern targets that exact unterminated shape, the rest are fallbacks.
+  html = html.replace(
+    /<div[^>]*>\s*<div[^>]*>\s*<div[^>]*>\s*<span[^>]*>[☰≡]<\/span>\s*<span[^>]*>Mục lục<\/span>\s*<\/div>\s*<div[^>]*><\/div>/gi,
+    ''
+  );
   html = html.replace(
     /<div[^>]*>\s*<div[^>]*>\s*<div[^>]*>\s*<span[^>]*>[☰≡]<\/span>\s*<span[^>]*>Mục lục<\/span>\s*<\/div>\s*<div[^>]*><\/div>\s*<\/div>\s*<\/div>/gi,
     ''
@@ -186,7 +275,11 @@ export function enhanceBlogContent(rawHtml: string): EnhancedPostContent {
   // 6. Unwrap heavy bold body paragraphs where the entire paragraph is <b>...</b>
   html = html.replace(/<p[^>]*>(?:<b>|<strong>)([^<]{45,})(?:<\/b>|<\/strong>)<\/p>/gi, '<p class="leading-relaxed">$1</p>');
 
-  // 7. Calculate word count and estimated reading time
+  // 7. Guarantee balanced container tags so malformed content cannot swallow
+  //    the page sections rendered after the article body.
+  html = repairUnbalancedTags(html);
+
+  // 8. Calculate word count and estimated reading time
   const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const wordCount = plainText.split(' ').filter(Boolean).length;
   const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
