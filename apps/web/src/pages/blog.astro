@@ -1,0 +1,185 @@
+---
+import Base from '../layouts/Base.astro';
+import { getPosts, type PostSummary } from '../lib/api/blog';
+import { resolveImageUrl } from '../lib/api/urls';
+import { Icon } from 'astro-icon/components';
+
+export const prerender = false;
+
+const pageParam = Astro.url.searchParams.get('page');
+const currentPage = pageParam ? Math.max(0, parseInt(pageParam, 10)) : 0;
+
+let posts: PostSummary[] = [];
+let totalPages = 1;
+let totalElements = 0;
+
+try {
+  const paged = await getPosts({ page: currentPage, size: 9 });
+  posts = paged.content;
+  totalPages = paged.totalPages;
+  totalElements = paged.totalElements;
+} catch (err) {
+  console.error('Failed to load blog posts:', err);
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+}
+---
+
+<Base
+  title="Blog & Xu hướng thời trang"
+  description="Khám phá các bài viết chia sẻ phong cách, cẩm nang phối đồ và xu hướng thời trang mới nhất từ Thuy Shop."
+>
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <!-- Header banner -->
+    <header class="mb-12 text-center md:mb-16">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">thuy shop journal</p>
+      <h1 class="mt-3 text-3xl font-light tracking-tight text-foreground sm:text-4xl md:text-5xl">
+        Góc Cảm Hứng & Phong Cách
+      </h1>
+      <p class="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+        Những câu chuyện thời trang, cẩm nang phối đồ tinh tế và cập nhật xu hướng bền vững dành cho ngày thường.
+      </p>
+      <div class="mx-auto mt-6 h-px w-16 bg-border"></div>
+      {totalElements > 0 && (
+        <p class="mt-4 text-center text-xs text-muted-foreground">
+          Đang hiển thị {posts.length} trong tổng số {totalElements} bài viết
+        </p>
+      )}
+    </header>
+
+    <!-- Post list or Empty state -->
+    {posts.length === 0 ? (
+      <div class="my-16 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16 text-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Icon name="lucide:book-open" class="h-6 w-6" />
+        </div>
+        <h2 class="mt-4 text-base font-medium text-foreground">Chưa có bài viết nào</h2>
+        <p class="mt-1 max-w-md text-sm text-muted-foreground">
+          Các bài viết phong cách và cẩm nang hữu ích đang được biên tập và sẽ ra mắt sớm nhất!
+        </p>
+        <a
+          href="/"
+          class="mt-6 inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-foreground transition-colors hover:bg-muted"
+        >
+          <span>Khám phá sản phẩm</span>
+          <Icon name="lucide:arrow-right" class="h-3.5 w-3.5" />
+        </a>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => {
+          const coverUrl = resolveImageUrl(post.featuredImage);
+          return (
+            <article class="group flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card transition-all duration-300 hover:border-border hover:shadow-sm">
+              <a href={`/blog/${post.slug}`} class="block aspect-[16/10] w-full overflow-hidden bg-muted">
+                {coverUrl ? (
+                  <img
+                    src={coverUrl}
+                    alt={post.title}
+                    loading="lazy"
+                    class="h-full w-full object-cover transition duration-500 ease-out group-hover:scale-105"
+                  />
+                ) : (
+                  <div class="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+                    <Icon name="lucide:image" class="h-10 w-10 opacity-40" />
+                  </div>
+                )}
+              </a>
+
+              <div class="flex flex-1 flex-col justify-between p-6">
+                <div>
+                  <div class="flex items-center gap-3 text-xs text-muted-foreground">
+                    {post.publishedAt && (
+                      <time datetime={post.publishedAt}>
+                        {formatDate(post.publishedAt)}
+                      </time>
+                    )}
+                    {post.author && (
+                      <>
+                        <span class="inline-block h-1 w-1 rounded-full bg-border"></span>
+                        <span>{post.author}</span>
+                      </>
+                    )}
+                  </div>
+
+                  <h2 class="mt-3 text-lg font-medium leading-snug tracking-tight text-foreground transition-colors group-hover:text-accent">
+                    <a href={`/blog/${post.slug}`}>
+                      {post.title}
+                    </a>
+                  </h2>
+
+                  {post.summary && (
+                    <p class="mt-2.5 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                      {post.summary}
+                    </p>
+                  )}
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-border/50">
+                  <a
+                    href={`/blog/${post.slug}`}
+                    class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-foreground transition-colors group-hover:text-accent"
+                  >
+                    <span>Đọc tiếp</span>
+                    <Icon name="lucide:arrow-right" class="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                  </a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    )}
+
+    <!-- Pagination -->
+    {totalPages > 1 && (
+      <nav aria-label="Phân trang blog" class="mt-12 flex items-center justify-center gap-3">
+        {currentPage > 0 ? (
+          <a
+            href={`/blog?page=${currentPage - 1}`}
+            class="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-medium text-foreground transition hover:bg-muted"
+          >
+            <Icon name="lucide:chevron-left" class="h-4 w-4" />
+            <span>Trang trước</span>
+          </a>
+        ) : (
+          <span class="inline-flex items-center gap-1.5 rounded-full border border-border/40 px-4 py-2 text-xs font-medium text-muted-foreground/50 opacity-50">
+            <Icon name="lucide:chevron-left" class="h-4 w-4" />
+            <span>Trang trước</span>
+          </span>
+        )}
+
+        <span class="px-3 text-xs text-muted-foreground">
+          Trang {currentPage + 1} / {totalPages}
+        </span>
+
+        {currentPage < totalPages - 1 ? (
+          <a
+            href={`/blog?page=${currentPage + 1}`}
+            class="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-medium text-foreground transition hover:bg-muted"
+          >
+            <span>Trang sau</span>
+            <Icon name="lucide:chevron-right" class="h-4 w-4" />
+          </a>
+        ) : (
+          <span class="inline-flex items-center gap-1.5 rounded-full border border-border/40 px-4 py-2 text-xs font-medium text-muted-foreground/50 opacity-50">
+            <span>Trang sau</span>
+            <Icon name="lucide:chevron-right" class="h-4 w-4" />
+          </span>
+        )}
+      </nav>
+    )}
+  </div>
+</Base>

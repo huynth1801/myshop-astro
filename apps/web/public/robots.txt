@@ -2,4 +2,7 @@ User-agent: *
 Disallow: /cart
 Disallow: /checkout
 Disallow: /account
+Disallow: /admin
 Disallow: /api/
+
+Sitemap: https://thuyshop.store/sitemap.xml

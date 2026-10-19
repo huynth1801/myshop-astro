@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminOrdersManager from '../../components/react/AdminOrdersManager';
+import AdminNavTabs from '../../components/react/AdminNavTabs';
+import { Icon } from 'astro-icon/components';
+
+export const prerender = false;
+---
+
+<Base title="Quản trị Đơn hàng" description="Quản lý và cập nhật tiến độ đơn hàng COD & VietQR Thuy Shop.">
+  <section class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-foreground">Quản trị — Đơn hàng</h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          Theo dõi trạng thái đơn hàng COD & VietQR, xác nhận giao dịch và quản lý vận chuyển.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a
+          href="/"
+          class="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Icon name="lucide:arrow-left" class="h-3.5 w-3.5" />
+          <span>Về cửa hàng</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation tabs between Products, Orders, and Blog -->
+    <AdminNavTabs client:load activeTab="orders" />
+
+    <AdminOrdersManager client:only="react" />
+  </section>
+</Base>

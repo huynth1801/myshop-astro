@@ -1,14 +1,11 @@
 import { z } from 'zod';
-
-const BASE_URL = import.meta.env.PUBLIC_API_URL;
-
-if (!BASE_URL) {
-  throw new Error('PUBLIC_API_URL is not set — copy apps/web/.env.example to .env');
-}
+import { getApiBaseUrl } from './urls';
 
 export interface AuthUser {
   email: string;
   name: string;
+  /** Present after /me (bootstrap/refresh) — absent right after login/register. */
+  role?: string;
 }
 
 const tokenResponseSchema = z.object({
@@ -41,7 +38,7 @@ export class AuthError extends Error {
 }
 
 async function authPost(path: string, body: unknown): Promise<z.infer<typeof tokenResponseSchema>> {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
     method: 'POST',
     credentials: 'include', // send + receive the refresh cookie
     headers: { 'content-type': 'application/json', accept: 'application/json' },
@@ -62,21 +59,57 @@ async function authPost(path: string, body: unknown): Promise<z.infer<typeof tok
   return tokenResponseSchema.parse(await res.json());
 }
 
+function extractUserFromToken(token: string): AuthUser | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (!payload.email) return null;
+    return {
+      email: payload.email,
+      name: payload.name || payload.email.split('@')[0],
+      role: payload.role || 'CUSTOMER',
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function register(email: string, password: string, name: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/register', { email, password, name });
   accessToken = tokens.accessToken;
-  return { email: tokens.email ?? email, name: tokens.name ?? name };
+  const decoded = extractUserFromToken(tokens.accessToken);
+  if (decoded) return decoded;
+  try {
+    return await me(); // full profile incl. role (the admin page needs it right away)
+  } catch {
+    return { email: tokens.email ?? email, name: tokens.name ?? name };
+  }
 }
 
 export async function login(email: string, password: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/login', { email, password });
   accessToken = tokens.accessToken;
-  return { email: tokens.email ?? email, name: tokens.name ?? '' };
+  const decoded = extractUserFromToken(tokens.accessToken);
+  if (decoded) return decoded;
+  try {
+    return await me(); // full profile incl. role (the admin page needs it right away)
+  } catch {
+    return { email: tokens.email ?? email, name: tokens.name ?? '' };
+  }
 }
 
 export async function logout(): Promise<void> {
   accessToken = null;
-  await fetch(`${BASE_URL}/api/v1/auth/logout`, {
+  await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
     method: 'POST',
     credentials: 'include',
   }).catch(() => {
@@ -88,14 +121,52 @@ async function me(): Promise<AuthUser> {
   if (!accessToken) {
     throw new AuthError('No access token', 'UNAUTHENTICATED', 401);
   }
-  const res = await fetch(`${BASE_URL}/api/v1/auth/me`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/auth/me`, {
     headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' },
   });
   if (!res.ok) {
     throw new AuthError('Session expired', 'UNAUTHENTICATED', res.status);
   }
   const parsed = meResponseSchema.parse(await res.json());
-  return { email: parsed.email, name: parsed.name };
+  return { email: parsed.email, name: parsed.name, role: parsed.role };
+}
+let refreshPromise: Promise<string | null> | null = null;
+
+/**
+ * Silently rotate access token using httpOnly refresh cookie.
+ * Deduplicated so multiple concurrent requests share the exact same refresh HTTP call.
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = (async () => {
+    try {
+      const tokens = await authPost('/api/v1/auth/refresh', {});
+      accessToken = tokens.accessToken;
+      return accessToken;
+    } catch {
+      accessToken = null;
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+  return refreshPromise;
+}
+
+/**
+ * Returns the current valid access token, or silently retrieves one via refresh cookie if missing.
+ */
+export async function getValidAccessToken(): Promise<string | null> {
+  if (accessToken) return accessToken;
+  return refreshAccessToken();
+}
+
+/**
+ * Bearer headers for authenticated islands (admin) — empty when signed out.
+ * Callers must re-run after bootstrapAuth()/login() so a fresh token is used.
+ */
+export function authHeaders(): Record<string, string> {
+  return accessToken ? { authorization: `Bearer ${accessToken}` } : {};
 }
 
 /**
@@ -103,14 +174,20 @@ async function me(): Promise<AuthUser> {
  * silently rotate via the refresh cookie. Returns null for guests.
  */
 export async function bootstrapSession(): Promise<AuthUser | null> {
-  try {
-    return await me();
-  } catch {
-    // no/invalid access token — try refresh
+  if (accessToken) {
+    const decoded = extractUserFromToken(accessToken);
+    if (decoded) return decoded;
+    try {
+      return await me();
+    } catch {
+      // access token expired, fallthrough to refresh
+    }
   }
+  const token = await refreshAccessToken();
+  if (!token) return null;
+  const decoded = extractUserFromToken(token);
+  if (decoded) return decoded;
   try {
-    const tokens = await authPost('/api/v1/auth/refresh', {});
-    accessToken = tokens.accessToken;
     return await me();
   } catch {
     accessToken = null;
@@ -125,7 +202,7 @@ export async function bootstrapSession(): Promise<AuthUser | null> {
  * Browser-only (reads location) — call from islands, never at module scope.
  */
 export function googleLoginUrl(): string {
-  return `${BASE_URL}/api/v1/auth/oauth/google/authorize?redirect_uri=${encodeURIComponent(
+  return `${getApiBaseUrl()}/api/v1/auth/oauth/google/authorize?redirect_uri=${encodeURIComponent(
     window.location.origin,
   )}`;
 }

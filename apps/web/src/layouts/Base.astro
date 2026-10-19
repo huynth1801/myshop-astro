@@ -1,10 +1,11 @@
 ---
 import '@fontsource-variable/inter';
 import '../styles/global.css';
-import { ClientRouter } from 'astro:transitions';
 import BaseHead from './BaseHead.astro';
 import Header from '../components/astro/Header.astro';
 import { CartBridge } from '../components/react/CartBridge';
+import ToastContainer from '../components/react/ToastContainer';
+import { ChatWidget } from '../components/react/ChatWidget';
 
 interface Props {
   title: string;
@@ -23,11 +24,10 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <BaseHead title={title} description={description} canonical={canonical} ogImage={ogImage} />
-    <ClientRouter />
   </head>
   <body class="flex min-h-full flex-col">
     <p class="bg-primary px-4 py-2 text-center text-xs font-medium tracking-wide text-primary-foreground">
-      Miễn phí giao hàng cho đơn từ 500K · Đổi trả trong 30 ngày
+      Miễn phí giao hàng cho đơn từ 99K · Đổi trả trong 14 ngày
     </p>
     <Header />
     <main class="flex-1"><slot /></main>
@@ -35,11 +35,42 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
       <div
         class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:flex-row sm:px-6 lg:px-8"
       >
-        <p class="font-semibold tracking-tighter text-foreground">myshop<span class="text-accent">.</span></p>
+        <div class="flex items-center gap-2">
+          <img src="/favicon.svg" alt="Thuy Shop Logo" width="22" height="22" class="size-5.5 rounded-full" />
+          <p class="font-semibold tracking-tighter text-foreground">Thuy shop<span class="text-accent">.</span></p>
+        </div>
         <p>Chọn kỹ, dùng lâu — đồ tốt cho ngày thường.</p>
-        <p>© {new Date().getFullYear()} MyShop</p>
+        <p>© {new Date().getFullYear()} Thuy Shop</p>
       </div>
     </footer>
     <CartBridge client:idle />
+    <ToastContainer client:idle />
+    <ChatWidget client:idle />
+
+    <!-- Instant hover/touch prefetch for catalog links (0ms perceived navigation) -->
+    <script is:inline>
+      (() => {
+        const prefetched = new Set();
+        function prefetch(url) {
+          if (!url || prefetched.has(url)) return;
+          prefetched.add(url);
+          const link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = url;
+          link.as = 'document';
+          document.head.appendChild(link);
+        }
+
+        function onPointerOver(e) {
+          const a = e.target && e.target.closest ? e.target.closest('a[href^="/products/"], a[href^="/categories/"]') : null;
+          if (a && a.href && a.origin === window.location.origin) {
+            prefetch(a.href);
+          }
+        }
+
+        document.addEventListener('mouseover', onPointerOver, { passive: true });
+        document.addEventListener('touchstart', onPointerOver, { passive: true });
+      })();
+    </script>
   </body>
 </html>

@@ -1,6 +1,15 @@
 spring:
   application:
     name: shop-api
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:apps/api/.env[.properties]
+      - optional:file:../.env[.properties]
+  servlet:
+    multipart:
+      max-file-size: 6MB # app rule is 5MB; slack for multipart overhead
+      max-request-size: 6MB
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/myshop}
     username: ${DB_USERNAME:tgm-mac007}
@@ -17,6 +26,21 @@ spring:
           time_zone: UTC
   jackson:
     default-property-inclusion: non_null
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
+            required: ${MAIL_SMTP_STARTTLS_REQUIRED:false}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 server:
   port: 8080
@@ -24,21 +48,49 @@ server:
 shop:
   cors:
     # 127.0.0.1 matters: devs often browse the dev server via 127.0.0.1:4321.
-    # (Cookies still need the same site name as PUBLIC_API_URL — see apps/web/.env.example.)
-    allowed-origins: http://localhost:4321,http://127.0.0.1:4321
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4321,http://127.0.0.1:4321,https://*.workers.dev,https://*.pages.dev,https://thuyshop.store,https://*.thuyshop.store}
   cookie:
-    secure: false # true in staging/prod behind HTTPS
+    secure: ${COOKIE_SECURE:false} # true in staging/prod behind HTTPS
+    same-site: ${COOKIE_SAME_SITE:Lax} # None for cross-site (e.g. *.pages.dev -> *.onrender.com)
+  uploads:
+    # Product image uploads (ADR 0005) — swap for S3/Cloudinary before scale-out.
+    dir: ${UPLOAD_DIR:./data/uploads}
   auth:
     # HS256 key must be >= 32 chars. Override in every real environment.
     jwt-secret: ${AUTH_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
-    access-token-minutes: 15
-    refresh-token-days: 7
+    access-token-minutes: ${AUTH_ACCESS_TOKEN_MINUTES:15}
+    refresh-token-days: ${AUTH_REFRESH_TOKEN_DAYS:7}
     oauth:
       # Only these storefront origins may receive the post-login redirect (ADR 0004).
-      allowed-redirect-origins: http://localhost:4321,http://127.0.0.1:4321
+      # Exact-match list (no wildcards) — enumerate every origin the store runs on.
+      allowed-redirect-origins: http://localhost:4321,http://127.0.0.1:4321,https://thuyshop.store,https://www.thuyshop.store
       google:
         # Empty = Google sign-in disabled but the app still boots (CI, new devs).
         # Create at console.cloud.google.com → Credentials → OAuth client (Web app);
         # authorized redirect URI: http://localhost:8080/api/v1/auth/oauth/google/callback
         client-id: ${GOOGLE_CLIENT_ID:}
         client-secret: ${GOOGLE_CLIENT_SECRET:}
+  security:
+    rate-limiting-enabled: ${RATE_LIMITING_ENABLED:true}
+    turnstile-secret: ${TURNSTILE_SECRET:}
+
+app:
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:Thuy Shop <noreply@thuyshop.vn>}
+  payment:
+    vietqr:
+      bank-id: ${VIETQR_BANK_ID:MB}
+      account-no: ${VIETQR_ACCOUNT_NO:0987654321}
+      account-name: ${VIETQR_ACCOUNT_NAME:THUY SHOP BOUTIQUE}
+  order:
+    unpaid-expiration-hours: ${ORDER_UNPAID_EXPIRATION_HOURS:2}
+    auto-cancel-interval-ms: ${ORDER_AUTO_CANCEL_INTERVAL_MS:300000}
+  telegram:
+    enabled: ${TELEGRAM_ENABLED:false}
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    chat-id: ${TELEGRAM_CHAT_ID:}
+    polling-enabled: ${TELEGRAM_POLLING_ENABLED:false}
+    webhook-url: ${TELEGRAM_WEBHOOK_URL:}
+    secret-token: ${TELEGRAM_SECRET_TOKEN:}
+

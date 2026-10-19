@@ -26,7 +26,7 @@ browser bootstrap: /me fails → /refresh (cookie) → /me — session restored,
 Failure at any step redirects back with `?auth_error=<code>` — never JSON, never
 tokens in URLs.
 
-### Data model (V7)
+### Data model (V13 — renumbered from V7 at merge; V7 was taken by blog posts)
 
 - `user_identities(provider, provider_user_id UNIQUE)` — one account may hold
   several identities plus a password.

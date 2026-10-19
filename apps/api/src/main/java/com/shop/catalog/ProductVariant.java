@@ -45,6 +45,37 @@ public class ProductVariant {
         }
     }
 
+    public static ProductVariant newVariant(Product product, String sku, long priceCents,
+            Long compareAtPriceCents, int stock, Map<String, Object> attributes) {
+        ProductVariant variant = new ProductVariant();
+        variant.product = product;
+        variant.sku = sku;
+        variant.priceCents = priceCents;
+        variant.compareAtPriceCents = compareAtPriceCents;
+        variant.stock = stock;
+        variant.attributes = attributes;
+        product.getVariants().add(variant);
+        return variant;
+    }
+
+    /** Admin variant update — merges fields over current values. */
+    void update(String sku, long priceCents, Long compareAtPriceCents, int stock, Map<String, Object> attributes) {
+        if (sku != null) {
+            this.sku = sku;
+        }
+        this.priceCents = priceCents;
+        this.compareAtPriceCents = compareAtPriceCents;
+        this.stock = stock;
+        if (attributes != null) {
+            this.attributes = attributes;
+        }
+    }
+
+    /** Admin price/stock update — legacy shorthand. */
+    void updatePriceStock(long priceCents, Long compareAtPriceCents, int stock) {
+        update(null, priceCents, compareAtPriceCents, stock, null);
+    }
+
     public UUID getId() {
         return id;
     }
@@ -67,6 +98,17 @@ public class ProductVariant {
 
     public int getStock() {
         return stock;
+    }
+
+    public void decrementStock(int qty) {
+        if (this.stock < qty) {
+            throw new com.shop.cart.OutOfStockException(this.sku, this.stock);
+        }
+        this.stock -= qty;
+    }
+
+    public void incrementStock(int qty) {
+        this.stock += qty;
     }
 
     public Map<String, Object> getAttributes() {

@@ -1,4 +1,4 @@
--- V7 — OAuth identities (ADR 0004). A user may sign in with several providers
+-- V13 — OAuth identities (ADR 0004). A user may sign in with several providers
 -- (and password). OAuth-only accounts have no password: password_hash is now
 -- nullable and password login simply fails for them.
 

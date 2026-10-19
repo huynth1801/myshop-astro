@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thuyshop",
+  "main": "dist/_worker.js/index.js",
+  "compatibility_date": "2026-10-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "SITE_URL": "https://thuyshop.store",
+    "API_BASE_URL": "https://api.thuyshop.store",
+    "PUBLIC_API_URL": "https://api.thuyshop.store"
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
+}

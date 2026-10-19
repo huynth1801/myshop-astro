@@ -2,12 +2,14 @@
 .env
 .env.*
 !.env.example
+!.env.prod.example
 
 # node / astro (apps/web)
 node_modules/
 dist/
 .astro/
 .vercel/
+.wrangler/
 *.log
 npm-debug.log*
 
@@ -25,3 +27,4 @@ build/
 # local db dumps
 *.dump
 *.sql.gz
+.zcode/

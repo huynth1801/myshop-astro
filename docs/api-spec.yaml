@@ -31,6 +31,9 @@ tags:
   - name: Checkout
   - name: Webhooks
   - name: Auth
+  - name: Admin
+  - name: Blog
+  - name: Chat
 
 paths:
   /api/health:
@@ -293,41 +296,63 @@ paths:
   /api/v1/checkout:
     post:
       tags: [Checkout]
-      summary: Create a Stripe Checkout Session (Phase 1)
+      summary: Place order and start checkout (COD, VietQR, or Stripe)
       description: |
         The server recalculates prices, discounts and shipping from the database —
         client-supplied numbers are never trusted. Idempotent per Idempotency-Key.
+        Supports COD, VietQR bank transfer, and Stripe.
       parameters:
         - in: header
           name: Idempotency-Key
-          required: true
-          schema: { type: string, format: uuid }
+          required: false
+          schema: { type: string }
           description: Retrying with the same key never creates a duplicate order
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [email, shippingAddress]
-              properties:
-                email: { type: string, format: email }
-                shippingAddress: { $ref: '#/components/schemas/Address' }
+            schema: { $ref: '#/components/schemas/CheckoutRequest' }
       responses:
         '201':
-          description: Session created — redirect the browser to url
+          description: Order placed successfully
           content:
             application/json:
-              schema:
-                type: object
-                required: [orderId, url]
-                properties:
-                  orderId: { type: string, format: uuid }
-                  url:
-                    type: string
-                    description: Stripe Checkout hosted page URL
+              schema: { $ref: '#/components/schemas/CheckoutResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/BusinessRule' }
+
+  /api/v1/orders/{id}:
+    get:
+      tags: [Checkout, Orders]
+      summary: Get order details by ID or order code
+      description: Public lookup for order confirmation receipt and tracking.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/orders/{id}/cancel:
+    post:
+      tags: [Checkout, Orders]
+      summary: Cancel order by customer
+      description: Allows a customer to cancel an order that is pending or confirmed before fulfillment. Restores inventory stock.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Cancelled order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 
   /api/v1/webhooks/stripe:
     post:
@@ -472,6 +497,782 @@ paths:
       responses:
         '302': { description: Back to the storefront (with ?auth_error=… on failure) }
 
+  /api/v1/admin/products:
+    get:
+      tags: [Admin]
+      summary: List all products (any status) ✅
+      description: Requires an ADMIN Bearer token (403 otherwise). Includes DRAFT and ARCHIVED.
+      security:
+        - bearerAuth: []
+      parameters:
+        - { in: query, name: page, schema: { type: integer, minimum: 0, default: 0 } }
+        - { in: query, name: size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { in: query, name: q, schema: { type: string }, description: 'Case-insensitive contains on name or slug' }
+        - { in: query, name: status, schema: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] } }
+        - { in: query, name: categoryId, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Paged admin summaries (primary image, variant count, stock, price range)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedAdminProducts' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+    post:
+      tags: [Admin]
+      summary: Create a product ✅
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug, categoryId, status]
+              properties:
+                name: { type: string, maxLength: 255 }
+                slug: { type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$', maxLength: 255 }
+                description: { type: string, default: '' }
+                shortDescription: { type: string, maxLength: 200 }
+                status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+                categoryId: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Created — full product with (empty) variant list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '409': { description: SLUG_TAKEN }
+        '404': { description: CATEGORY_NOT_FOUND (unknown categoryId) }
+
+  /api/v1/admin/products/{id}:
+    get:
+      tags: [Admin]
+      summary: Product detail with variants and images ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Any status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Admin]
+      summary: Update product fields ✅
+      description: |
+        Partial update — absent fields stay unchanged. The slug is immutable
+        (stable-URL rule); change status here (e.g. DRAFT → ACTIVE to publish).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 255 }
+                description: { type: string }
+                shortDescription: { type: string, maxLength: 200 }
+                status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+                categoryId: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/variants:
+    post:
+      tags: [Admin]
+      summary: Add a variant ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku, priceCents, stock]
+              properties:
+                sku: { type: string, pattern: '^[A-Za-z0-9-]+$', maxLength: 64 }
+                priceCents: { type: integer, format: int64, minimum: 0 }
+                compareAtPriceCents: { type: integer, format: int64, minimum: 0 }
+                stock: { type: integer, minimum: 0 }
+                attributes: { type: object, additionalProperties: true }
+      responses:
+        '201':
+          description: Variant added — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: SKU_TAKEN }
+
+  /api/v1/admin/variants/{variantId}:
+    patch:
+      tags: [Admin]
+      summary: Update variant (sku, price, compareAt, stock, attributes) ✅
+      description: Partial — absent fields stay unchanged.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: variantId, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sku: { type: string, pattern: '^[A-Za-z0-9-]+$' }
+                priceCents: { type: integer, format: int64, minimum: 0 }
+                compareAtPriceCents: { type: integer, format: int64, minimum: 0, nullable: true }
+                stock: { type: integer, minimum: 0 }
+                attributes: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: Updated variant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Variant' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Admin]
+      summary: Delete a variant ✅ (ADR 0005)
+      description: |
+        409 VARIANT_IN_USE when the variant is referenced by a cart item
+        (cart_items FK is RESTRICT). Carts expire on their own; retry later.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: variantId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: VARIANT_IN_USE }
+
+  /api/v1/admin/products/{id}/images:
+    post:
+      tags: [Admin]
+      summary: Add an image by URL ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url: { type: string, maxLength: 1024 }
+                alt: { type: string, maxLength: 255, default: '' }
+      responses:
+        '201':
+          description: Image added — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/images/upload:
+    post:
+      tags: [Admin]
+      summary: Upload an image file ✅ (ADR 0005)
+      description: |
+        multipart/form-data with `file` (+ optional `alt`). jpg/png/webp only,
+        ≤ 5 MB. Stored in the API's upload dir and served from
+        /api/v1/files/{name}; the product_images row gets that URL.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                alt: { type: string }
+      responses:
+        '201':
+          description: Uploaded + attached — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/images/order:
+    put:
+      tags: [Admin]
+      summary: Reorder images ✅
+      description: Full ordered id list; positions are reassigned 0..n. Position 0 = primary.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageIds]
+              properties:
+                imageIds:
+                  type: array
+                  items: { type: string, format: uuid }
+                  minItems: 1
+      responses:
+        '200':
+          description: Reordered — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: 'IMAGE_SET_MISMATCH — ids do not match the product exactly' }
+
+  /api/v1/admin/products/{id}/images/{imageId}:
+    patch:
+      tags: [Admin]
+      summary: Update image (url, alt) ✅
+      description: Update image URL or alt text while preserving position and id.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: imageId, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url: { type: string, maxLength: 2048 }
+                alt: { type: string, maxLength: 255 }
+      responses:
+        '200':
+          description: Updated — returns the updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Admin]
+      summary: Delete an image ✅
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: imageId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/products/{id}/images/{imageId}/upload:
+    post:
+      tags: [Admin]
+      summary: Replace image with an uploaded file ✅
+      description: |
+        multipart/form-data with `file` (+ optional `alt`). Replaces the file URL
+        and optional alt of an existing image while preserving its position and id.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: imageId, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                alt: { type: string }
+      responses:
+        '200':
+          description: Image replaced — returns updated product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminProductDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/files/{name}:
+    get:
+      tags: [Admin]
+      summary: Serve an uploaded file ✅ (ADR 0005)
+      description: Public, immutable-cached. Only names this API generated (UUID.ext) resolve.
+      security: []
+      parameters:
+        - { in: path, name: name, required: true, schema: { type: string } }
+      responses:
+        '200': { description: File bytes (image/jpeg | image/png | image/webp) }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/categories:
+    get:
+      tags: [Admin]
+      summary: List categories with ids ✅
+      description: Category options for the product form — the public list has no ids.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Ordered by position
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, slug, name, hasParent]
+                  properties:
+                    id: { type: string, format: uuid }
+                    slug: { type: string }
+                    name: { type: string }
+                    hasParent: { type: boolean }
+    post:
+      tags: [Admin]
+      summary: Create a category ✅
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string, maxLength: 255 }
+                slug: { type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$', maxLength: 255 }
+                parentId: { type: string, format: uuid, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [slug, name, hasParent]
+                properties:
+                  slug: { type: string }
+                  name: { type: string }
+                  hasParent: { type: boolean }
+        '409': { description: SLUG_TAKEN }
+        '404': { description: CATEGORY_NOT_FOUND (unknown parentId) }
+
+  /api/v1/posts:
+    get:
+      tags: [Blog]
+      summary: List published blog posts
+      description: Paginated published blog articles for the storefront
+      security: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+        - in: query
+          name: tag
+          schema: { type: string }
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200':
+          description: Paginated posts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedPosts' }
+
+  /api/v1/posts/{slug}:
+    get:
+      tags: [Blog]
+      summary: Get blog post by slug
+      description: Returns published article detail and linked related products
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Blog post detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/posts:
+    get:
+      tags: [Blog, Admin]
+      summary: Admin list blog posts
+      description: Paginated posts of any status (DRAFT, PUBLISHED)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+        - in: query
+          name: status
+          schema: { type: string, enum: [DRAFT, PUBLISHED] }
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200':
+          description: Paginated admin posts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminPagedPosts' }
+    post:
+      tags: [Blog, Admin]
+      summary: Admin create a blog post
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminCreatePostRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminPostDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { description: 'SLUG_TAKEN' }
+
+  /api/v1/admin/posts/{id}:
+    get:
+      tags: [Blog, Admin]
+      summary: Admin get blog post detail
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Blog post detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminPostDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Blog, Admin]
+      summary: Admin update blog post
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdminUpdatePostRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminPostDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: 'SLUG_TAKEN' }
+    delete:
+      tags: [Blog, Admin]
+      summary: Admin delete blog post
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/posts/bulk-delete:
+    post:
+      tags: [Blog, Admin]
+      summary: Bulk delete blog posts
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BulkDeletePostsRequest' }
+      responses:
+        '200':
+          description: Bulk delete result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkOperationResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/admin/posts/bulk-status:
+    post:
+      tags: [Blog, Admin]
+      summary: Bulk update blog post status
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BulkUpdatePostStatusRequest' }
+      responses:
+        '200':
+          description: Bulk status update result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkOperationResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/admin/posts/crawl:
+    post:
+      tags: [Blog, Admin]
+      summary: Crawl article from external URL
+      description: Scrapes title, content, OG image, and meta description from a web page
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrawlPostRequest' }
+      responses:
+        '200':
+          description: Extracted article preview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CrawledPostPreview' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/admin/rss-sources:
+    get:
+      tags: [Blog, Admin]
+      summary: List configured RSS feed sources
+      description: Paginated RSS feed sources
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: Paginated RSS sources
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedRssSources' }
+    post:
+      tags: [Blog, Admin]
+      summary: Add an RSS feed source
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRssSourceRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RssSourceResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { description: URL_ALREADY_EXISTS }
+
+  /api/v1/admin/rss-sources/{id}:
+    delete:
+      tags: [Blog, Admin]
+      summary: Delete an RSS feed source
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/rss-sources/scan-all:
+    post:
+      tags: [Blog, Admin]
+      summary: Scan all active RSS sources and auto-create matching drafts
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Scan summary and list of created drafts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RssScanResultResponse' }
+
+  /api/v1/admin/rss-sources/{id}/scan:
+    post:
+      tags: [Blog, Admin]
+      summary: Scan a specific RSS source and auto-create matching drafts
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Scan summary and list of created drafts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RssScanResultResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/orders:
+    get:
+      tags: [Orders, Admin]
+      summary: List orders with filters (status, search, pagination)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: page, schema: { type: integer, default: 0 } }
+        - { in: query, name: size, schema: { type: integer, default: 20 } }
+        - { in: query, name: status, schema: { type: string, enum: [ALL, PENDING, CONFIRMED, PAID, SHIPPING, FULFILLED, CANCELLED] } }
+        - { in: query, name: search, schema: { type: string }, description: Search by code, customer name, or phone }
+      responses:
+        '200':
+          description: Paged list of orders
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedAdminOrders' }
+
+  /api/v1/admin/orders/metrics:
+    get:
+      tags: [Orders, Admin]
+      summary: Get order overview metrics (counts by status, revenue)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Order stats metrics
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminOrderMetrics' }
+
+  /api/v1/admin/orders/{id}:
+    get:
+      tags: [Orders, Admin]
+      summary: Get full order details for admin
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/orders/{id}/status:
+    patch:
+      tags: [Orders, Admin]
+      summary: Update order fulfillment / payment status
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateOrderStatusRequest' }
+      responses:
+        '200':
+          description: Updated order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/admin/orders/{id}/cancel:
+    post:
+      tags: [Orders, Admin]
+      summary: Cancel order and restore stock
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Cancelled order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderDetailResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/chat/messages:
+    get:
+      tags: [Chat]
+      summary: Get chat conversation and message history
+      parameters:
+        - in: query
+          name: sessionToken
+          required: true
+          schema: { type: string }
+          description: Unique session token identifying customer chat
+        - in: query
+          name: after
+          required: false
+          schema: { type: string, format: date-time }
+          description: Filter messages created after this timestamp
+      responses:
+        '200':
+          description: Conversation message history
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatConversationResponse' }
+
+    post:
+      tags: [Chat]
+      summary: Send a message from storefront to Telegram support
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendChatMessageRequest' }
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatMessageResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/webhooks/telegram:
+    post:
+      tags: [Webhooks, Chat]
+      summary: Telegram webhook receiver for admin replies
+      parameters:
+        - in: header
+          name: X-Telegram-Bot-Api-Secret-Token
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: Webhook received successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+
 components:
   parameters:
     Slug:
@@ -502,6 +1303,11 @@ components:
           schema: { $ref: '#/components/schemas/Problem' }
     Unauthorized:
       description: Missing or expired credentials
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: Authenticated but not an ADMIN
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
@@ -594,7 +1400,7 @@ components:
         compareAtFromCents:
           type: integer
           nullable: true
-          description: Lowest compare-at price — powers −% badges (ADR 0003: VND minor units)
+          description: 'Lowest compare-at price — powers −% badges (ADR 0003: VND minor units)'
         image:
           allOf: [{ $ref: '#/components/schemas/Image' }]
           nullable: true
@@ -642,6 +1448,65 @@ components:
         size: { type: integer, example: 12 }
         totalElements: { type: integer, example: 342 }
         totalPages: { type: integer, example: 29 }
+
+    PagedAdminProducts:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AdminProduct' }
+        page: { type: integer, example: 0 }
+        size: { type: integer, example: 20 }
+        totalElements: { type: integer, example: 29 }
+        totalPages: { type: integer, example: 2 }
+
+    AdminProduct:
+      type: object
+      required: [id, slug, name, status, category, variantCount, totalStock, inStock, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        category: { $ref: '#/components/schemas/CategoryRef' }
+        priceFromCents: { type: integer, format: int64, nullable: true }
+        priceToCents: { type: integer, format: int64, nullable: true }
+        variantCount: { type: integer }
+        totalStock: { type: integer }
+        inStock: { type: boolean }
+        image: { $ref: '#/components/schemas/Image', description: Primary image (position 0), null when none }
+        createdAt: { type: string, format: date-time }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/Variant' }
+
+    AdminProductDetail:
+      type: object
+      required: [id, slug, name, description, shortDescription, status, category, variants, images, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string, description: Immutable }
+        name: { type: string }
+        description: { type: string }
+        shortDescription: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        category: { $ref: '#/components/schemas/CategoryRef' }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/Variant' }
+        images:
+          type: array
+          description: Ordered by position; index 0 is the primary/hero image
+          items:
+            type: object
+            required: [id, url, alt, position]
+            properties:
+              id: { type: string, format: uuid }
+              url: { type: string }
+              alt: { type: string }
+              position: { type: integer }
+        createdAt: { type: string, format: date-time }
 
     Category:
       allOf:
@@ -699,3 +1564,381 @@ components:
         city: { type: string }
         postalCode: { type: string }
         countryCode: { type: string, minLength: 2, maxLength: 2 }
+
+    PostSummary:
+      type: object
+      required: [id, title, slug, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        slug: { type: string }
+        summary: { type: string, nullable: true }
+        featuredImage: { type: string, nullable: true }
+        author: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, PUBLISHED] }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    PostDetail:
+      type: object
+      required: [id, title, slug, content, status, viewCount, createdAt, relatedProducts]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        slug: { type: string }
+        summary: { type: string, nullable: true }
+        content: { type: string }
+        featuredImage: { type: string, nullable: true }
+        author: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, PUBLISHED] }
+        seoTitle: { type: string, nullable: true }
+        seoDescription: { type: string, nullable: true }
+        viewCount: { type: integer }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        relatedProducts:
+          type: array
+          items: { $ref: '#/components/schemas/ProductSummary' }
+
+    PagedPosts:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/PostSummary' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+
+    AdminPostSummary:
+      $ref: '#/components/schemas/PostSummary'
+
+    AdminPostDetail:
+      type: object
+      required: [id, title, slug, content, status, viewCount, createdAt, relatedProductIds]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        slug: { type: string }
+        summary: { type: string, nullable: true }
+        content: { type: string }
+        featuredImage: { type: string, nullable: true }
+        author: { type: string, nullable: true }
+        status: { type: string, enum: [DRAFT, PUBLISHED] }
+        seoTitle: { type: string, nullable: true }
+        seoDescription: { type: string, nullable: true }
+        viewCount: { type: integer }
+        publishedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        relatedProductIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    AdminPagedPosts:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPostSummary' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+
+    AdminCreatePostRequest:
+      type: object
+      required: [title, content]
+      properties:
+        title: { type: string, maxLength: 255 }
+        slug: { type: string, maxLength: 255 }
+        summary: { type: string, maxLength: 500 }
+        content: { type: string }
+        featuredImage: { type: string, maxLength: 2048 }
+        author: { type: string, maxLength: 100 }
+        status: { type: string, enum: [DRAFT, PUBLISHED], default: DRAFT }
+        seoTitle: { type: string, maxLength: 255 }
+        seoDescription: { type: string, maxLength: 500 }
+        relatedProductIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    AdminUpdatePostRequest:
+      type: object
+      properties:
+        title: { type: string, maxLength: 255 }
+        slug: { type: string, maxLength: 255 }
+        summary: { type: string, maxLength: 500 }
+        content: { type: string }
+        featuredImage: { type: string, maxLength: 2048 }
+        author: { type: string, maxLength: 100 }
+        status: { type: string, enum: [DRAFT, PUBLISHED] }
+        seoTitle: { type: string, maxLength: 255 }
+        seoDescription: { type: string, maxLength: 500 }
+        relatedProductIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    CrawlPostRequest:
+      type: object
+      required: [sourceUrl]
+      properties:
+        sourceUrl: { type: string, format: uri }
+
+    CrawledPostPreview:
+      type: object
+      required: [title, content, sourceUrl, suggestedSlug]
+      properties:
+        title: { type: string }
+        summary: { type: string, nullable: true }
+        content: { type: string }
+        featuredImage: { type: string, nullable: true }
+        author: { type: string, nullable: true }
+        sourceUrl: { type: string }
+        suggestedSlug: { type: string }
+
+    RssSourceResponse:
+      type: object
+      required: [id, name, url, isActive, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        url: { type: string, format: uri }
+        category: { type: string, nullable: true }
+        isActive: { type: boolean }
+        lastFetchedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    PagedRssSources:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/RssSourceResponse' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+
+    CreateRssSourceRequest:
+      type: object
+      required: [name, url]
+      properties:
+        name: { type: string, maxLength: 255 }
+        url: { type: string, maxLength: 2048 }
+        category: { type: string, maxLength: 100 }
+        isActive: { type: boolean, default: true }
+
+    RssScanResultResponse:
+      type: object
+      required: [sourcesScanned, articlesScanned, newDraftsCreated, skippedExisting, createdPosts]
+      properties:
+        sourcesScanned: { type: integer }
+        articlesScanned: { type: integer }
+        newDraftsCreated: { type: integer }
+        skippedExisting: { type: integer }
+        createdPosts:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPostSummary' }
+
+    BulkDeletePostsRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items: { type: string, format: uuid }
+          minItems: 1
+
+    BulkUpdatePostStatusRequest:
+      type: object
+      required: [ids, status]
+      properties:
+        ids:
+          type: array
+          items: { type: string, format: uuid }
+          minItems: 1
+        status:
+          type: string
+          enum: [DRAFT, PUBLISHED]
+
+    BulkOperationResult:
+      type: object
+      required: [count]
+      properties:
+        count: { type: integer }
+
+    CustomerAddress:
+      type: object
+      required: [fullName, phone, line1, city]
+      properties:
+        fullName: { type: string }
+        phone: { type: string }
+        email: { type: string, format: email, nullable: true }
+        line1: { type: string }
+        city: { type: string }
+        district: { type: string, nullable: true }
+        ward: { type: string, nullable: true }
+        postalCode: { type: string, nullable: true }
+        countryCode: { type: string, default: 'VN' }
+
+    CheckoutRequest:
+      type: object
+      required: [shippingAddress, paymentMethod]
+      properties:
+        cartToken: { type: string, description: Optional if passed via cookie }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string }
+        shippingAddress: { $ref: '#/components/schemas/CustomerAddress' }
+        paymentMethod:
+          type: string
+          enum: [COD, VIETQR, STRIPE]
+          default: COD
+        customerNote: { type: string, nullable: true }
+
+    BankInfo:
+      type: object
+      required: [bankName, bankAccount, accountHolder, transferContent, amountVnd]
+      properties:
+        bankName: { type: string }
+        bankAccount: { type: string }
+        accountHolder: { type: string }
+        transferContent: { type: string }
+        amountVnd: { type: integer }
+
+    CheckoutResponse:
+      type: object
+      required: [orderId, orderCode, status, subtotalCents, discountCents, shippingCents, totalCents, paymentMethod]
+      properties:
+        orderId: { type: string, format: uuid }
+        orderCode: { type: string }
+        status: { type: string }
+        subtotalCents: { type: integer, format: int64 }
+        discountCents: { type: integer, format: int64 }
+        shippingCents: { type: integer, format: int64 }
+        totalCents: { type: integer, format: int64 }
+        paymentMethod: { type: string, enum: [COD, VIETQR, STRIPE] }
+        vietQrUrl: { type: string, nullable: true }
+        bankInfo: { $ref: '#/components/schemas/BankInfo', nullable: true }
+        stripeUrl: { type: string, nullable: true }
+
+    OrderItemResponse:
+      type: object
+      required: [id, productName, sku, unitPriceCents, qty, totalPriceCents]
+      properties:
+        id: { type: string, format: uuid }
+        productName: { type: string }
+        sku: { type: string }
+        unitPriceCents: { type: integer, format: int64 }
+        qty: { type: integer }
+        totalPriceCents: { type: integer, format: int64 }
+        imageUrl: { type: string, nullable: true }
+
+    OrderDetailResponse:
+      type: object
+      required: [id, orderCode, status, subtotalCents, discountCents, shippingCents, totalCents, paymentMethod, shippingAddress, items, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderCode: { type: string }
+        status: { type: string }
+        subtotalCents: { type: integer, format: int64 }
+        discountCents: { type: integer, format: int64 }
+        shippingCents: { type: integer, format: int64 }
+        totalCents: { type: integer, format: int64 }
+        paymentMethod: { type: string }
+        shippingAddress: { $ref: '#/components/schemas/CustomerAddress' }
+        customerNote: { type: string, nullable: true }
+        vietQrUrl: { type: string, nullable: true }
+        bankInfo: { $ref: '#/components/schemas/BankInfo', nullable: true }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemResponse' }
+        createdAt: { type: string, format: date-time }
+
+    AdminOrderSummary:
+      type: object
+      required: [id, orderCode, status, customerName, customerPhone, totalCents, itemCount, paymentMethod, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        orderCode: { type: string }
+        status: { type: string }
+        customerName: { type: string }
+        customerPhone: { type: string }
+        customerCity: { type: string, nullable: true }
+        totalCents: { type: integer, format: int64 }
+        itemCount: { type: integer }
+        paymentMethod: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemResponse' }
+        createdAt: { type: string, format: date-time }
+
+    PagedAdminOrders:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AdminOrderSummary' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+
+    AdminOrderMetrics:
+      type: object
+      required: [totalOrders, pendingCount, confirmedCount, shippingCount, fulfilledCount, cancelledCount, totalRevenueCents]
+      properties:
+        totalOrders: { type: integer }
+        pendingCount: { type: integer }
+        confirmedCount: { type: integer }
+        shippingCount: { type: integer }
+        fulfilledCount: { type: integer }
+        cancelledCount: { type: integer }
+        totalRevenueCents: { type: integer, format: int64 }
+
+    UpdateOrderStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, PAID, SHIPPING, FULFILLED, CANCELLED]
+
+    SendChatMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        sessionToken: { type: string }
+        content: { type: string, minLength: 1, maxLength: 2000 }
+        customerName: { type: string, maxLength: 150 }
+        customerPhone: { type: string, maxLength: 50 }
+        currentUrl: { type: string }
+        productTitle: { type: string }
+        productSku: { type: string }
+
+    ChatMessageResponse:
+      type: object
+      required: [id, senderType, content, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        sessionToken: { type: string }
+        senderType: { type: string, enum: [CUSTOMER, ADMIN] }
+        content: { type: string }
+        metadata: { type: object }
+        createdAt: { type: string, format: date-time }
+
+    ChatConversationResponse:
+      type: object
+      required: [sessionToken, messages]
+      properties:
+        sessionToken: { type: string }
+        customerName: { type: string }
+        customerPhone: { type: string }
+        messages:
+          type: array
+          items: { $ref: '#/components/schemas/ChatMessageResponse' }
+

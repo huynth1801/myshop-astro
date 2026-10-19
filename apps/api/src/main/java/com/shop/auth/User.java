@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
-/** users table (V1 baseline; password_hash nullable since V7). Passwords are bcrypt hashes — never raw. */
+/** users table (V1 baseline; password_hash nullable since V13). Passwords are bcrypt hashes — never raw. */
 @Entity
 @Table(name = "users")
 public class User {

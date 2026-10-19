@@ -1,10 +1,5 @@
 import { z } from 'zod';
-
-const BASE_URL = import.meta.env.PUBLIC_API_URL;
-
-if (!BASE_URL) {
-  throw new Error('PUBLIC_API_URL is not set — copy apps/web/.env.example to .env');
-}
+import { getApiBaseUrl } from './urls';
 
 export class ApiError extends Error {
   constructor(
@@ -27,6 +22,7 @@ const cartItemSchema = z.object({
   priceAtAddCents: z.number().int(),
   priceCents: z.number().int(),
   lineTotalCents: z.number().int(),
+  imageUrl: z.string().nullable().optional(),
 });
 
 export const cartSchema = z.object({
@@ -44,7 +40,7 @@ export type CartItemData = z.infer<typeof cartItemSchema>;
 export type CartData = z.infer<typeof cartSchema>;
 
 async function cartRequest(path: string, init?: RequestInit): Promise<CartData> {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
     credentials: 'include', // cart_token cookie — same-site between :4321 and :8080
     headers: { 'content-type': 'application/json', accept: 'application/json' },
     ...init,
@@ -68,17 +64,23 @@ export function getCart(): Promise<CartData> {
   return cartRequest('/api/v1/cart');
 }
 
+/** Mirror of the API's @Min/@Max(99) bounds — the server re-validates anyway. */
+function clampQty(qty: number, min: number): number {
+  if (!Number.isFinite(qty)) return min;
+  return Math.min(99, Math.max(min, Math.floor(qty)));
+}
+
 export function addToCart(variantId: string, qty = 1): Promise<CartData> {
   return cartRequest('/api/v1/cart/items', {
     method: 'POST',
-    body: JSON.stringify({ variantId, qty }),
+    body: JSON.stringify({ variantId, qty: clampQty(qty, 1) }),
   });
 }
 
 export function setItemQty(itemId: string, qty: number): Promise<CartData> {
   return cartRequest(`/api/v1/cart/items/${itemId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ qty }),
+    body: JSON.stringify({ qty: clampQty(qty, 0) }),
   });
 }
 

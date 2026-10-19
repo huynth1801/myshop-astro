@@ -12,9 +12,9 @@ architecture-level decision.
 ## 1. Architecture Overview
 
 ```
-Browser ──► Astro (static-first, React islands, Node adapter behind CDN)
+Browser ──► Astro (SSR catalog, React islands, Node adapter behind CDN)
                 │
-                ├── Static catalog pages (prerendered, ~0 KB JS) ──► Java REST API ──► PostgreSQL
+                ├── Catalog pages (SSR on demand, ~0 KB JS) ──► Java REST API ──► PostgreSQL
                 └── Islands: cart, checkout, auth ──► Java REST API
                               │
                               ├── Redis (cache, rate limits) — Phase 2+
@@ -24,7 +24,8 @@ Browser ──► Astro (static-first, React islands, Node adapter behind CDN)
 
 Core principles:
 
-- Catalog pages are static HTML whenever possible; interactivity is added as isolated React islands.
+- Catalog pages render on demand (ADR 0011) so admin edits are live instantly;
+  interactivity is added as isolated React islands.
 - The Java API is the single source of truth for prices, stock, and orders — never trust the frontend.
 - Money is stored as integer cents (`BIGINT`), never floats.
 - Stripe Checkout (hosted page) so raw card data never touches our servers — PCI SAQ-A, the lightest compliance level.
@@ -33,7 +34,7 @@ Core principles:
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | Astro 5 (hybrid rendering) | `output: 'server'` + `prerender = true` for catalog pages |
+| Frontend | Astro 5 (SSR, ADR 0011) | `output: 'server'`; catalog/blog/admin all on demand |
 | Islands / UI | React + shadcn/ui, Tailwind CSS v4 | shadcn CLI officially supports Astro |
 | Client state | nanostores (cart UI mirror only) | Cart data lives server-side, keyed by cookie |
 | Forms | react-hook-form + Zod | Zod validates every API response at the boundary |
@@ -66,9 +67,44 @@ Stripe test-mode keys.
 - 2026-10-08 — **Git workflow adopted:** feature branch → PR → CI green (`api / verify`,
   `web / build`) → squash-merge. See `AGENTS.md`.
 - 2026-10-10 — **Google sign-in added** (ADR 0004): OAuth authorization-code on top
-  of the existing JWT session; `users.password_hash` now nullable (V7
-  `user_identities`). Requires `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` — the
+  of the existing JWT session; `users.password_hash` now nullable (V13
+  `user_identities` — renumbered from the branch's V7 during merge; V7 was taken
+  by blog posts). Requires `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` — the
   app boots with them unset (Google button then reports not-configured).
+- 2026-10-11 — **Admin CRUD API** (Phase 2): `/api/v1/admin/**` behind `hasRole(ADMIN)` —
+  paged any-status product list, product create/update (slug immutable), variant
+  add + price/stock update, category create. Spec in `docs/api-spec.yaml` (Admin tag).
+  Admin UI (web) is the follow-up PR. Promote an admin locally with
+  `update users set role='ADMIN' where email='…';`.
+- 2026-10-13 — **Checkout with COD & VietQR + Admin Orders:** ADR 0008 implemented with
+  dynamic VietQR generation, human-friendly order codes (`MS-XXXX`), full server-side
+  recalculation, and admin order lifecycle management (`/admin/orders`).
+- 2026-10-14 — **Automated Bank Transfer Webhook planned (SePay.vn / Casso.vn):** While manual
+  bank transfer verification via Admin Orders (`/admin/orders`) is currently operational,
+  an automated webhook handler (`POST /api/v1/webhooks/sepay`) is planned for future implementation
+  to listen for real-time bank notifications, match order codes in transfer descriptions
+  (`THANH TOAN MS-XXXX`), and transition orders to `CONFIRMED` without manual admin intervention.
+- 2026-10-14 — **Revenue Analytics & Reporting planned (Daily & Monthly):** Currently, the admin
+  dashboard displays lifetime aggregate revenue (`SUM(total_cents - shipping_cents)` for non-cancelled
+  orders). Planned for future release: daily and monthly aggregated revenue reports, date-range
+  filtering, and visual charts for the admin dashboard.
+- 2026-10-14 — **Product View Tracking (Hướng 1 - First-Party Counter) planned:**
+  Track product clicks / detail views to measure customer interest and show metrics directly on Admin:
+  - **Database:** Flyway migration adding `views_count BIGINT NOT NULL DEFAULT 0` column to `products` table and an index on `products(views_count DESC)`.
+  - **API Backend:** Lightweight endpoint `POST /api/v1/products/{slug}/view` (unauthenticated, atomic `UPDATE products SET views_count = views_count + 1 WHERE slug = :slug`).
+  - **Storefront (PDP):** Non-blocking beacon request via `navigator.sendBeacon('/api/v1/products/' + slug + '/view')` (or `fetch(..., { keepalive: true })`) on product page load, with client-side 30-minute debounce (`localStorage` key `viewed_${slug}`) to avoid counting repeated F5 refreshes as duplicate views.
+  - **Admin UI:** Add "Lượt xem" (Views) column in the Admin Products table (`/admin/products`) with ability to sort by popularity.
+- 2026-10-14 — **Telegram-Powered Customer Live Chat (ADR 0009):** In-house storefront chat widget
+  interfaced with Telegram Bot API. Customers chat on web; inquiries forward to shop owner's Telegram
+  with customer info and PDP link; shop owner replies directly in Telegram; replies sync back to web widget.
+- 2026-10-15 — **Custom Domain SEO & Google Indexing Checklist planned (Post-Domain Purchase):**
+  Quy trình cấu hình kỹ thuật và khai báo Google Search Console để website và sản phẩm hiển thị trên Google Search:
+  1. **Domain & Biến môi trường:** Sau khi gắn Custom Domain (vd: `thuyshop.vn`) trên Cloudflare, cập nhật biến `SITE_URL=https://thuyshop.vn` trong `wrangler.jsonc` & Cloudflare Dashboard để `<link rel="canonical">`, Open Graph và `sitemap.xml` tự động sinh đúng URL chính thức (tránh bị Google de-index do trỏ về domain ảo/placeholder).
+  2. **robots.txt:** Bổ sung `Sitemap: https://thuyshop.vn/sitemap.xml` vào `apps/web/public/robots.txt` để crawler tự tìm thấy danh mục và sản phẩm.
+  3. **Google Search Console (GSC):** Xác minh quyền sở hữu domain (bằng bản ghi DNS TXT trong Cloudflare DNS).
+  4. **Khai báo Sitemap:** Submit `sitemap.xml` trong GSC để Googlebot lập lịch cào toàn bộ catalog.
+  5. **URL Inspection (Index cấp tốc):** Dùng tính năng Kiểm tra URL để gửi yêu cầu lập chỉ mục ("Request Indexing") cho các sản phẩm chủ lực (index trong 24h - 48h).
+  6. **Tối ưu Content/Title:** Tránh sao chép 100% tiêu đề sàn TMĐT (Shopee/TikTok); bổ sung nhận diện thương hiệu `| Thuy Shop` và mô tả độc nhất.
 
 ## 4. Data Model (core tables)
 
@@ -181,9 +217,9 @@ export default defineConfig({
 { "compilerOptions": { "strict": true, "paths": { "@/*": ["./src/*"] } } }
 ```
 
-Rendering model: **hybrid.** Catalog/product/category pages set `export const prerender = true`
-(+ `getStaticPaths`) → static HTML, ~0 KB JS. Cart/checkout/account stay SSR. This is the
-Astro equivalent of the Next.js "Server Components by default" rule.
+Rendering model: **SSR (ADR 0011).** Catalog/product/category/blog pages render on
+demand (`prerender = false`) — admin edits show up immediately, no rebuild webhook.
+Cart/checkout/account are SSR too. `.astro` templates still ship ~0 KB JS.
 
 ## 6. Frontend Rules (Astro / shadcn / Tailwind)
 
@@ -247,14 +283,15 @@ Astro equivalent of the Next.js "Server Components by default" rule.
     import AddToCartButton from '../../components/react/AddToCartButton';
     import CrossSellCarousel from '../../components/react/CrossSellCarousel';
 
-    export const prerender = true;
-    export async function getStaticPaths() {
-      const products = await getProducts();          // calls the Java API at build time
-      if (products.length === 0) throw new Error('API down — fail the build');
-      return products.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
-    }
+    export const prerender = false;               // ADR 0011 — live data, no rebuild webhook
 
-    const { product } = Astro.props;
+    const { slug } = Astro.params;
+    let product;
+    try {
+      product = await getProduct(slug);           // calls the Java API per request
+    } catch {
+      return new Response('Sản phẩm không tồn tại', { status: 404 });
+    }
     const crossSells = await getRecommendations(product.slug, 'CROSS_SELL');
     ---
     <Base title={product.name} description={product.shortDescription}>
@@ -350,8 +387,9 @@ set:html={JSON.stringify(schema)} />`) with builders in `lib/seo.ts`: Product + 
 (name, image, price, priceCurrency, availability) on product pages, BreadcrumbList on all
 pages, Organization on the homepage.
 
-**Sitemap & robots:** `@astrojs/sitemap` generates `sitemap-index.xml` (requires `site` in
-config). `public/robots.txt` blocks `/cart`, `/checkout`, `/account`, `/api/`.
+**Sitemap & robots:** Dynamic SSR sitemap served at `/sitemap.xml` (ADR 0011, `src/pages/sitemap.xml.ts`)
+so on-demand catalog/blog additions appear immediately. `public/robots.txt` blocks non-public routes
+(`/cart`, `/checkout`, `/account`, `/admin`, `/api/`) and points crawlers to `Sitemap: https://<domain>/sitemap.xml`.
 
 **Title pattern:** `%s | YourBrand`. Unique meta description per product (from
 `shortDescription`, 150–160 chars). One `<h1>` per page; semantic HTML (`<nav>`, `<main>`,
@@ -365,7 +403,10 @@ schema instead of 404ing.
 Astro has no built-in tag revalidation (`revalidateTag`). Two patterns, both achieving
 "static speed + fresh data":
 
-**Pattern A — Prerender + rebuild hook (start here):**
+**Pattern A — Prerender + rebuild hook (DROPPED, ADR 0011):**
+The catalog prerendered at build time and a `PRODUCT_UPDATED` webhook would trigger a
+rebuild. The webhook was never built, so admin edits never reached shoppers — catalog
+pages are now plain SSR. Kept here for history:
 1. The whole catalog prerenders at build time.
 2. Java API emits `PRODUCT_UPDATED` → triggers a GitHub Actions `repository_dispatch` →
    rebuild + redeploy (2–3 min).
@@ -417,8 +458,8 @@ PURGE request for Nginx/Varnish). Choose the host before writing it.
 **Bonus — Server Islands (experimental):** fully static page, price/stock in a
 `<Price server:defer>` island → cached HTML, always-fresh price per request.
 
-**Rule: start with Pattern A. Only move to B when the store actually changes price/stock
-multiple times a day.**
+**Current rule (ADR 0011): catalog is SSR, HTML sent with `Cache-Control: no-cache`.**
+Only add Pattern B (CDN cache + purge) when traffic measurements demand it — not before.
 
 **Core Web Vitals targets:** LCP < 2.5s · CLS < 0.1 · INP < 200ms · Lighthouse ≥ 90 on
 product pages — with Astro these are usually free because catalog pages ship ~0 KB JS.
@@ -428,7 +469,7 @@ product pages — with Astro these are usually free because catalog pages ship ~
 | Concept | Next.js | Astro |
 |---|---|---|
 | Server data fetch | RSC async component | top-level `await` in frontmatter |
-| Static page | `revalidate = 3600` (ISR) | `prerender = true` + Pattern A/B |
+| Static page | `revalidate = 3600` (ISR) | `prerender = false` (SSR, ADR 0011) |
 | On-demand revalidate | `revalidateTag()` | webhook → rebuild or CDN purge |
 | Client state | Zustand | nanostores |
 | Metadata | `generateMetadata()` | `BaseHead.astro` (direct meta tags) |
@@ -462,6 +503,12 @@ well-indexed monolith scales a small store for years.
   client's numbers are display-only.
 - Stripe webhook signature verification; order status transitions driven by webhooks, not the
   browser redirect.
+- **VietQR Automated Bank Reconciliation (Planned — SePay.vn / Casso.vn):**
+  - Webhook endpoint `POST /api/v1/webhooks/sepay` secured with API token header validation.
+  - Regex pattern matching for order code in transfer content: `THANH TOAN (MS-\d{6}-[A-Z0-9]+)`.
+  - Amount validation: verify received payment matches order `total_cents / 100`.
+  - Idempotency & state progression: transition matching order from `PENDING` to `CONFIRMED` / `PAID`.
+  - Customer feedback: Server-Sent Events (SSE) or polling on `/order-success` to update UI immediately upon receipt.
 - Argon2/bcrypt passwords; JWT access 15 min + refresh token in httpOnly, Secure,
   SameSite=Lax cookie.
 - Security headers via middleware: HSTS, X-Content-Type-Options, CSP, X-Frame-Options: DENY.
@@ -519,6 +566,15 @@ Env handling: each app keeps a committed `.env.example`; real `.env` files are g
 
 - [ ] Checkout E2E passes in staging with Stripe live keys (test a real $1 product)
 - [ ] Stripe webhook verified + retry-safe order fulfillment
+- [ ] (Optional) Automated Bank Transfer Webhook (SePay.vn / Casso.vn) for instant VietQR order confirmation
+- [ ] (Optional) Product view counter (Hướng 1: first-party `views_count` on products + beacon tracking)
+- [ ] (Optional) Daily and monthly revenue reporting & sales charts in Admin dashboard
+- [ ] Custom domain DNS & SSL configured on Cloudflare (e.g. `thuyshop.vn`)
+- [ ] `SITE_URL` env set in Cloudflare Worker vars (`wrangler.jsonc`) to enable exact canonical URLs & sitemap origin
+- [ ] `robots.txt` updated with `Sitemap: https://<domain>/sitemap.xml`
+- [ ] Google Search Console: domain ownership verified via Cloudflare DNS TXT record
+- [ ] Google Search Console: `sitemap.xml` submitted and crawled
+- [ ] Google Search Console: Request Indexing executed for core catalog products via URL Inspection
 - [ ] Sitemap, robots, canonical URLs, JSON-LD validated in Google Rich Results Test
 - [ ] Lighthouse ≥ 90 on product/category/home
 - [ ] Sentry receiving errors from both apps; uptime monitoring on `/api/health` and homepage

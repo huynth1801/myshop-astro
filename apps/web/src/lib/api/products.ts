@@ -1,13 +1,8 @@
 import { z } from 'zod';
-
-const API_BASE_URL = import.meta.env.API_BASE_URL;
-
-if (!API_BASE_URL) {
-  throw new Error('API_BASE_URL is not set — copy apps/web/.env.example to .env');
-}
+import { getApiBaseUrl } from './urls';
 
 async function apiGet<T>(path: string, schema: z.ZodType<T>): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
     headers: { accept: 'application/json' },
   });
   if (!res.ok) {

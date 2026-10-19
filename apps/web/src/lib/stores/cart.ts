@@ -24,7 +24,6 @@ export async function refreshCart(): Promise<void> {
 
 export async function addToCart(variantId: string, qty = 1): Promise<void> {
   cart.set(await apiAdd(variantId, qty));
-  cartOpen.set(true);
 }
 
 export async function setItemQty(itemId: string, qty: number): Promise<void> {
@@ -42,3 +41,8 @@ export async function applyCouponCode(code: string): Promise<void> {
 export async function removeCoupon(): Promise<void> {
   cart.set(await apiRemoveCoupon());
 }
+
+export function clearCart(): void {
+  cart.set(null);
+}
+

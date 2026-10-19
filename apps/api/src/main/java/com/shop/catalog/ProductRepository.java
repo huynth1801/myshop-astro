@@ -6,13 +6,18 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ProductRepository extends JpaRepository<Product, UUID> {
+public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
 
     boolean existsBySlugAndStatus(String slug, ProductStatus status);
+
+    List<Product> findByStatus(ProductStatus status);
 
     @Query("select p.id from Product p "
             + "where p.slug = :slug and p.status = com.shop.catalog.ProductStatus.ACTIVE")
@@ -106,4 +111,24 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             where p.slug = :slug and p.status = com.shop.catalog.ProductStatus.ACTIVE
             """)
     Optional<Product> findDetailBySlug(@Param("slug") String slug);
+
+    /** Admin detail fetch — same shape, any status, addressed by id. */
+    @Query("""
+            select distinct p from Product p
+              join fetch p.category c
+              left join fetch p.variants v
+            where p.id = :id
+            """)
+    Optional<Product> findDetailById(@Param("id") UUID id);
+
+    boolean existsBySlug(String slug);
+
+    /** Admin list — category eager so the page mapping never lazy-loads per row. */
+    @Override
+    @EntityGraph(attributePaths = "category")
+    Page<Product> findAll(Pageable pageable);
+
+    @Override
+    @EntityGraph(attributePaths = "category")
+    Page<Product> findAll(Specification<Product> spec, Pageable pageable);
 }

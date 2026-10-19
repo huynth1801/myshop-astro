@@ -1,0 +1,22 @@
+---
+import Base from '../../../layouts/Base.astro';
+import AdminProductEdit from '../../../components/react/AdminProductEdit';
+import { Icon } from 'astro-icon/components';
+
+const { id } = Astro.params;
+---
+
+<Base title="Sửa sản phẩm | Quản trị" description="Chỉnh sửa sản phẩm Thuy Shop">
+  <section class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <a
+      href="/admin"
+      class="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+    >
+      <Icon name="lucide:arrow-left" class="h-4 w-4" />
+      <span>Danh sách sản phẩm</span>
+    </a>
+    <div class="mt-4">
+      {id ? <AdminProductEdit client:only="react" id={id} /> : <p class="text-sm text-muted-foreground">Thiếu id sản phẩm.</p>}
+    </div>
+  </section>
+</Base>

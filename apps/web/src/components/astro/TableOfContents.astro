@@ -1,0 +1,104 @@
+---
+import type { TocItem } from '../../lib/blog/contentEnhancer';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  toc: TocItem[];
+}
+
+const { toc } = Astro.props;
+if (!toc || toc.length < 2) {
+  // Don't render TOC if there's less than 2 headings
+  return;
+}
+---
+
+<nav
+  aria-label="Mục lục bài viết"
+  class="not-prose my-10 overflow-hidden rounded-2xl border border-border/80 bg-surface/60 p-5 shadow-xs transition-all sm:p-6"
+  id="toc-container"
+>
+  <div class="flex items-center justify-between gap-4">
+    <div class="flex items-center gap-2.5">
+      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-card border border-border/80 text-accent-olive">
+        <Icon name="lucide:list" class="h-4 w-4" />
+      </div>
+      <div>
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-foreground">
+          Mục lục nội dung
+        </h2>
+        <p class="text-[11px] text-muted-foreground">{toc.length} mục chính trong bài viết</p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      id="toc-toggle-btn"
+      class="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-1 text-xs font-medium text-foreground-secondary transition hover:bg-muted hover:text-foreground"
+      aria-expanded="true"
+      aria-controls="toc-list"
+    >
+      <span id="toc-toggle-text">Thu gọn</span>
+      <Icon name="lucide:chevron-down" id="toc-toggle-icon" class="h-3.5 w-3.5 transition-transform duration-200" />
+    </button>
+  </div>
+
+  <div id="toc-list-wrapper" class="mt-4 border-t border-border/50 pt-4 transition-all duration-300">
+    <ol class="space-y-1.5 text-sm" id="toc-list">
+      {toc.map((item, idx) => {
+        const isH2 = item.level === 2;
+        const indexStr = String(idx + 1).padStart(2, '0');
+        return (
+          <li class={isH2 ? 'mt-1' : 'ml-6'}>
+            <a
+              href={`#${item.id}`}
+              class="group flex items-baseline gap-2.5 rounded-lg px-2.5 py-1.5 text-foreground-secondary transition-all hover:bg-card hover:text-accent-olive"
+            >
+              {isH2 && (
+                <span class="text-[11px] font-mono font-medium text-muted-foreground/70 group-hover:text-accent-olive">
+                  {indexStr}
+                </span>
+              )}
+              {!isH2 && (
+                <span class="text-muted-foreground/50 group-hover:text-accent-olive">•</span>
+              )}
+              <span class={isH2 ? 'font-medium text-foreground group-hover:text-accent-olive' : 'text-xs text-muted-foreground group-hover:text-accent-olive'}>
+                {item.text}
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  </div>
+</nav>
+
+<script>
+  function setupTocToggle() {
+    const btn = document.getElementById('toc-toggle-btn');
+    const wrapper = document.getElementById('toc-list-wrapper');
+    const toggleText = document.getElementById('toc-toggle-text');
+    const toggleIcon = document.getElementById('toc-toggle-icon');
+
+    if (!btn || !wrapper || !toggleText || !toggleIcon) return;
+
+    btn.addEventListener('click', () => {
+      const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+      if (isExpanded) {
+        wrapper.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+        toggleText.textContent = 'Mở rộng';
+        toggleIcon.classList.add('-rotate-90');
+      } else {
+        wrapper.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        toggleText.textContent = 'Thu gọn';
+        toggleIcon.classList.remove('-rotate-90');
+      }
+    });
+  }
+
+  // Run on initial load and after view transitions
+  setupTocToggle();
+  document.addEventListener('astro:page-load', setupTocToggle);
+</script>

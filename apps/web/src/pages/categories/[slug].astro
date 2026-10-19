@@ -1,56 +1,57 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/astro/ProductCard.astro';
+import FilterBar from '../../components/astro/FilterBar.astro';
 import JsonLd from '../../components/astro/JsonLd.astro';
 import { categoryDisplayName, getCategories } from '../../lib/api/categories';
 import { getCategoryProducts } from '../../lib/api/products';
 
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const categories = await getCategories();
-  if (categories.length === 0) {
-    throw new Error('API returned 0 categories — failing the build');
-  }
-  return categories.map((category) => ({ params: { slug: category.slug } }));
-}
+// ADR 0011: catalog renders on demand so admin edits show up immediately.
+export const prerender = false;
 
 const { slug } = Astro.params;
 if (!slug) {
-  throw new Error('Missing slug param — getStaticPaths always provides it');
+  return Astro.redirect('/');
 }
 
 const categories = await getCategories();
 const category = categories.find((c) => c.slug === slug);
 if (!category) {
-  throw new Error(`Category ${slug} vanished between getStaticPaths and render`);
+  return new Response('Danh mục không tồn tại', { status: 404 });
 }
 
 const { content, totalElements } = await getCategoryProducts(category.slug, 0, 60);
-if (content.length === 0 && totalElements > 0) {
-  throw new Error('Pagination inconsistency — totalElements > 0 but empty page');
-}
 const site = Astro.site ?? new URL('https://myshop.example.com');
 ---
 
 <Base
   title={`${categoryDisplayName(category)} — chọn kỹ, dùng lâu`}
-  description={`${totalElements} sản phẩm ${categoryDisplayName(category).toLowerCase()} được chọn kỹ tại myshop. Freeship từ 500K, đổi trả trong 30 ngày.`}
+  description={`${totalElements} sản phẩm ${categoryDisplayName(category).toLowerCase()} được chọn kỹ tại Thuy Shop. Freeship từ 99K, đổi trả trong 14 ngày.`}
   canonical={`/categories/${category.slug}/`}
 >
-  <nav aria-label="Breadcrumb" class="mx-auto max-w-7xl px-4 pt-6 text-sm text-muted-foreground sm:px-6 lg:px-8">
-    <ol class="flex list-none gap-2">
-      <li><a href="/" class="hover:text-foreground">Trang chủ</a></li>
-      <li aria-hidden="true">/</li>
-      <li aria-current="page" class="text-foreground">{categoryDisplayName(category)}</li>
-    </ol>
-  </nav>
+  <section class="border-b border-border bg-canvas">
+    <div class="mx-auto max-w-7xl px-4 pt-6 pb-10 sm:px-6 lg:px-8">
+      <nav aria-label="Breadcrumb" class="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground-muted">
+        <ol class="flex list-none gap-2">
+          <li><a href="/" class="transition-colors hover:text-foreground">Trang chủ</a></li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" class="text-foreground">{categoryDisplayName(category)}</li>
+        </ol>
+      </nav>
 
-  <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-    <h1 class="text-3xl font-semibold">{categoryDisplayName(category)}</h1>
-    <p class="mt-1 text-sm text-muted-foreground">{totalElements} sản phẩm</p>
+      <div class="mt-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
+        <h1 class="text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
+          {categoryDisplayName(category)}
+        </h1>
+        <p class="text-xs tabular-nums text-foreground-muted">{totalElements} sản phẩm</p>
+      </div>
+    </div>
+  </section>
 
-    <ul class="mt-8 grid list-none grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4" role="list">
+  <FilterBar categories={categories} activeSlug={category.slug} totalCount={totalElements} />
+
+  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <ul class="grid list-none grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 sm:gap-y-14 lg:grid-cols-4" role="list">
       {content.map((product, index) => (
         <li><ProductCard product={product} eager={index < 4} /></li>
       ))}

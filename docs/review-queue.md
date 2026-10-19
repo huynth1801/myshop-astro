@@ -27,3 +27,97 @@ Commits pending review. Auto-managed:
 - eed1f17 (2026-10-09) chore: review queue
 - f44de27 (2026-10-09) feat(seed): standalone demo-catalog seed with real Shopee images (./scripts/seed.sh)
 - 653b415 (2026-10-09) fix(web): accept site-relative image paths in Zod schema; docs: seed runbook
+- 533231d (2026-10-13) feat(web): redesign storefront with boutique minimalist aesthetic
+- d8bfbb2 (2026-10-13) chore: review queue
+- 7b0467b (2026-10-13) feat: add interactive hero lookbook slider component and assets
+- cfd6013 (2026-10-13) feat(admin): Shopee-style product edit page /admin/products/[id]
+- b05a18d (2026-10-13) chore: update review queue
+- 57c3cec (2026-10-13) feat(admin): support editing all product parameters, multi-attribute variants, images, and descriptions
+- 8b8986f (2026-10-13) feat(admin): overhaul image manager UX with drag-drop reordering, primary badge, SEO alt modal, and multi-file dropzone
+- 1c8f0f6 (2026-10-13) feat(admin): enable editing existing images with Canvas rotate, flip, file replacement, and URL update
+- 00c1b4b (2026-10-13) fix(admin): fit image editor modal within viewport bounds with fixed header/footer and scrollable body
+- d9e923d (2026-10-13) feat(web): standardize on Lucide icons across admin and storefront UI
+- 1856121 (2026-10-13) chore(docs): update review queue for icon standardization
+- 99af925 (2026-10-13) feat(catalog): import 162 variants with real prices and stock from Shopee sales info export
+- d3c63d8 (2026-10-13) chore: update review queue
+- 9e3101f (2026-10-13) feat(admin): make variant table always-editable inline with zero horizontal overflow
+- 77576ec (2026-10-13) chore(docs): update review queue for variant table redesign
+- b932883 (2026-10-13) feat(admin): add sticky live storefront preview widget to product edit sidebar
+- b36f97d (2026-10-13) feat(web): redesign variant picker with grouped multi-attribute selectors, color swatches, and live price
+- b8f4ee3 (2026-10-13) chore: update review queue
+- 5e3961f (2026-10-13) feat(blog): implement blog engine, SEO crawler, storefront routes and admin management
+- a92c46a (2026-10-13) chore: update review queue
+- 13660b8 (2026-10-13) fix(web): fallback client API_BASE_URL and align admin auth fallback states
+- 5667664 (2026-10-13) feat(blog): implement automated RSS crawler and product-keyword matching engine
+- 66db6d3 (2026-10-13) feat(blog): add quick paste crawler bar and curate dedicated fashion RSS feeds
+- c2b0302 (2026-10-13) feat(blog): replace native alert and confirm with custom boutique ConfirmDialog
+- 2de0322 (2026-10-13) chore(docs): update review queue for blog confirm dialog
+- eb5c2eb (2026-10-13) chore(docs): update review queue for blog confirm dialog
+- 8b5e52e (2026-10-13) feat(blog): improve delete UI/UX with prominent red styling on dialog and action buttons
+- 7223b17 (2026-10-13) fix(blog): ensure createdAt non-null serialization and resilient client parsing
+- 55e5e77 (2026-10-13) chore(docs): update review queue for blog fixes
+- c923058 (2026-10-13) chore(docs): sync review queue
+- 059e0a6 (2026-10-13) fix(blog): resolve auth 401 race condition, auto-refresh tokens, and add bulk post actions
+- de683e2 (2026-10-13) chore(docs): update review queue for auth and blog save fixes
+- b71b695 (2026-10-13) chore(docs): sync review queue
+- ddd4332 (2026-10-13) chore(docs): sync review queue
+- f051157 (2026-10-13) feat(blog): lock header buttons to right on long titles and add global toast notifications
+- 654361c (2026-10-13) fix(api): allow PUT and HEAD methods in CORS configuration
+- 59fe4dd (2026-10-13) chore(docs): update review queue for CORS fix
+- a452886 (2026-10-13) chore(docs): sync review queue
+- 438c4d5 (2026-10-13) feat(blog): fetch all catalog products and add live search with filter tabs in post editor
+- f1e9c1d (2026-10-13) fix(blog): constrain related products list height with scroll and add global spacing tokens
+- 3913a74 (2026-10-13) fix(catalog): separate product title and price onto dedicated rows in ProductCard
+- 71ab662 (2026-10-13) feat: implement checkout with COD, VietQR and admin order management
+- efe36a2 (2026-10-13) feat(checkout): auto-fill saved shipping address and phone for returning customers
+- 56d58f2 (2026-10-13) fix(auth): hydrate AuthButton with client:load and make login triggers accessible
+- aaae41d (2026-10-13) fix(auth): remove createPortal in AuthButton and use store.listen in useStore
+- 775191a (2026-10-14) feat(checkout): add searchable cascading address selectors with Vietnam official administrative API
+- 46cd91f (2026-10-14) feat(checkout): fix transparent dropdown blur, remove district select box and add multi-token ward search
+- 5520f52 (2026-10-14) fix(locations): upgrade Vietnam administrative API to v2 (34 provinces & new wards without district level)
+- f4847a2 (2026-10-14) chore: sync review queue
+- c5c83c2 (2026-10-14) feat(orders): add customer order tracking portal and recent orders navigation
+- 0d252ab (2026-10-14) feat(orders): auto-cancel unpaid orders after 24h with inventory restoration and VietQR env support
+- b6f4fef (2026-10-14) feat(orders): support order confirmation emails and admin carrier handover action
+- bdeafda (2026-10-14) feat(email): enhance confirmation email design and embed product images via CID inline attachments
+- 9571785 (2026-10-14) fix(admin): streamline orders table actions to eliminate horizontal scroll and improve confirmation toasts
+- ef7e562 (2026-10-14) docs: update review queue
+- 93df6e6 (2026-10-14) feat(admin): support both quick in-table and modal order confirmation without horizontal scroll
+- 89d73f9 (2026-10-14) fix(metrics): exclude shipping fee from total revenue calculation
+- 102f6a6 (2026-10-14) feat(chat): implement storefront live chat backed by Telegram Bot API
+- 260d431 (2026-10-14) fix(chat): map metadata jsonb via JdbcTypeCode for PostgreSQL compatibility
+- 0b33e86 (2026-10-14) feat(chat): dispatch Telegram notifications asynchronously with higher network timeout
+- 3ddd8f0 (2026-10-14) fix(chat): remove unencoded allowed_updates param from telegram getUpdates URL
+- 26ae7c2 (2026-10-14) fix(web): switch heading balance to text-pretty to improve title wrapping
+- 2a21b2f (2026-10-14) fix(cart): do not auto-open cart drawer on add to cart and show toast feedback
+- dae98df (2026-10-14) feat(brand): update storefront branding to Thuy Shop and adjust free shipping threshold to 99k
+- 44c2085 (2026-10-14) docs: update review queue and brand title for admin blog edit page
+- 74500ad (2026-10-14) docs: update store branding in admin orders page and sync review queue
+- 6aace3b (2026-10-14) docs: sync review queue
+- 540892f (2026-10-14) feat(brand): update Thuy Shop metadata description across remaining storefront pages
+- 78065af (2026-10-14) feat(infra): prepare Cloudflare Pages adapter and multi-stage Docker build for zero-cost deployment
+- 8d3bcc2 (2026-10-14) feat(infra): add VPS docker compose, auto-deploy workflow and ADR 0010
+- 1b54982 (2026-10-15) feat(cors): allow *.workers.dev domain in CORS origins
+- 51b197d (2026-10-15) docs: sync review queue
+- aaec591 (2026-10-15) docs(env): document CORS_ALLOWED_ORIGINS and cookie options in .env.example
+- b29b7b6 (2026-10-15) fix(web): render catalog on demand so admin edits appear immediately (ADR 0011)
+- a993173 (2026-10-15) chore: review queue
+- e29e679 (2026-10-15) fix(web): support dynamic Cloudflare Workers runtime env for API base URL
+- c238369 (2026-10-15) docs: sync review queue
+- 5bcbafa (2026-10-15) chore: review queue
+- 87a4b10 (2026-10-15) merge: resolve wrangler.jsonc conflict with origin/main
+- c4f8987 (2026-10-15) feat(web): add interactive product image gallery with thumbnail strip
+- f92a85b (2026-10-15) chore: review queue
+- 988b154 (2026-10-15) chore: review queue
+- 110194e (2026-10-15) fix(web): allow reliable navigation to product detail from product cards
+- 681ad8a (2026-10-15) chore: review queue
+- 23e5515 (2026-10-15) fix(web): remove ClientRouter to restore native browser navigation across all pages
+- 2eef9e2 (2026-10-15) chore: review queue
+- 5dc4bad (2026-10-15) perf(web): parallelize PDP fetches and add instant hover prefetching
+- 82e7c23 (2026-10-15) docs: add custom domain SEO and Google indexing checklist to PLAN.md
+- bb64983 (2026-10-15) chore: update environment URLs and CORS to https://thuyshop.store and https://api.thuyshop.store
+- fef4b18 (2026-10-16) fix(web): only fetch orders on admin orders tab and add count badges
+- da4d009 (2026-10-16) fix(web): isolate orders per authenticated user and clear on sign out
+- 700d483 (2026-10-16) fix(web): break circular dependency between auth and recent-orders stores
+- ca757b2 (2026-10-16) chore: review queue
+- 7822781 (2026-10-16) feat(branding): add Google Search compliant favicon suite and logo

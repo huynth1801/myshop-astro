@@ -3,9 +3,12 @@ package com.shop.cart;
 import com.shop.cart.dto.CartItemResponse;
 import com.shop.cart.dto.CartResponse;
 import com.shop.catalog.Product;
+import com.shop.catalog.ProductImage;
 import com.shop.catalog.ProductVariant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Cart → DTO with CURRENT variant prices (the cart always recalculates;
@@ -15,14 +18,21 @@ import java.util.Map;
  */
 public final class CartMapper {
 
-    /** Free-shipping threshold: 500,000₫ stored as minor units (ADR 0003). */
-    static final long FREE_SHIPPING_THRESHOLD_CENTS = 50_000_000L;
+    /** Free-shipping threshold: 99,000₫ stored as minor units (ADR 0003). */
+    static final long FREE_SHIPPING_THRESHOLD_CENTS = 9_900_000L;
 
     private CartMapper() {
     }
 
     public static CartResponse toResponse(Cart cart, List<CartItem> items, Coupon coupon) {
-        List<CartItemResponse> itemDtos = items.stream().map(CartMapper::toItemResponse).toList();
+        return toResponse(cart, items, coupon, Map.of());
+    }
+
+    public static CartResponse toResponse(Cart cart, List<CartItem> items, Coupon coupon,
+            Map<UUID, String> primaryImagesByProductId) {
+        List<CartItemResponse> itemDtos = items.stream()
+                .map(item -> toItemResponse(item, primaryImagesByProductId))
+                .toList();
         long subtotalCents = itemDtos.stream().mapToLong(CartItemResponse::lineTotalCents).sum();
         long discountCents = coupon == null ? 0L : discountCents(coupon, subtotalCents);
         String couponCode = coupon == null ? null : coupon.getCode();
@@ -43,13 +53,32 @@ public final class CartMapper {
         };
     }
 
-    private static CartItemResponse toItemResponse(CartItem item) {
+    private static CartItemResponse toItemResponse(CartItem item,
+            Map<UUID, String> primaryImagesByProductId) {
         ProductVariant variant = item.getVariant();
         Product product = variant.getProduct();
+
+        String imageUrl = null;
+        if (primaryImagesByProductId != null && product != null && product.getId() != null) {
+            imageUrl = primaryImagesByProductId.get(product.getId());
+        }
+        if (imageUrl == null) {
+            try {
+                if (product.getImages() != null && !product.getImages().isEmpty()) {
+                    imageUrl = product.getImages().stream()
+                            .min(Comparator.comparingInt(ProductImage::getPosition))
+                            .map(ProductImage::getUrl)
+                            .orElse(product.getImages().get(0).getUrl());
+                }
+            } catch (Exception ignored) {
+                // Safe fallback if images collection is uninitialized in lazy mode or mocks
+            }
+        }
+
         return new CartItemResponse(item.getId(), variant.getId(), variant.getSku(),
                 product.getName(), product.getSlug(),
                 variant.getAttributes() == null ? Map.of() : variant.getAttributes(),
                 item.getQty(), item.getPriceAtAddCents(), variant.getPriceCents(),
-                variant.getPriceCents() * item.getQty());
+                variant.getPriceCents() * item.getQty(), imageUrl);
     }
 }

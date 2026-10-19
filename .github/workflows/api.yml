@@ -36,4 +36,7 @@ jobs:
           DB_URL: jdbc:postgresql://localhost:5432/myshop
           DB_USERNAME: postgres
           DB_PASSWORD: postgres
+          VIETQR_BANK_ID: MB
+          VIETQR_ACCOUNT_NO: '0987654321'
+          VIETQR_ACCOUNT_NAME: 'MYSHOP BOUTIQUE'
         run: ./mvnw --batch-mode verify

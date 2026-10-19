@@ -32,7 +32,7 @@ public class CartItem {
     @Column(name = "price_at_add_cents", nullable = false)
     private long priceAtAddCents;
 
-    static CartItem newItem(Cart cart, ProductVariant variant, int qty) {
+    public static CartItem newItem(Cart cart, ProductVariant variant, int qty) {
         CartItem item = new CartItem();
         item.cart = cart;
         item.variant = variant;

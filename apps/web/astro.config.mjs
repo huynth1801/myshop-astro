@@ -1,15 +1,26 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import node from '@astrojs/node';
-import sitemap from '@astrojs/sitemap';
+import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
+import icon from 'astro-icon';
+import fs from 'node:fs';
+
+const isCloudflare =
+  process.env.OUTPUT_ADAPTER === 'cloudflare' ||
+  Boolean(process.env.CF_PAGES) ||
+  Boolean(process.env.CF_WORKER) ||
+  Boolean(process.env.WORKERS_CI) ||
+  fs.existsSync('/opt/buildhome');
 
 export default defineConfig({
-  // TODO: set to the real domain before launch — required for sitemap + canonical URLs
-  site: 'https://myshop.example.com',
+  // Default to custom domain, customizable via SITE_URL
+  site: process.env.SITE_URL || 'https://thuyshop.store',
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
-  integrations: [react(), sitemap()],
+  adapter: isCloudflare ? cloudflare() : node({ mode: 'standalone' }),
+  // Sitemap is served live from /sitemap.xml (ADR 0011) — catalog pages are SSR,
+  // so a build-time sitemap would only ever see the handful of static routes.
+  integrations: [react(), icon()],
   vite: {
     plugins: [tailwindcss()],
   },

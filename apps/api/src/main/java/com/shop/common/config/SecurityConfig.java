@@ -1,6 +1,7 @@
 package com.shop.common.config;
 
 import com.shop.auth.JwtAuthFilter;
+import com.shop.common.security.RateLimitingFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,15 +31,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter)
-            throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter,
+            RateLimitingFilter rateLimitingFilter) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(sessions -> sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/api/v1/products/**", "/api/v1/categories/**",
-                        "/api/v1/cart/**", "/api/v1/auth/**").permitAll()
+                        "/api/v1/cart/**", "/api/v1/auth/**", "/api/v1/files/**", "/api/v1/posts/**",
+                        "/api/v1/checkout/**", "/api/v1/orders/**", "/api/v1/chat/**", "/api/v1/webhooks/**").permitAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .exceptionHandling(handling -> handling
                 .authenticationEntryPoint((request, response, ex) ->
@@ -47,6 +50,7 @@ public class SecurityConfig {
                 .accessDeniedHandler((request, response, ex) ->
                         writeProblem(response, 403, "FORBIDDEN",
                                 "You cannot access this resource")))
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

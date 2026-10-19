@@ -17,7 +17,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
- * user_identities (V7): links a user to one external OAuth subject. One
+ * user_identities (V13): links a user to one external OAuth subject. One
  * account may hold several identities (and a password) — see ADR 0004.
  */
 @Entity

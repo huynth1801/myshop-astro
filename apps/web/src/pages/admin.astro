@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import AdminDashboard from '../components/react/AdminDashboard';
+import AdminNavTabs from '../components/react/AdminNavTabs';
+import { Icon } from 'astro-icon/components';
+---
+
+<Base title="Quản trị" description="Quản trị Thuy Shop — dành cho ADMIN">
+  <section class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight">Quản trị — Sản phẩm</h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          Thêm / chỉnh sản phẩm, biến thể, giá và tồn kho. Thay đổi hiện ngay trên shop.
+        </p>
+      </div>
+      <a
+        href="/"
+        class="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <Icon name="lucide:arrow-left" class="h-4 w-4" />
+        <span>Về cửa hàng</span>
+      </a>
+    </div>
+
+    <!-- Navigation tabs between Products, Orders, and Blog -->
+    <AdminNavTabs client:load activeTab="products" />
+
+    <AdminDashboard client:only="react" />
+  </section>
+</Base>

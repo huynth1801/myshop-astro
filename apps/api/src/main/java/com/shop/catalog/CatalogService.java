@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -94,6 +95,19 @@ public class CatalogService {
                 .map(byId::get)
                 .filter(summary -> summary != null) // archived/deleted related product
                 .limit(limit)
+                .toList();
+    }
+
+    public List<ProductSummaryResponse> getSummariesByIds(List<UUID> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return List.of();
+        }
+        Map<UUID, ProductSummaryResponse> byId = new LinkedHashMap<>();
+        enrichSummaries(products.findSummariesByIdIn(productIds))
+                .forEach(summary -> byId.put(summary.id(), summary));
+        return productIds.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
                 .toList();
     }
 

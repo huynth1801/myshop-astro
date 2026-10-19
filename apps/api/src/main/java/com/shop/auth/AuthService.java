@@ -30,7 +30,7 @@ public class AuthService {
     public User login(String email, String password) {
         User user = users.findByEmailIgnoreCase(email)
                 .orElseThrow(InvalidCredentialsException::new);
-        // null hash = OAuth-only account (V7) — same error as a wrong password
+        // null hash = OAuth-only account (V13) — same error as a wrong password
         if (user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new InvalidCredentialsException();
         }
