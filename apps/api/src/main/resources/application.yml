@@ -60,6 +60,16 @@ shop:
     jwt-secret: ${AUTH_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
     access-token-minutes: ${AUTH_ACCESS_TOKEN_MINUTES:15}
     refresh-token-days: ${AUTH_REFRESH_TOKEN_DAYS:7}
+    oauth:
+      # Only these storefront origins may receive the post-login redirect (ADR 0004).
+      # Exact-match list (no wildcards) — enumerate every origin the store runs on.
+      allowed-redirect-origins: http://localhost:4321,http://127.0.0.1:4321,https://thuyshop.store,https://www.thuyshop.store
+      google:
+        # Empty = Google sign-in disabled but the app still boots (CI, new devs).
+        # Create at console.cloud.google.com → Credentials → OAuth client (Web app);
+        # authorized redirect URI: http://localhost:8080/api/v1/auth/oauth/google/callback
+        client-id: ${GOOGLE_CLIENT_ID:}
+        client-secret: ${GOOGLE_CLIENT_SECRET:}
   security:
     rate-limiting-enabled: ${RATE_LIMITING_ENABLED:true}
     turnstile-secret: ${TURNSTILE_SECRET:}

@@ -66,6 +66,11 @@ Stripe test-mode keys.
   on payments. Revisit before launch: the Launch Checklist §15 still requires it.
 - 2026-10-08 — **Git workflow adopted:** feature branch → PR → CI green (`api / verify`,
   `web / build`) → squash-merge. See `AGENTS.md`.
+- 2026-10-10 — **Google sign-in added** (ADR 0004): OAuth authorization-code on top
+  of the existing JWT session; `users.password_hash` now nullable (V13
+  `user_identities` — renumbered from the branch's V7 during merge; V7 was taken
+  by blog posts). Requires `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` — the
+  app boots with them unset (Google button then reports not-configured).
 - 2026-10-11 — **Admin CRUD API** (Phase 2): `/api/v1/admin/**` behind `hasRole(ADMIN)` —
   paged any-status product list, product create/update (slug immutable), variant
   add + price/stock update, category create. Spec in `docs/api-spec.yaml` (Admin tag).
