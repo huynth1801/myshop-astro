@@ -44,6 +44,10 @@ spring:
 
 server:
   port: 8080
+  # Behind the Cloudflare tunnel the container sees plain HTTP; trust
+  # X-Forwarded-Proto/Host so OAuth callback URLs come out as https://
+  # (ServletUriComponentsBuilder in OAuthController reads the scheme from here).
+  forward-headers-strategy: native
 
 shop:
   cors:
