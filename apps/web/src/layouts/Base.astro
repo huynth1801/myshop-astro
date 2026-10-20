@@ -40,6 +40,11 @@ const canonical = Astro.props.canonical ?? Astro.url.pathname;
           <p class="font-semibold tracking-tighter text-foreground">Thuy shop<span class="text-accent">.</span></p>
         </div>
         <p>Chọn kỹ, dùng lâu — đồ tốt cho ngày thường.</p>
+        <nav aria-label="Chính sách" class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs">
+          <a href="/chinh-sach/dieu-khoan" class="transition hover:text-foreground">Điều khoản sử dụng</a>
+          <a href="/chinh-sach/bao-mat" class="transition hover:text-foreground">Bảo mật</a>
+          <a href="/chinh-sach/doi-tra" class="transition hover:text-foreground">Đổi trả</a>
+        </nav>
         <p>© {new Date().getFullYear()} Thuy Shop</p>
       </div>
     </footer>

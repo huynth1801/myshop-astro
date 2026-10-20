@@ -121,3 +121,4 @@ Commits pending review. Auto-managed:
 - 700d483 (2026-10-16) fix(web): break circular dependency between auth and recent-orders stores
 - ca757b2 (2026-10-16) chore: review queue
 - 7822781 (2026-10-16) feat(branding): add Google Search compliant favicon suite and logo
+- 486b52e (2026-10-20) feat(order): SePay webhook — auto-confirm VietQR orders on bank transfer
