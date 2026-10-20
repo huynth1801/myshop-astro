@@ -14,12 +14,60 @@ import AdminStatsBar from './AdminStatsBar';
 import AdminToolbar from './AdminToolbar';
 import AdminProductRow from './AdminProductRow';
 
+const DASHBOARD_CACHE_KEY = 'myshop_admin_dashboard_cache';
+
+interface DashboardCache {
+  totalElements: number;
+  totalPages: number;
+  products: AdminProduct[];
+  categories: AdminCategory[];
+}
+
+function getCachedDashboard(): DashboardCache | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(DASHBOARD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      typeof parsed?.totalElements === 'number' &&
+      Array.isArray(parsed?.products) &&
+      Array.isArray(parsed?.categories)
+    ) {
+      return parsed as DashboardCache;
+    }
+  } catch {
+    // ignore parse error
+  }
+  return null;
+}
+
+function setCachedDashboard(data: Partial<DashboardCache>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = sessionStorage.getItem(DASHBOARD_CACHE_KEY);
+    const existing: DashboardCache = raw
+      ? JSON.parse(raw)
+      : {
+          totalElements: 0,
+          totalPages: 1,
+          products: [],
+          categories: [],
+        };
+    sessionStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify({ ...existing, ...data }));
+  } catch {
+    // ignore storage error
+  }
+}
+
 /** Admin product management dashboard with stats, variant matrix and quick controls. */
 export default function AdminDashboard() {
   const user = useStore(authUser);
   const loading = useStore(authLoading);
-  const [products, setProducts] = useState<AdminProduct[] | null>(null);
-  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  // SWR: Initialize synchronously from sessionStorage for 0ms instant paint
+  const [cached] = useState<DashboardCache | null>(() => getCachedDashboard());
+  const [products, setProducts] = useState<AdminProduct[] | null>(cached?.products ?? null);
+  const [categories, setCategories] = useState<AdminCategory[]>(cached?.categories ?? []);
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [status, setStatus] = useState('');
@@ -29,15 +77,20 @@ export default function AdminDashboard() {
   // stops the [user, reload] effect from re-firing reload(0) after setPage,
   // which used to snap every pagination click back to page 1.
   const pageRef = useRef(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(cached?.totalPages ?? 1);
+  const [totalElements, setTotalElements] = useState(cached?.totalElements ?? 0);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     void bootstrapAuth();
-    listCategories().then(setCategories).catch(() => {});
+    listCategories()
+      .then((cats) => {
+        setCategories(cats);
+        setCachedDashboard({ categories: cats });
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -60,6 +113,15 @@ export default function AdminDashboard() {
         setPage(paged.page);
         setTotalPages(paged.totalPages);
         setTotalElements(paged.totalElements);
+
+        // Update SWR cache when on default view (page 0, no search filter)
+        if (!debouncedQ && !status && !categoryId && paged.page === 0) {
+          setCachedDashboard({
+            products: paged.content,
+            totalElements: paged.totalElements,
+            totalPages: paged.totalPages,
+          });
+        }
       } catch (e) {
         setProducts([]);
         setError(e instanceof AdminError ? e.message : 'Không tải được danh sách sản phẩm.');
