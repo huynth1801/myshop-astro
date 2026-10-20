@@ -84,6 +84,13 @@ Stripe test-mode keys.
   an automated webhook handler (`POST /api/v1/webhooks/sepay`) is planned for future implementation
   to listen for real-time bank notifications, match order codes in transfer descriptions
   (`THANH TOAN MS-XXXX`), and transition orders to `CONFIRMED` without manual admin intervention.
+- 2026-10-20 — **SePay webhook implemented** (`feat/sepay-webhook`): `POST /api/v1/webhooks/sepay`
+  auto-confirms PENDING VIETQR orders when the transfer description contains the order code and
+  the amount matches the total exactly; auth via constant-time `Authorization` token compare
+  (unset token = endpoint disabled, 503). Non-settleable transfers (unknown code, amount
+  mismatch, cancelled/COD order) return a machine-readable status for manual handling —
+  always 2xx for authorized calls so SePay never pointlessly retries. Requires `SEPAY_API_TOKEN`
+  (see `apps/api/.env.example`); manual verification via `/admin/orders` remains the fallback.
 - 2026-10-14 — **Revenue Analytics & Reporting planned (Daily & Monthly):** Currently, the admin
   dashboard displays lifetime aggregate revenue (`SUM(total_cents - shipping_cents)` for non-cancelled
   orders). Planned for future release: daily and monthly aggregated revenue reports, date-range

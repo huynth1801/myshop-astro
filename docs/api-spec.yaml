@@ -370,6 +370,53 @@ paths:
       responses:
         '204': { description: Accepted (must be retry-safe and idempotent) }
 
+  /api/v1/webhooks/sepay:
+    post:
+      tags: [Webhooks]
+      summary: SePay bank-transfer events ✅ (PLAN.md §12)
+      description: |
+        Automated VietQR reconciliation. SePay POSTs every incoming bank
+        transaction; the API extracts the order code (MS-YYMMDD-XXXXXX) from
+        the transfer description, requires the transferred amount to equal the
+        order total exactly (whole VND), and transitions a PENDING VIETQR order
+        to CONFIRMED via the same lifecycle path the admin uses manually.
+        Idempotent — once an order left PENDING, replays are a no-op.
+        Transfers that cannot be auto-settled (unknown code, wrong amount,
+        cancelled/COD order) are reported back with a machine-readable status
+        for manual handling, still as 2xx so SePay does not retry them.
+      security: []
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema: { type: string }
+          description: 'The SePay webhook token (optionally "Bearer "-prefixed); constant-time compared. Unset server token = 503.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content, transferAmount]
+              properties:
+                content: { type: string, example: 'Chuyen tien TU NGUYEN VAN A THANH TOAN MS-261020-AB3XK9' }
+                transferAmount: { type: integer, format: int64, minimum: 1, description: 'Whole VND ("dong")' }
+                transferType: { type: string, enum: [in, out], description: 'Only "in" (or absent) is processed' }
+            example: { content: 'Chuyen tien TU NGUYEN VAN A THANH TOAN MS-261020-AB3XK9', transferAmount: 333000, transferType: in }
+      responses:
+        '200':
+          description: Match outcome (never retried by SePay)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [CONFIRMED, IGNORED, ORDER_NOT_FOUND, ALREADY_PROCESSED, AMOUNT_MISMATCH, MANUAL_REVIEW] }
+                  orderCode: { type: string, nullable: true }
+                  message: { type: string }
+        '403': { description: Missing/invalid token }
+        '503': { description: 'SEPAY_API_TOKEN not configured on the server' }
+
   /api/v1/auth/register:
     post:
       tags: [Auth]

@@ -93,4 +93,9 @@ app:
     polling-enabled: ${TELEGRAM_POLLING_ENABLED:false}
     webhook-url: ${TELEGRAM_WEBHOOK_URL:}
     secret-token: ${TELEGRAM_SECRET_TOKEN:}
+  sepay:
+    # Token from the SePay dashboard (Webhook section); sent back on every
+    # event in the Authorization header. Empty = endpoint disabled (503) —
+    # payment events are never accepted unauthenticated.
+    api-token: ${SEPAY_API_TOKEN:}
 
