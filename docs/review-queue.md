@@ -122,3 +122,4 @@ Commits pending review. Auto-managed:
 - ca757b2 (2026-10-16) chore: review queue
 - 7822781 (2026-10-16) feat(branding): add Google Search compliant favicon suite and logo
 - 486b52e (2026-10-20) feat(order): SePay webhook — auto-confirm VietQR orders on bank transfer
+- ee9da74 (2026-10-16) feat(web): add SWR cache and in-tab token caching for instant 0ms admin navigation

@@ -41,21 +41,59 @@ const STATUS_TABS: { key: string; label: string }[] = [
   { key: 'CANCELLED', label: 'Đã hủy' },
 ];
 
+const ORDERS_DASHBOARD_CACHE_KEY = 'myshop_admin_orders_dashboard_cache';
+
+interface OrdersDashboardCache {
+  metrics: AdminOrderMetrics;
+  orders: AdminOrderSummary[];
+  totalElements: number;
+  totalPages: number;
+}
+
+function getCachedOrdersDashboard(): OrdersDashboardCache | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(ORDERS_DASHBOARD_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.metrics && Array.isArray(parsed?.orders)) {
+      return parsed as OrdersDashboardCache;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function setCachedOrdersDashboard(data: Partial<OrdersDashboardCache>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = sessionStorage.getItem(ORDERS_DASHBOARD_CACHE_KEY);
+    const existing = raw ? JSON.parse(raw) : {};
+    sessionStorage.setItem(ORDERS_DASHBOARD_CACHE_KEY, JSON.stringify({ ...existing, ...data }));
+  } catch {
+    // ignore
+  }
+}
+
 export default function AdminOrdersManager() {
   const user = useStore(authUser);
   const authBusy = useStore(authLoading);
 
+  // SWR: Initialize synchronously from sessionStorage for 0ms instant paint
+  const [cached] = useState<OrdersDashboardCache | null>(() => getCachedOrdersDashboard());
+
   // Metrics
-  const [metrics, setMetrics] = useState<AdminOrderMetrics | null>(null);
+  const [metrics, setMetrics] = useState<AdminOrderMetrics | null>(cached?.metrics ?? null);
 
   // List State
-  const [orders, setOrders] = useState<AdminOrderSummary[] | null>(null);
+  const [orders, setOrders] = useState<AdminOrderSummary[] | null>(cached?.orders ?? null);
   const [activeTab, setActiveTab] = useState('ALL');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(cached?.totalPages ?? 1);
+  const [totalElements, setTotalElements] = useState(cached?.totalElements ?? 0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
@@ -86,6 +124,7 @@ export default function AdminOrdersManager() {
     try {
       const data = await getAdminOrderMetrics();
       setMetrics(data);
+      setCachedOrdersDashboard({ metrics: data });
       setCachedAdminBadgeData({
         pendingCount: data.pendingCount,
         totalOrders: data.totalOrders,
@@ -110,6 +149,15 @@ export default function AdminOrdersManager() {
         setPage(data.page);
         setTotalPages(data.totalPages);
         setTotalElements(data.totalElements);
+
+        // Update SWR cache when on default view (page 0, ALL tab, no search)
+        if (activeTab === 'ALL' && !debouncedSearch.trim() && data.page === 0) {
+          setCachedOrdersDashboard({
+            orders: data.content,
+            totalElements: data.totalElements,
+            totalPages: data.totalPages,
+          });
+        }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Không tải được danh sách đơn hàng.');
       } finally {

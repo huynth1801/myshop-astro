@@ -22,10 +22,49 @@ const meResponseSchema = z.object({
 });
 
 /**
- * Access token lives in module memory only — never localStorage (XSS).
+ * Access token lives in module memory and tab-isolated sessionStorage — never localStorage (XSS).
  * The refresh token is an httpOnly cookie the browser manages for us.
  */
 let accessToken: string | null = null;
+const TOKEN_SESSION_KEY = 'myshop_access_token_session';
+
+interface StoredTokenData {
+  token: string;
+  expiresAt: number;
+}
+
+function getStoredAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(TOKEN_SESSION_KEY);
+    if (!raw) return null;
+    const parsed: StoredTokenData = JSON.parse(raw);
+    if (typeof parsed?.token === 'string' && typeof parsed?.expiresAt === 'number') {
+      if (Date.now() < parsed.expiresAt - 30_000) {
+        return parsed.token;
+      }
+    }
+    sessionStorage.removeItem(TOKEN_SESSION_KEY);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function setStoredAccessToken(token: string | null, expiresIn = 900): void {
+  accessToken = token;
+  if (typeof window === 'undefined') return;
+  try {
+    if (token) {
+      const expiresAt = Date.now() + Math.max(expiresIn, 60) * 1000;
+      sessionStorage.setItem(TOKEN_SESSION_KEY, JSON.stringify({ token, expiresAt }));
+    } else {
+      sessionStorage.removeItem(TOKEN_SESSION_KEY);
+    }
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 export class AuthError extends Error {
   constructor(
@@ -85,7 +124,7 @@ function extractUserFromToken(token: string): AuthUser | null {
 
 export async function register(email: string, password: string, name: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/register', { email, password, name });
-  accessToken = tokens.accessToken;
+  setStoredAccessToken(tokens.accessToken, tokens.expiresIn);
   const decoded = extractUserFromToken(tokens.accessToken);
   if (decoded) return decoded;
   try {
@@ -97,7 +136,7 @@ export async function register(email: string, password: string, name: string): P
 
 export async function login(email: string, password: string): Promise<AuthUser> {
   const tokens = await authPost('/api/v1/auth/login', { email, password });
-  accessToken = tokens.accessToken;
+  setStoredAccessToken(tokens.accessToken, tokens.expiresIn);
   const decoded = extractUserFromToken(tokens.accessToken);
   if (decoded) return decoded;
   try {
@@ -108,7 +147,7 @@ export async function login(email: string, password: string): Promise<AuthUser> 
 }
 
 export async function logout(): Promise<void> {
-  accessToken = null;
+  setStoredAccessToken(null);
   await fetch(`${getApiBaseUrl()}/api/v1/auth/logout`, {
     method: 'POST',
     credentials: 'include',
@@ -141,10 +180,10 @@ export async function refreshAccessToken(): Promise<string | null> {
   refreshPromise = (async () => {
     try {
       const tokens = await authPost('/api/v1/auth/refresh', {});
-      accessToken = tokens.accessToken;
+      setStoredAccessToken(tokens.accessToken, tokens.expiresIn);
       return accessToken;
     } catch {
-      accessToken = null;
+      setStoredAccessToken(null);
       return null;
     } finally {
       refreshPromise = null;
@@ -158,6 +197,11 @@ export async function refreshAccessToken(): Promise<string | null> {
  */
 export async function getValidAccessToken(): Promise<string | null> {
   if (accessToken) return accessToken;
+  const stored = getStoredAccessToken();
+  if (stored) {
+    accessToken = stored;
+    return stored;
+  }
   return refreshAccessToken();
 }
 
@@ -174,6 +218,9 @@ export function authHeaders(): Record<string, string> {
  * silently rotate via the refresh cookie. Returns null for guests.
  */
 export async function bootstrapSession(): Promise<AuthUser | null> {
+  if (!accessToken) {
+    accessToken = getStoredAccessToken();
+  }
   if (accessToken) {
     const decoded = extractUserFromToken(accessToken);
     if (decoded) return decoded;
@@ -190,7 +237,7 @@ export async function bootstrapSession(): Promise<AuthUser | null> {
   try {
     return await me();
   } catch {
-    accessToken = null;
+    setStoredAccessToken(null);
     return null;
   }
 }
