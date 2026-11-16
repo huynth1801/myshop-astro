@@ -105,6 +105,11 @@ Stripe test-mode keys.
   4. **Khai báo Sitemap:** Submit `sitemap.xml` trong GSC để Googlebot lập lịch cào toàn bộ catalog.
   5. **URL Inspection (Index cấp tốc):** Dùng tính năng Kiểm tra URL để gửi yêu cầu lập chỉ mục ("Request Indexing") cho các sản phẩm chủ lực (index trong 24h - 48h).
   6. **Tối ưu Content/Title:** Tránh sao chép 100% tiêu đề sàn TMĐT (Shopee/TikTok); bổ sung nhận diện thương hiệu `| Thuy Shop` và mô tả độc nhất.
+- 2026-10-20 — **Legal pages added** (`feat/legal-pages`): `/chinh-sach/dieu-khoan`,
+  `/chinh-sach/bao-mat`, `/chinh-sach/doi-tra` (prerendered, in sitemap, linked from the
+  footer) — content aligned with storefront rules (freeship 99K, đổi trả 14 ngày, COD +
+  VietQR, đồ lót không đổi trả vì vệ sinh). Contact email là placeholder — chủ shop sửa
+  `hotro@thuyshop.store` thành email thật khi duyệt.
 
 ## 4. Data Model (core tables)
 

@@ -53,6 +53,9 @@ export const GET: APIRoute = async ({ site }) => {
   const entries: Array<{ loc: string; changefreq?: string; priority?: string }> = [
     { loc: '/', changefreq: 'daily', priority: '1.0' },
     { loc: '/blog', changefreq: 'daily', priority: '0.6' },
+    { loc: '/chinh-sach/dieu-khoan', changefreq: 'monthly', priority: '0.3' },
+    { loc: '/chinh-sach/bao-mat', changefreq: 'monthly', priority: '0.3' },
+    { loc: '/chinh-sach/doi-tra', changefreq: 'monthly', priority: '0.3' },
     ...categories.map((c) => ({
       loc: `/categories/${c.slug}/`,
       changefreq: 'daily',
